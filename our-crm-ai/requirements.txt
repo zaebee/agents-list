@@ -1,1 +1,4 @@
 requests
+sentence-transformers
+faiss-cpu
+anthropic
