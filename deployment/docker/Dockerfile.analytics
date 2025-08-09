@@ -1,0 +1,28 @@
+FROM python:3.9-slim-buster
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY our-crm-ai/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy analytics modules
+COPY our-crm-ai/analytics_engine.py ./
+COPY our-crm-ai/analytics_api.py ./
+COPY our-crm-ai/config.json ./
+
+# Expose port for the analytics service
+EXPOSE 5000
+
+# Set environment to production
+ENV FLASK_ENV=production
+ENV PYTHONUNBUFFERED=1
+
+# Use gunicorn to serve the application
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "analytics_api:create_analytics_app()"]
