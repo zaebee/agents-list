@@ -1,0 +1,11 @@
+╭───────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                         │
+│                                                   │
+│   /help for help, /status for your current setup  │
+│                                                   │
+│   cwd: /home/zaebee/projects/agents-list          │
+╰───────────────────────────────────────────────────╯
+
+> /export 
+  ⎿  Failed to copy to clipboard. Make sure `xclip` or `wl-copy` is installed on your system and try again.
+
