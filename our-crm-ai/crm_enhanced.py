@@ -2,6 +2,9 @@ import requests
 import json
 import os
 import argparse
+import time
+import uuid
+from functools import wraps
 from agent_selector import suggest_agents
 
 # --- Configuration ---
@@ -11,6 +14,66 @@ HEADERS = {
     "Authorization": f"Bearer {API_KEY}",
     "Content-Type": "application/json"
 }
+
+# API Configuration
+DEFAULT_TIMEOUT = 30
+MAX_RETRIES = 3
+RETRY_DELAY = 1  # seconds
+
+def retry_api_call(max_retries=MAX_RETRIES, delay=RETRY_DELAY):
+    """Decorator to add retry logic for API calls with exponential backoff."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except requests.exceptions.RequestException as e:
+                    last_exception = e
+                    if attempt == max_retries - 1:
+                        print(f"❌ API call failed after {max_retries} attempts: {e}")
+                        break
+                    
+                    wait_time = delay * (2 ** attempt)  # Exponential backoff
+                    print(f"⚠️  API call failed (attempt {attempt + 1}), retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+            
+            raise last_exception
+        return wrapper
+    return decorator
+
+def validate_task_id(task_id: str) -> bool:
+    """Validate task ID format to prevent injection attacks."""
+    if not task_id or not isinstance(task_id, str):
+        return False
+    
+    # Try UUID format first
+    try:
+        uuid.UUID(task_id)
+        return True
+    except ValueError:
+        pass
+    
+    # Fallback: alphanumeric with minimum length
+    return len(task_id) >= 8 and all(c.isalnum() or c == '-' for c in task_id)
+
+@retry_api_call()
+def make_api_request(method: str, url: str, **kwargs):
+    """Enhanced API request wrapper with timeout and retry logic."""
+    # Add default timeout if not specified
+    if 'timeout' not in kwargs:
+        kwargs['timeout'] = DEFAULT_TIMEOUT
+    
+    # Ensure SSL verification
+    kwargs['verify'] = True
+    
+    # Add headers
+    if 'headers' not in kwargs:
+        kwargs['headers'] = HEADERS
+    
+    return requests.request(method, url, **kwargs)
 
 def load_config():
     """Loads the configuration from config.json."""
@@ -101,7 +164,7 @@ def create_task(args, config):
         task_data["stickers"] = {sticker_id: owner_state_id}
         print(f"🎯 Assigned to: {owner}")
 
-    response = requests.post(f"{BASE_URL}/tasks", headers=HEADERS, json=task_data)
+    response = make_api_request("POST", f"{BASE_URL}/tasks", json=task_data)
 
     if response.status_code == 201:
         task_id = response.json().get("id")
@@ -111,6 +174,11 @@ def create_task(args, config):
 
 def update_task(args, config):
     """Updates an existing task with enhanced validation."""
+    # Validate task ID format
+    if not validate_task_id(args.task_id):
+        print("❌ Error: Invalid task ID format. Task ID must be a valid UUID or alphanumeric string.")
+        return
+        
     print(f"Updating task: {args.task_id}...")
 
     if not args.owner:
@@ -136,7 +204,7 @@ def update_task(args, config):
 
         update_data["stickers"] = {sticker_id: owner_state_id}
 
-    response = requests.put(f"{BASE_URL}/tasks/{args.task_id}", headers=HEADERS, json=update_data)
+    response = make_api_request("PUT", f"{BASE_URL}/tasks/{args.task_id}", json=update_data)
 
     if response.status_code == 200:
         print("✅ Task updated successfully.")
@@ -153,7 +221,7 @@ def list_tasks(args, config):
         # Get tasks from each column
         for column_name, column_id in config["columns"].items():
             params = {"columnId": column_id, "limit": 1000}
-            response = requests.get(f"{BASE_URL}/task-list", headers=HEADERS, params=params)
+            response = make_api_request("GET", f"{BASE_URL}/task-list", params=params)
             response.raise_for_status()
             tasks = response.json().get("content", [])
             for task in tasks:
@@ -202,11 +270,17 @@ def list_tasks(args, config):
 def view_task(args, config):
     """Views a single task and its comments with enhanced display."""
     task_id = args.task_id
+    
+    # Validate task ID format
+    if not validate_task_id(task_id):
+        print("❌ Error: Invalid task ID format. Task ID must be a valid UUID or alphanumeric string.")
+        return
+        
     print(f"📖 Fetching details for task: {task_id}...")
 
     try:
         # Get task details
-        task_response = requests.get(f"{BASE_URL}/tasks/{task_id}", headers=HEADERS)
+        task_response = make_api_request("GET", f"{BASE_URL}/tasks/{task_id}")
         task_response.raise_for_status()
         task = task_response.json()
 
@@ -235,7 +309,7 @@ def view_task(args, config):
         print("💬 COMMENTS")
         print("-" * 60)
         
-        chat_response = requests.get(f"{BASE_URL}/chats/{task_id}/messages", headers=HEADERS)
+        chat_response = make_api_request("GET", f"{BASE_URL}/chats/{task_id}/messages")
         if chat_response.status_code == 200:
             messages = chat_response.json().get("content", [])
             if not messages:
@@ -252,10 +326,16 @@ def view_task(args, config):
 def comment_on_task(args, config):
     """Adds a comment to a task."""
     task_id = args.task_id
+    
+    # Validate task ID format
+    if not validate_task_id(task_id):
+        print("❌ Error: Invalid task ID format. Task ID must be a valid UUID or alphanumeric string.")
+        return
+        
     print(f"💬 Adding comment to task: {task_id}...")
 
     comment_data = {"text": args.message}
-    response = requests.post(f"{BASE_URL}/chats/{task_id}/messages", headers=HEADERS, json=comment_data)
+    response = make_api_request("POST", f"{BASE_URL}/chats/{task_id}/messages", json=comment_data)
 
     if response.status_code == 201:
         print("✅ Comment added successfully.")
@@ -266,6 +346,12 @@ def move_task(args, config):
     """Moves a task to a different column."""
     task_id = args.task_id
     target_column_name = args.column
+    
+    # Validate task ID format
+    if not validate_task_id(task_id):
+        print("❌ Error: Invalid task ID format. Task ID must be a valid UUID or alphanumeric string.")
+        return
+        
     print(f"🔄 Moving task {task_id} to column '{target_column_name}'...")
 
     target_column_id = config["columns"].get(target_column_name)
@@ -275,7 +361,7 @@ def move_task(args, config):
         return
 
     update_data = {"columnId": target_column_id}
-    response = requests.put(f"{BASE_URL}/tasks/{task_id}", headers=HEADERS, json=update_data)
+    response = make_api_request("PUT", f"{BASE_URL}/tasks/{task_id}", json=update_data)
 
     if response.status_code == 200:
         print("✅ Task moved successfully.")

@@ -4,6 +4,7 @@ AI Agent Selector - Automatically suggests appropriate agents for tasks.
 """
 
 import re
+import difflib
 from typing import List, Tuple, Dict
 from pathlib import Path
 
@@ -91,8 +92,34 @@ AGENT_KEYWORDS = {
     'context-manager': ['multi-agent', 'coordination', 'context', 'workflow']
 }
 
+def fuzzy_keyword_match(text: str, keyword: str, threshold: float = 0.8) -> bool:
+    """Use fuzzy matching for more flexible keyword detection."""
+    words = text.lower().split()
+    keyword_lower = keyword.lower()
+    
+    # Direct substring match (fastest)
+    if keyword_lower in text.lower():
+        return True
+    
+    # Fuzzy match against individual words
+    for word in words:
+        if difflib.SequenceMatcher(None, word, keyword_lower).ratio() >= threshold:
+            return True
+    
+    # Fuzzy match against word combinations for multi-word keywords
+    if ' ' in keyword_lower:
+        keyword_words = keyword_lower.split()
+        text_words = words
+        
+        for i in range(len(text_words) - len(keyword_words) + 1):
+            text_phrase = ' '.join(text_words[i:i + len(keyword_words)])
+            if difflib.SequenceMatcher(None, text_phrase, keyword_lower).ratio() >= threshold:
+                return True
+    
+    return False
+
 def calculate_agent_scores(task_description: str) -> List[Tuple[str, float, List[str]]]:
-    """Calculate relevance scores for each agent based on task description."""
+    """Calculate relevance scores for each agent based on task description with fuzzy matching."""
     task_lower = task_description.lower()
     scores = []
     
@@ -101,10 +128,20 @@ def calculate_agent_scores(task_description: str) -> List[Tuple[str, float, List
         score = 0.0
         
         for keyword in keywords:
-            if keyword in task_lower:
+            match_type = None
+            
+            # Exact match (highest weight)
+            if keyword.lower() in task_lower:
+                match_type = "exact"
                 matched_keywords.append(keyword)
-                # Weight score based on keyword specificity
-                keyword_weight = len(keyword.split()) * 1.0  # Multi-word keywords get higher weight
+                keyword_weight = len(keyword.split()) * 1.0
+                score += keyword_weight
+            
+            # Fuzzy match (lower weight)
+            elif fuzzy_keyword_match(task_lower, keyword, threshold=0.75):
+                match_type = "fuzzy"
+                matched_keywords.append(f"~{keyword}")  # Mark as fuzzy match
+                keyword_weight = len(keyword.split()) * 0.7  # Reduced weight for fuzzy matches
                 score += keyword_weight
         
         if matched_keywords:
