@@ -1,19 +1,19 @@
 {
-    "project_id": "dd0342dc-020d-4687-a578-42f0311d921f",
-    "board_id": "a67ac996-f02e-492a-988f-1bd834d26bcc",
+    "project_id": "dc08147c-055a-4600-b768-ca3177dff71e",
+    "board_id": "02d006ba-7bb1-4ea4-a194-3e1a70bf256d",
     "columns": {
-        "To Do": "cd60ec00-985e-42a3-ad0f-3956dd0c9305",
-        "In Progress": "c2b09aa7-4fc6-4e63-9cd2-4e0ecbfcf938",
-        "Done": "4d23b68a-9359-45e7-8080-86eafa106ed1"
+        "To Do": "bc167d0b-f0f7-4f20-8a30-4a8f7176a56c",
+        "In Progress": "6ea80145-074f-4c79-8530-a17aa0d018b3",
+        "Done": "4df1d900-11a7-4cca-b0d0-5b3a6b54e1fc"
     },
     "ai_owner_sticker": {
-        "id": "72188900-fbca-402e-9493-04cab230b434",
+        "id": "6a036406-dbf0-433a-87af-03a1381f7802",
         "states": {
-            "api-documenter": "04a8965d1bed",
-            "ai-engineer": "8f71443c4600",
-            "frontend-developer": "69d05a74efbd",
-            "deployment-engineer": "7214d9c9d301",
-            "business-analyst": "f61b922edf8e"
+            "api-documenter": "3971a10ee04c",
+            "ai-engineer": "17c370c81c90",
+            "frontend-developer": "dd71c4926448",
+            "deployment-engineer": "6b83835ed6eb",
+            "business-analyst": "4779064bdeb0"
         }
     }
 }

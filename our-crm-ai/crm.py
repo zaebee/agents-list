@@ -72,6 +72,38 @@ def create_task(args, config):
     else:
         handle_api_error(response)
 
+def update_task(args, config):
+    """Updates an existing task. Currently only supports changing the owner."""
+    print(f"Updating task: {args.task_id}...")
+
+    if not args.owner:
+        print("Error: Nothing to update. Please provide an attribute to update (e.g., --owner).")
+        return
+
+    update_data = {}
+
+    if args.owner:
+        owner_sticker_config = config.get("ai_owner_sticker")
+        if not owner_sticker_config:
+            print("Error: 'ai_owner_sticker' not found in config.json. Please run setup.")
+            return
+
+        sticker_id = owner_sticker_config.get("id")
+        owner_state_id = owner_sticker_config.get("states", {}).get(args.owner)
+
+        if not owner_state_id:
+            print(f"Error: Owner '{args.owner}' is not a valid AI agent role in config.")
+            return
+
+        update_data["stickers"] = {sticker_id: owner_state_id}
+
+    response = requests.put(f"{BASE_URL}/tasks/{args.task_id}", headers=HEADERS, json=update_data)
+
+    if response.status_code == 200:
+        print("Task updated successfully.")
+    else:
+        handle_api_error(response)
+
 def list_tasks(args, config):
     """Lists all tasks on the board."""
     print("Fetching tasks from the board...")
@@ -203,6 +235,12 @@ def main():
     create_parser.add_argument("--description", default="", help="The description of the task.")
     create_parser.add_argument("--owner", help="The AI agent owner for the task.")
     create_parser.set_defaults(func=create_task)
+
+    # Update command
+    update_parser = subparsers.add_parser("update", help="Update an existing task.")
+    update_parser.add_argument("task_id", help="The ID of the task to update.")
+    update_parser.add_argument("--owner", help="The new AI agent owner for the task.")
+    update_parser.set_defaults(func=update_task)
 
     # List command
     list_parser = subparsers.add_parser("list", help="List all tasks.")

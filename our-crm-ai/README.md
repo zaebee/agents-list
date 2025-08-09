@@ -64,6 +64,19 @@ python crm.py create --title "Review new feature" --description "Review the late
 python crm.py create --title "Design MCP for Agent Communication" --owner "api-documenter"
 ```
 
+### Update a Task
+Updates an existing task. Currently, this only supports changing the AI Owner.
+
+**Command:**
+```bash
+python crm.py update <task_id> --owner <new_agent_name>
+```
+
+**Example:**
+```bash
+python crm.py update 3a9286d6-9a26-4bca-b902-776eb41856fa --owner "ai-engineer"
+```
+
 ### List Tasks
 Lists all tasks on the board, showing their ID, title, and current status.
 
