@@ -6,6 +6,7 @@ import time
 import uuid
 from functools import wraps
 from agent_selector import suggest_agents
+from pm_agent_gateway import PMAgentGateway
 
 # --- Configuration ---
 API_KEY = os.environ.get("YOUGILE_API_KEY")
@@ -95,13 +96,53 @@ def handle_api_error(response):
     except json.JSONDecodeError:
         print(f"Response: {response.text}")
 
-def suggest_owner_for_task(title, description):
-    """Suggest AI owner based on task content using the agent selector."""
+def suggest_owner_for_task(title, description, use_pm_gateway=True):
+    """Suggest AI owner using PM Agent Gateway for intelligent analysis."""
+    if use_pm_gateway:
+        try:
+            print(f"\n🎯 Using PM Agent Gateway for intelligent task analysis...")
+            pm_gateway = PMAgentGateway()
+            result = pm_gateway.create_managed_task(title, description)
+            
+            if result['type'] == 'direct_assignment':
+                suggested_agent = result['assigned_agent']
+                priority = result['priority']
+                estimated_hours = result['analysis']['estimated_hours']
+                
+                print(f"\n💡 PM Recommendation: {suggested_agent}")
+                print(f"📊 Priority: {priority}, Estimated: {estimated_hours} hours")
+                
+                use_suggestion = input(f"Use PM recommendation ({suggested_agent})? (y/n): ").strip().lower()
+                if use_suggestion == 'y':
+                    return suggested_agent
+            
+            elif result['type'] == 'complex_task':
+                print(f"\n⚠️  Complex task detected!")
+                print(f"🔄 PM Gateway recommends breaking into {len(result['subtasks'])} subtasks")
+                print(f"📊 Priority: {result['priority']}")
+                
+                for i, subtask in enumerate(result['subtasks'][:3], 1):  # Show first 3
+                    print(f"  {i}. {subtask['title']} → {subtask['agent']}")
+                
+                if len(result['subtasks']) > 3:
+                    print(f"  ... and {len(result['subtasks']) - 3} more subtasks")
+                
+                # For complex tasks, suggest the primary agent
+                primary_agent = result['analysis']['required_agents'][0] if result['analysis']['required_agents'] else 'business-analyst'
+                
+                create_subtasks = input(f"Create as complex task with primary agent ({primary_agent})? (y/n): ").strip().lower()
+                if create_subtasks == 'y':
+                    return primary_agent
+        
+        except Exception as e:
+            print(f"⚠️  PM Gateway error: {e}, falling back to basic agent selector...")
+    
+    # Fallback to basic agent selector
     combined_text = f"{title} {description}"
     suggestions = suggest_agents(combined_text, max_suggestions=3)
     
     if suggestions:
-        print(f"\n🤖 AI Agent Suggestions:")
+        print(f"\n🤖 Basic Agent Suggestions:")
         for i, suggestion in enumerate(suggestions, 1):
             confidence = suggestion['confidence']
             agent = suggestion['agent']
@@ -472,6 +513,12 @@ Examples:
     suggest_parser = subparsers.add_parser("suggest", help="Suggest AI agents for a task description.")
     suggest_parser.add_argument("description", help="Task description to analyze.")
     suggest_parser.set_defaults(func=lambda args, config: print_agent_suggestions(args.description))
+    
+    # PM Analyze command (comprehensive task analysis)
+    pm_parser = subparsers.add_parser("pm", help="PM Agent Gateway - comprehensive task analysis and workflow planning.")
+    pm_parser.add_argument("--title", required=True, help="Task title to analyze.")
+    pm_parser.add_argument("--description", help="Task description for detailed analysis.")
+    pm_parser.set_defaults(func=pm_analyze_task)
 
     args = parser.parse_args()
     args.func(args, config)
@@ -497,6 +544,53 @@ def print_agent_suggestions(description):
     else:
         print("❌ No specific agent suggestions found.")
         print("💡 Consider using 'search-specialist' for general research tasks.")
+
+def pm_analyze_task(args, config):
+    """Use PM Agent Gateway to analyze and provide comprehensive task recommendations."""
+    try:
+        pm_gateway = PMAgentGateway()
+        result = pm_gateway.create_managed_task(args.title, args.description or "")
+        
+        print(f"\n🎯 PM Agent Analysis Complete!")
+        print("=" * 60)
+        
+        if result['type'] == 'direct_assignment':
+            print(f"📋 Task: {result['task']['title']}")
+            print(f"🎯 Recommended Agent: {result['assigned_agent']}")
+            print(f"📊 Priority: {result['priority']}")
+            print(f"⏰ Estimated: {result['analysis']['estimated_hours']} hours")
+            print(f"🔧 Complexity: {result['analysis']['complexity']}")
+            
+            if result['analysis']['risk_factors']:
+                print(f"⚠️  Risk Factors:")
+                for risk in result['analysis']['risk_factors']:
+                    print(f"   • {risk}")
+            
+            print(f"✅ Success Criteria:")
+            for criteria in result['analysis']['success_criteria']:
+                print(f"   • {criteria}")
+                
+        elif result['type'] == 'complex_task':
+            print(f"📋 Complex Task: {result['original_task']['title']}")
+            print(f"📊 Priority: {result['priority']}")
+            print(f"⏰ Total Estimated: {result['analysis']['estimated_hours']} hours")
+            print(f"🔧 Complexity: {result['analysis']['complexity']}")
+            
+            print(f"\n🔄 Recommended Subtasks ({len(result['subtasks'])}):")
+            for i, subtask in enumerate(result['subtasks'], 1):
+                print(f"   {i}. {subtask['title']}")
+                print(f"      → Agent: {subtask['agent']}")
+                print(f"      → Time: {subtask['estimated_hours']} hours")
+                if subtask.get('depends_on'):
+                    print(f"      → Depends on: {subtask['depends_on']}")
+                print()
+        
+        print(f"💡 Recommendation: {result['recommendation']}")
+        
+    except Exception as e:
+        print(f"❌ PM Analysis failed: {e}")
+        print("💡 Falling back to basic agent suggestions...")
+        print_agent_suggestions(f"{args.title} {args.description or ''}")
 
 if __name__ == "__main__":
     main()
