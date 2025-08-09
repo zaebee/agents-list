@@ -1,9 +1,13 @@
 import argparse
-import sys
 import re
 import os
 import subprocess
+import sys
+
+# Add project root to path to allow sibling imports
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from crm import CRMClient
+
 
 def recognize_intent(command):
     """Recognizes the user's intent from the command."""
@@ -14,18 +18,24 @@ def recognize_intent(command):
         return "query_rag", {"query": command}
 
     # Intent: list_tasks
-    if any(keyword in command_lower for keyword in ["list", "show all", "board", "tasks"]):
+    if any(
+        keyword in command_lower for keyword in ["list", "show all", "board", "tasks"]
+    ):
         return "list_tasks", {}
 
     # Intent: view_task
     view_keywords = ["view task", "show task", "details for task", "show me task"]
     if any(keyword in command_lower for keyword in view_keywords):
         # Try to find a UUID in the command
-        match = re.search(r'([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})', command_lower)
+        match = re.search(
+            r"([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})",
+            command_lower,
+        )
         if match:
             return "view_task", {"task_id": match.group(1)}
 
     return "unknown", {}
+
 
 def execute_action(intent, params):
     """Executes the action corresponding to the intent."""
@@ -62,10 +72,10 @@ def execute_action(intent, params):
             response += f"Title: {task.get('title')}\n"
             response += f"Description: {task.get('description', 'No description.')}\n"
             response += "\n--- Comments ---\n"
-            if not task.get('comments'):
+            if not task.get("comments"):
                 response += "No comments found."
             else:
-                for msg in reversed(task['comments']):
+                for msg in reversed(task["comments"]):
                     response += f"- {msg.get('text')}\n"
             return response
         except Exception as e:
@@ -78,12 +88,14 @@ def execute_action(intent, params):
                 return "Error: Query not provided for 'query_rag' intent."
 
             # We need the full path to query_rag.py
-            script_path = os.path.join(os.path.dirname(__file__), 'query_rag.py')
+            script_path = os.path.join(
+                os.path.dirname(__file__), "../rag/query_rag.py"
+            )
             result = subprocess.run(
-                ['python3', script_path, query],
+                ["python3", script_path, query],
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
             return result.stdout
         except FileNotFoundError:
@@ -93,14 +105,21 @@ def execute_action(intent, params):
         except Exception as e:
             return f"An unexpected error occurred: {e}"
 
-    else: # unknown intent
+    else:  # unknown intent
         return "Sorry, I didn't understand that command. Please try again."
 
 
 def main():
     """Main function for the PM Agent."""
-    parser = argparse.ArgumentParser(description="Project Manager Agent for our-crm-ai.")
-    parser.add_argument("command", type=str, nargs='+', help="The natural language command for the PM agent.")
+    parser = argparse.ArgumentParser(
+        description="Project Manager Agent for our-crm-ai."
+    )
+    parser.add_argument(
+        "command",
+        type=str,
+        nargs="+",
+        help="The natural language command for the PM agent.",
+    )
 
     args = parser.parse_args()
 

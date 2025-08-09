@@ -5,25 +5,28 @@ import argparse
 
 BASE_URL = "https://yougile.com/api-v2"
 
+
 class CRMClient:
     def __init__(self, api_key=None):
         if api_key is None:
             api_key = os.environ.get("YOUGILE_API_KEY")
 
         if not api_key:
-            raise ValueError("YOUGILE_API_KEY not provided or set as an environment variable.")
+            raise ValueError(
+                "YOUGILE_API_KEY not provided or set as an environment variable."
+            )
 
         self.api_key = api_key
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.config = self._load_config()
 
     def _load_config(self):
         """Loads the configuration from config.json."""
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        config_path = os.path.join(script_dir, "config.json")
+        config_path = os.path.join(script_dir, "../config.json")
         try:
             with open(config_path, "r") as f:
                 return json.load(f)
@@ -56,7 +59,7 @@ class CRMClient:
         task_data = {
             "title": title,
             "description": description,
-            "columnId": todo_column_id
+            "columnId": todo_column_id,
         }
 
         if owner:
@@ -74,7 +77,9 @@ class CRMClient:
 
             task_data["stickers"] = {sticker_id: owner_state_id}
 
-        response = requests.post(f"{BASE_URL}/tasks", headers=self.headers, json=task_data)
+        response = requests.post(
+            f"{BASE_URL}/tasks", headers=self.headers, json=task_data
+        )
 
         if response.status_code == 201:
             task_id = response.json().get("id")
@@ -106,7 +111,9 @@ class CRMClient:
             return False
 
         update_data["stickers"] = {sticker_id: owner_state_id}
-        response = requests.put(f"{BASE_URL}/tasks/{task_id}", headers=self.headers, json=update_data)
+        response = requests.put(
+            f"{BASE_URL}/tasks/{task_id}", headers=self.headers, json=update_data
+        )
 
         if response.status_code == 200:
             print("Task updated successfully.")
@@ -123,12 +130,14 @@ class CRMClient:
 
         print(f"Uploading file: {file_path}...")
         try:
-            with open(file_path, 'rb') as f:
-                files = {'file': (os.path.basename(file_path), f)}
+            with open(file_path, "rb") as f:
+                files = {"file": (os.path.basename(file_path), f)}
                 # We don't use self.headers here because requests will set the
                 # Content-Type with the correct boundary for multipart/form-data.
                 upload_headers = {"Authorization": f"Bearer {self.api_key}"}
-                response = requests.post(f"{BASE_URL}/upload-file", headers=upload_headers, files=files)
+                response = requests.post(
+                    f"{BASE_URL}/upload-file", headers=upload_headers, files=files
+                )
                 response.raise_for_status()
 
             file_data = response.json()
@@ -163,7 +172,9 @@ class CRMClient:
         try:
             for column_name, column_id in self.config["columns"].items():
                 params = {"columnId": column_id, "limit": 1000}
-                response = requests.get(f"{BASE_URL}/task-list", headers=self.headers, params=params)
+                response = requests.get(
+                    f"{BASE_URL}/task-list", headers=self.headers, params=params
+                )
                 response.raise_for_status()
                 tasks = response.json().get("content", [])
                 for task in tasks:
@@ -183,15 +194,19 @@ class CRMClient:
             return None
 
         try:
-            task_response = requests.get(f"{BASE_URL}/tasks/{task_id}", headers=self.headers)
+            task_response = requests.get(
+                f"{BASE_URL}/tasks/{task_id}", headers=self.headers
+            )
             task_response.raise_for_status()
             task = task_response.json()
 
-            chat_response = requests.get(f"{BASE_URL}/chats/{task_id}/messages", headers=self.headers)
+            chat_response = requests.get(
+                f"{BASE_URL}/chats/{task_id}/messages", headers=self.headers
+            )
             if chat_response.status_code == 200:
-                task['comments'] = chat_response.json().get("content", [])
+                task["comments"] = chat_response.json().get("content", [])
             else:
-                task['comments'] = []
+                task["comments"] = []
 
             return task
         except requests.exceptions.RequestException as e:
@@ -202,7 +217,11 @@ class CRMClient:
         """Adds a comment to a task."""
         print(f"Adding comment to task: {task_id}...")
         comment_data = {"text": message}
-        response = requests.post(f"{BASE_URL}/chats/{task_id}/messages", headers=self.headers, json=comment_data)
+        response = requests.post(
+            f"{BASE_URL}/chats/{task_id}/messages",
+            headers=self.headers,
+            json=comment_data,
+        )
 
         if response.status_code == 201:
             print("Comment added successfully.")
@@ -225,7 +244,9 @@ class CRMClient:
             return False
 
         update_data = {"columnId": target_column_id}
-        response = requests.put(f"{BASE_URL}/tasks/{task_id}", headers=self.headers, json=update_data)
+        response = requests.put(
+            f"{BASE_URL}/tasks/{task_id}", headers=self.headers, json=update_data
+        )
 
         if response.status_code == 200:
             print("Task moved successfully.")
@@ -233,6 +254,7 @@ class CRMClient:
         else:
             self._handle_api_error(response)
             return False
+
 
 def main():
     """Main function to parse arguments and call CLI handlers."""
@@ -242,22 +264,28 @@ def main():
         print(e)
         return
 
-    parser = argparse.ArgumentParser(description="A CLI for interacting with the YouGile-based CRM.")
+    parser = argparse.ArgumentParser(
+        description="A CLI for interacting with the YouGile-based CRM."
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Create command
     create_parser = subparsers.add_parser("create", help="Create a new task.")
     create_parser.add_argument("--title", required=True, help="The title of the task.")
-    create_parser.add_argument("--description", default="", help="The description of the task.")
+    create_parser.add_argument(
+        "--description", default="", help="The description of the task."
+    )
     create_parser.add_argument("--owner", help="The AI agent owner for the task.")
 
     # Update command
     update_parser = subparsers.add_parser("update", help="Update an existing task.")
     update_parser.add_argument("task_id", help="The ID of the task to update.")
-    update_parser.add_argument("--owner", required=True, help="The new AI agent owner for the task.")
+    update_parser.add_argument(
+        "--owner", required=True, help="The new AI agent owner for the task."
+    )
 
     # List command
-    list_parser = subparsers.add_parser("list", help="List all tasks.")
+    subparsers.add_parser("list", help="List all tasks.")
 
     # View command
     view_parser = subparsers.add_parser("view", help="View a specific task.")
@@ -269,15 +297,25 @@ def main():
     comment_parser.add_argument("--message", required=True, help="The comment message.")
 
     # Move command
-    move_parser = subparsers.add_parser("move", help="Move a task to a different column.")
+    move_parser = subparsers.add_parser(
+        "move", help="Move a task to a different column."
+    )
     move_parser.add_argument("task_id", help="The ID of the task to move.")
-    move_parser.add_argument("--column", required=True, help="The name of the target column.")
+    move_parser.add_argument(
+        "--column", required=True, help="The name of the target column."
+    )
 
     # Attach command
     attach_parser = subparsers.add_parser("attach", help="Attach a file to a task.")
-    attach_parser.add_argument("task_id", help="The ID of the task to attach the file to.")
-    attach_parser.add_argument("--file", required=True, dest="file_path", help="The local path to the file to attach.")
-
+    attach_parser.add_argument(
+        "task_id", help="The ID of the task to attach the file to."
+    )
+    attach_parser.add_argument(
+        "--file",
+        required=True,
+        dest="file_path",
+        help="The local path to the file to attach.",
+    )
 
     args = parser.parse_args()
 
@@ -303,10 +341,10 @@ def main():
             # Simplified owner display for brevity in this refactoring
             print(f"Description:\n{task.get('description', 'No description.')}")
             print("\n--- Comments ---")
-            if not task.get('comments'):
+            if not task.get("comments"):
                 print("No comments found.")
             else:
-                for msg in reversed(task['comments']):
+                for msg in reversed(task["comments"]):
                     print(f"- {msg.get('text')}")
     elif args.command == "comment":
         client.comment_on_task(args.task_id, args.message)
@@ -314,6 +352,7 @@ def main():
         client.move_task(args.task_id, args.column)
     elif args.command == "attach":
         client.attach_file(args.task_id, args.file_path)
+
 
 if __name__ == "__main__":
     main()
