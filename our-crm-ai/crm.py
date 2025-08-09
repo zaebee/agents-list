@@ -115,6 +115,43 @@ class CRMClient:
             self._handle_api_error(response)
             return False
 
+    def attach_file(self, task_id, file_path):
+        """Uploads a file and attaches it to a task by commenting with its URL."""
+        if not os.path.exists(file_path):
+            print(f"Error: File not found at {file_path}")
+            return False
+
+        print(f"Uploading file: {file_path}...")
+        try:
+            with open(file_path, 'rb') as f:
+                files = {'file': (os.path.basename(file_path), f)}
+                # We don't use self.headers here because requests will set the
+                # Content-Type with the correct boundary for multipart/form-data.
+                upload_headers = {"Authorization": f"Bearer {self.api_key}"}
+                response = requests.post(f"{BASE_URL}/upload-file", headers=upload_headers, files=files)
+                response.raise_for_status()
+
+            file_data = response.json()
+            file_url = file_data.get("fullUrl")
+            if not file_url:
+                print("Error: File upload response did not contain a URL.")
+                return False
+
+            print(f"File uploaded successfully. URL: {file_url}")
+
+            # Now, post a comment with the file URL
+            file_name = os.path.basename(file_path)
+            comment_text = f"Attached file: [{file_name}]({file_url})"
+
+            return self.comment_on_task(task_id, comment_text)
+
+        except requests.exceptions.RequestException as e:
+            self._handle_api_error(e.response)
+            return False
+        except Exception as e:
+            print(f"An unexpected error occurred during file attachment: {e}")
+            return False
+
     def list_tasks(self):
         """Lists all tasks on the board."""
         print("Fetching tasks from the board...")
@@ -236,6 +273,12 @@ def main():
     move_parser.add_argument("task_id", help="The ID of the task to move.")
     move_parser.add_argument("--column", required=True, help="The name of the target column.")
 
+    # Attach command
+    attach_parser = subparsers.add_parser("attach", help="Attach a file to a task.")
+    attach_parser.add_argument("task_id", help="The ID of the task to attach the file to.")
+    attach_parser.add_argument("--file", required=True, dest="file_path", help="The local path to the file to attach.")
+
+
     args = parser.parse_args()
 
     if args.command == "create":
@@ -269,6 +312,8 @@ def main():
         client.comment_on_task(args.task_id, args.message)
     elif args.command == "move":
         client.move_task(args.task_id, args.column)
+    elif args.command == "attach":
+        client.attach_file(args.task_id, args.file_path)
 
 if __name__ == "__main__":
     main()
