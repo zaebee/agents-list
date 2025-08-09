@@ -13,11 +13,13 @@ HEADERS = {
 
 def load_config():
     """Loads the configuration from config.json."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, "config.json")
     try:
-        with open("config.json", "r") as f:
+        with open(config_path, "r") as f:
             return json.load(f)
     except FileNotFoundError:
-        print("Error: config.json not found.")
+        print(f"Error: {config_path} not found.")
         print("Please run the crm_setup.py script first.")
         return None
 
@@ -45,6 +47,22 @@ def create_task(args, config):
         "description": args.description,
         "columnId": todo_column_id
     }
+
+    # Handle AI Owner sticker
+    if args.owner:
+        owner_sticker_config = config.get("ai_owner_sticker")
+        if not owner_sticker_config:
+            print("Error: 'ai_owner_sticker' not found in config.json. Please run setup.")
+            return
+
+        sticker_id = owner_sticker_config.get("id")
+        owner_state_id = owner_sticker_config.get("states", {}).get(args.owner)
+
+        if not owner_state_id:
+            print(f"Error: Owner '{args.owner}' is not a valid AI agent role in config.")
+            return
+
+        task_data["stickers"] = {sticker_id: owner_state_id}
 
     response = requests.post(f"{BASE_URL}/tasks", headers=HEADERS, json=task_data)
 
@@ -100,6 +118,19 @@ def view_task(args, config):
         print("\n--- Task Details ---")
         print(f"ID: {task.get('id')}")
         print(f"Title: {task.get('title')}")
+
+        # Display AI Owner if present
+        owner_sticker_config = config.get("ai_owner_sticker", {})
+        sticker_id = owner_sticker_config.get("id")
+        task_stickers = task.get("stickers", {})
+
+        if sticker_id and sticker_id in task_stickers:
+            owner_state_id = task_stickers[sticker_id]
+            # Invert the states mapping to find the name from the ID
+            states_map = {v: k for k, v in owner_sticker_config.get("states", {}).items()}
+            owner_name = states_map.get(owner_state_id, "Unknown")
+            print(f"AI Owner: {owner_name}")
+
         print(f"Description:\n{task.get('description', 'No description.')}")
 
         # Get task comments (from chat)
@@ -170,6 +201,7 @@ def main():
     create_parser = subparsers.add_parser("create", help="Create a new task.")
     create_parser.add_argument("--title", required=True, help="The title of the task.")
     create_parser.add_argument("--description", default="", help="The description of the task.")
+    create_parser.add_argument("--owner", help="The AI agent owner for the task.")
     create_parser.set_defaults(func=create_task)
 
     # List command

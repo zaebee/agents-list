@@ -1,9 +1,19 @@
 {
-    "project_id": "03f05c44-1a88-4dd0-aca0-864180497ccb",
-    "board_id": "7c42e540-4cf9-4c61-80cf-796ddb5c4ab4",
+    "project_id": "dd0342dc-020d-4687-a578-42f0311d921f",
+    "board_id": "a67ac996-f02e-492a-988f-1bd834d26bcc",
     "columns": {
-        "To Do": "14365543-150b-4820-8516-4e53db1bc5e0",
-        "In Progress": "746b06b6-7a9c-4959-a300-00ecf2cdd6de",
-        "Done": "42307f70-0154-45aa-bb6e-4aa3ab7876be"
+        "To Do": "cd60ec00-985e-42a3-ad0f-3956dd0c9305",
+        "In Progress": "c2b09aa7-4fc6-4e63-9cd2-4e0ecbfcf938",
+        "Done": "4d23b68a-9359-45e7-8080-86eafa106ed1"
+    },
+    "ai_owner_sticker": {
+        "id": "72188900-fbca-402e-9493-04cab230b434",
+        "states": {
+            "api-documenter": "04a8965d1bed",
+            "ai-engineer": "8f71443c4600",
+            "frontend-developer": "69d05a74efbd",
+            "deployment-engineer": "7214d9c9d301",
+            "business-analyst": "f61b922edf8e"
+        }
     }
 }

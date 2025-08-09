@@ -13,6 +13,13 @@ HEADERS = {
 PROJECT_NAME = "AI Team Communication"
 BOARD_NAME = "AI Team Tasks"
 COLUMN_NAMES = ["To Do", "In Progress", "Done"]
+AI_OWNER_ROLES = [
+    "api-documenter",
+    "ai-engineer",
+    "frontend-developer",
+    "deployment-engineer",
+    "business-analyst"
+]
 
 def main():
     """
@@ -23,6 +30,9 @@ def main():
         print("Please set it to your YouGile API key.")
         return
 
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, "config.json")
+
     print("Starting YouGile project setup...")
 
     try:
@@ -32,9 +42,6 @@ def main():
         project_res = requests.post(f"{BASE_URL}/projects", headers=HEADERS, json=project_data)
         project_res.raise_for_status()
         project_id = project_res.json().get("id")
-        if not project_id:
-            print("Error: Could not get project ID.")
-            return
         print(f"Project created with ID: {project_id}")
 
         # 2. Create Board
@@ -43,9 +50,6 @@ def main():
         board_res = requests.post(f"{BASE_URL}/boards", headers=HEADERS, json=board_data)
         board_res.raise_for_status()
         board_id = board_res.json().get("id")
-        if not board_id:
-            print("Error: Could not get board ID.")
-            return
         print(f"Board created with ID: {board_id}")
 
         # 3. Create Columns
@@ -57,25 +61,56 @@ def main():
             column_res = requests.post(f"{BASE_URL}/columns", headers=HEADERS, json=column_data)
             column_res.raise_for_status()
             column_id = column_res.json().get("id")
-            if not column_id:
-                print(f"Error: Could not create column '{column_name}'.")
-                continue
             column_ids[column_name] = column_id
             print(f"    Column '{column_name}' created with ID: {column_id}")
 
-        if len(column_ids) != len(COLUMN_NAMES):
-            print("Error: Not all columns were created successfully.")
-            return
+        # 4. Create AI Owner Sticker (at company level)
+        print("Creating 'AI Owner' sticker...")
+        sticker_data = {"name": "AI Owner"}
+        sticker_res = requests.post(f"{BASE_URL}/string-stickers", headers=HEADERS, json=sticker_data)
+        sticker_res.raise_for_status()
+        sticker_id = sticker_res.json().get("id")
+        print(f"'AI Owner' sticker created with ID: {sticker_id}")
 
-        # 4. Save configuration
+        # 5. Associate Sticker with Board
+        print(f"Associating sticker with board '{BOARD_NAME}'...")
+        board_details_res = requests.get(f"{BASE_URL}/boards/{board_id}", headers=HEADERS)
+        board_details_res.raise_for_status()
+        board_stickers = board_details_res.json().get("stickers", {})
+        if "custom" not in board_stickers:
+            board_stickers["custom"] = {}
+        board_stickers["custom"][sticker_id] = True
+
+        update_board_data = {"stickers": board_stickers}
+        update_board_res = requests.put(f"{BASE_URL}/boards/{board_id}", headers=HEADERS, json=update_board_data)
+        update_board_res.raise_for_status()
+        print("Sticker associated successfully.")
+
+        # 6. Create States for AI Owner Sticker
+        print("Creating states for 'AI Owner' sticker...")
+        owner_state_ids = {}
+        for role_name in AI_OWNER_ROLES:
+            print(f"  - Creating state: '{role_name}'")
+            state_data = {"name": role_name}
+            state_res = requests.post(f"{BASE_URL}/string-stickers/{sticker_id}/states", headers=HEADERS, json=state_data)
+            state_res.raise_for_status()
+            state_id = state_res.json().get("id")
+            owner_state_ids[role_name] = state_id
+            print(f"    State '{role_name}' created with ID: {state_id}")
+
+        # 7. Save configuration
         config = {
             "project_id": project_id,
             "board_id": board_id,
-            "columns": column_ids
+            "columns": column_ids,
+            "ai_owner_sticker": {
+                "id": sticker_id,
+                "states": owner_state_ids
+            }
         }
-        with open("config.json", "w") as f:
+        with open(config_path, "w") as f:
             json.dump(config, f, indent=4)
-        print("\nConfiguration saved to config.json")
+        print(f"\nConfiguration saved to {config_path}")
         print("Setup complete!")
 
     except requests.exceptions.RequestException as e:

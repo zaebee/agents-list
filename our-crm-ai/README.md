@@ -48,16 +48,20 @@ This project is a Proof of Concept (PoC) for a command-line interface (CLI) base
 All commands are run using the `crm.py` script.
 
 ### Create a Task
-Creates a new task in the "To Do" column.
+Creates a new task in the "To Do" column. You can optionally assign an AI agent as the owner.
 
 **Command:**
 ```bash
-python crm.py create --title "<task_title>" --description "<task_description>"
+python crm.py create --title "<task_title>" --description "<task_description>" [--owner <agent_name>]
 ```
 
-**Example:**
+**Examples:**
 ```bash
-python crm.py create --title "Set up AI development environment" --description "Install all necessary libraries and tools for the AI team's project."
+# Create a task without an owner
+python crm.py create --title "Review new feature" --description "Review the latest code submission for the AI owner feature."
+
+# Create a task and assign an owner
+python crm.py create --title "Design MCP for Agent Communication" --owner "api-documenter"
 ```
 
 ### List Tasks
