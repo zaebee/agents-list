@@ -35,7 +35,7 @@ A comprehensive collection of specialized AI subagents for [Claude Code](https:/
 
 ## Overview
 
-This repository contains 58 specialized subagents that extend Claude Code's capabilities. Each subagent is an expert in a specific domain, automatically invoked based on context or explicitly called when needed. All agents are configured with specific Claude models based on task complexity for optimal performance and cost-effectiveness.
+This repository contains 59 specialized subagents that extend Claude Code's capabilities. Each subagent is an expert in a specific domain, automatically invoked based on context or explicitly called when needed. All agents are configured with specific Claude models based on task complexity for optimal performance and cost-effectiveness.
 
 ## Available Subagents
 
@@ -116,7 +116,7 @@ This repository contains 58 specialized subagents that extend Claude Code's capa
 
 ## Model Assignments
 
-All 58 subagents are configured with specific Claude models based on task complexity:
+All 59 subagents are configured with specific Claude models based on task complexity:
 
 ### 🚀 Haiku (Fast & Cost-Effective) - 9 agents
 **Model:** `haiku`
@@ -130,7 +130,7 @@ All 58 subagents are configured with specific Claude models based on task comple
 - `search-specialist` - Web research and information gathering
 - `legal-advisor` - Privacy policies and compliance documents
 
-### ⚡ Sonnet (Balanced Performance) - 36 agents
+### ⚡ Sonnet (Balanced Performance) - 37 agents
 **Model:** `sonnet`
 
 **Development & Languages:**
@@ -199,6 +199,36 @@ These subagents are automatically available when placed in `~/.claude/agents/` d
 ```bash
 cd ~/.claude
 git clone https://github.com/wshobson/agents.git
+```
+
+## CRM Integration
+
+This repository includes a comprehensive CRM system (`our-crm-ai/`) that integrates with YouGile for task management with AI agent assignment:
+
+### Features
+- **Automatic Agent Suggestion**: AI-powered recommendations based on task description
+- **59 Agent Support**: All available agents can be assigned as task owners
+- **Enhanced CLI**: Rich task management with colored output and smart categorization
+- **Agent Intelligence**: Keyword-based agent matching for optimal task assignment
+
+### Setup
+```bash
+cd our-crm-ai
+pip install -r requirements.txt
+export YOUGILE_API_KEY="your_api_key"
+python3 crm_setup_enhanced.py  # Creates project with all agents
+```
+
+### Usage
+```bash
+# Smart task creation with AI agent suggestions
+python3 crm_enhanced.py create --title "Optimize database queries" --description "Improve performance"
+
+# List all 59 available agents by category  
+python3 crm_enhanced.py agents
+
+# Get AI agent suggestions for any task
+python3 crm_enhanced.py suggest "implement user authentication with JWT"
 ```
 
 ## Usage
@@ -305,11 +335,23 @@ Each subagent follows this structure:
 name: subagent-name
 description: When this subagent should be invoked
 model: haiku  # Optional - specify which model to use (haiku/sonnet/opus)
-tools: tool1, tool2  # Optional - defaults to all tools
+tools: Read, Edit, Grep, Glob, WebFetch  # Optional - restrict available tools
 ---
 
 System prompt defining the subagent's role and capabilities
 ```
+
+### Tool Restrictions
+
+Agents are configured with appropriate tool access based on their roles:
+
+- **Security Agents**: No direct execution tools (Bash, Write) for safety
+- **Documentation Agents**: Web research and analysis tools only
+- **Infrastructure Agents**: Full tool access including process management
+- **Language Specialists**: Development tools including Bash and NotebookEdit
+- **Business Analysts**: Web research and analysis tools
+
+This ensures agents operate within their intended scope while maintaining security.
 
 ### Model Configuration
 
