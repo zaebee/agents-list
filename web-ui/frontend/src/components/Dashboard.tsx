@@ -3,10 +3,11 @@
 import React, { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Plus, Bot, RefreshCw, Activity } from 'lucide-react';
+import { Plus, Bot, RefreshCw, Activity, BarChart3, Kanban } from 'lucide-react';
 import TaskColumn from './TaskColumn';
 import CreateTaskModal from './CreateTaskModal';
 import TaskDetailsModal from './TaskDetailsModal';
+import AnalyticsDashboard from './AnalyticsDashboard';
 import { useTasks } from '../hooks/useTasks';
 import { ColumnName } from '../types';
 
@@ -23,6 +24,7 @@ const Dashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'board' | 'analytics'>('board');
 
   const handleTaskMove = async (taskId: string, targetColumn: ColumnName) => {
     try {
@@ -94,6 +96,32 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
+              {/* Navigation Tabs */}
+              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab('board')}
+                  className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${
+                    activeTab === 'board'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Kanban size={16} />
+                  <span>Task Board</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${
+                    activeTab === 'analytics'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <BarChart3 size={16} />
+                  <span>Analytics</span>
+                </button>
+              </div>
+
               {/* Actions */}
               <div className="flex items-center space-x-3">
                 <button
@@ -104,13 +132,15 @@ const Dashboard: React.FC = () => {
                 >
                   <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                 </button>
-                <button
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
-                >
-                  <Plus size={16} />
-                  <span>New Task</span>
-                </button>
+                {activeTab === 'board' && (
+                  <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                  >
+                    <Plus size={16} />
+                    <span>New Task</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -118,7 +148,9 @@ const Dashboard: React.FC = () => {
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {loading && tasksByColumn['To Do'].length === 0 ? (
+          {activeTab === 'analytics' ? (
+            <AnalyticsDashboard />
+          ) : loading && tasksByColumn['To Do'].length === 0 ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>

@@ -76,3 +76,40 @@ export interface PMAnalysis {
 }
 
 export type ColumnName = 'To Do' | 'In Progress' | 'Done';
+
+// Analytics Types
+export interface TaskCompletionAnalytics {
+  totalTasks: number;
+  completedTasks: number;
+  completionRate: number;
+}
+
+export interface AgentPerformanceData {
+  [agent: string]: {
+    totalTasks: number;
+    completedTasks: number;
+    successRate: number;
+  };
+}
+
+export interface ExecutiveDashboardData {
+  systemOverview: {
+    totalAgents: number;
+    activeIntegrations: number;
+    systemHealth: number;
+  };
+  performanceKPIs: {
+    taskCompletionRate: number;
+    topPerformingAgents: Array<{
+      agent: string;
+      successRate: number;
+    }>;
+    workflowEfficiency: number;
+  };
+}
+
+export interface AnalyticsData {
+  taskCompletion: TaskCompletionAnalytics;
+  agentPerformance: AgentPerformanceData;
+  executiveDashboard: ExecutiveDashboardData;
+}
