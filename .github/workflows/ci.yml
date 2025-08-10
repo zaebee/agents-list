@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r our-crm-ai/requirements.txt
+          pip install -r web-ui/backend/requirements.txt
+          pip install flake8
+
+      - name: Run tests
+        run: |
+          python3 tests/run_all_tests.py
+
+      - name: Run linter
+        run: |
+          flake8 our-crm-ai/ web-ui/backend/
