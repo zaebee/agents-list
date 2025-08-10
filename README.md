@@ -355,6 +355,19 @@ The system is **production-ready** for immediate deployment. Future enhancements
 - Custom agent training capabilities
 - API marketplace for third-party integrations
 
+## 🔐 Authentication and Authorization
+
+The AI-CRM system includes a comprehensive, production-ready authentication and authorization framework.
+
+### Key Features
+- **User Authentication**: Secure user registration, login, and session management with JWT.
+- **Subscription Tiers**: Built-in support for `FREE`, `PRO`, and `ENTERPRISE` subscription tiers.
+- **Feature Access Control**: Restrict access to features and API endpoints based on the user's subscription level.
+- **Rate Limiting**: Tier-based API rate limiting to prevent abuse.
+- **Security**: Includes password hashing, security headers, and CORS protection.
+
+For a detailed overview of the authentication system, please refer to the `AUTHENTICATION_IMPLEMENTATION.md` file.
+
 ## Usage
 
 ### Automatic Invocation

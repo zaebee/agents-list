@@ -116,4 +116,7 @@ python3 crm_enhanced.py update <task_id> --owner <new_agent_name>
 - **`suggest "<description>"`**: Get AI agent suggestions for a task without creating it.
 
 ---
+---
 This updated README provides a more accurate overview of the enhanced AI-CRM's capabilities.
+
+**Note:** The AI-CRM now includes a full user authentication and authorization system. Please refer to the main `README.md` and `AUTHENTICATION_IMPLEMENTATION.md` for more details.
