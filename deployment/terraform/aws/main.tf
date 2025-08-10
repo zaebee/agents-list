@@ -61,7 +61,7 @@ variable "project_name" {
 variable "domain_name" {
   description = "Domain name for the application"
   type        = string
-  default     = "aicrm.example.com"
+  default     = "zae.life"
 }
 
 variable "vpc_cidr" {
@@ -479,10 +479,28 @@ resource "aws_lb_target_group" "backend" {
   }
 }
 
-resource "aws_lb_listener" "main" {
+resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = "80"
   protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   = aws_acm_certificate_validation.main.certificate_arn
 
   default_action {
     type             = "forward"
@@ -491,7 +509,7 @@ resource "aws_lb_listener" "main" {
 }
 
 resource "aws_lb_listener_rule" "api" {
-  listener_arn = aws_lb_listener.main.arn
+  listener_arn = aws_lb_listener.https.arn
   priority     = 100
 
   action {
@@ -613,6 +631,77 @@ resource "aws_secretsmanager_secret_version" "db_password" {
   secret_string = random_password.db_password.result
 }
 
+# Route53 Hosted Zone
+resource "aws_route53_zone" "main" {
+  name = var.domain_name
+
+  tags = {
+    Name = "${var.project_name}-zone-${var.environment}"
+  }
+}
+
+# SSL Certificate
+resource "aws_acm_certificate" "main" {
+  domain_name               = var.domain_name
+  subject_alternative_names = ["*.${var.domain_name}"]
+  validation_method         = "DNS"
+
+  tags = {
+    Name = "${var.project_name}-cert-${var.environment}"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = aws_route53_zone.main.zone_id
+}
+
+resource "aws_acm_certificate_validation" "main" {
+  certificate_arn         = aws_acm_certificate.main.arn
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+}
+
+# DNS Records
+resource "aws_route53_record" "main" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.main.dns_name
+    zone_id                = aws_lb.main.zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "api" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "api.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.main.dns_name
+    zone_id                = aws_lb.main.zone_id
+    evaluate_target_health = true
+  }
+}
+
 # Outputs
 output "vpc_id" {
   description = "ID of the VPC"
@@ -643,4 +732,24 @@ output "ecr_repositories" {
     frontend = aws_ecr_repository.frontend.repository_url
     cli      = aws_ecr_repository.cli.repository_url
   }
+}
+
+output "domain_name" {
+  description = "Primary domain name"
+  value       = var.domain_name
+}
+
+output "api_domain" {
+  description = "API subdomain"
+  value       = "api.${var.domain_name}"
+}
+
+output "ssl_certificate_arn" {
+  description = "SSL certificate ARN"
+  value       = aws_acm_certificate_validation.main.certificate_arn
+}
+
+output "nameservers" {
+  description = "Route53 hosted zone nameservers"
+  value       = aws_route53_zone.main.name_servers
 }

@@ -28,9 +28,19 @@ node_modules
 # RAG system generated data
 our-crm-ai/rag/chunks.json
 our-crm-ai/rag/index.faiss
+our-crm-ai/config.json
+our-crm-ai/config_*.json
 
 # Temporary attachment downloads
 our-crm-ai/temp_attachments/
 
 # Python cache
 __pycache__/
+
+# Environment variables
+.env
+*.env
+.env.*
+!/.env.example
+!/.env.production.example
+!/.env.development.example

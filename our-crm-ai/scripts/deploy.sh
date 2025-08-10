@@ -15,10 +15,17 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-DEPLOYMENT_MODE=${1:-docker}  # docker or manual
+DEPLOYMENT_MODE=${1:-docker}  # docker, manual, or dev
 PROJECT_NAME="ai-crm"
 APP_DIR="/opt/ai-crm"
 LOG_FILE="/var/log/ai-crm-deployment.log"
+
+# Development mode settings
+if [[ $DEPLOYMENT_MODE == "dev" ]]; then
+    PROJECT_NAME="ai-crm-dev"
+    LOG_FILE="logs/deployment.log"
+    mkdir -p logs
+fi
 
 # Logging function
 log() {
@@ -66,13 +73,30 @@ check_prerequisites() {
         info "Docker and Docker Compose are available"
     fi
     
-    # Check environment file
-    if [[ ! -f ".env.production" ]]; then
-        error "Production environment file not found. Please copy .env.production.example to .env.production and configure it."
+    # Check environment file based on deployment mode
+    if [[ $DEPLOYMENT_MODE == "dev" ]]; then
+        ENV_FILE=".env.development"
+        if [[ ! -f "$ENV_FILE" ]]; then
+            warning "Development environment file not found. Creating from template..."
+            if [[ -f ".env.production.example" ]]; then
+                cp .env.production.example "$ENV_FILE"
+                sed -i 's/production/development/g' "$ENV_FILE"
+                sed -i 's/AI_CRM_DEBUG=false/AI_CRM_DEBUG=true/g' "$ENV_FILE"
+                sed -i 's/AI_CRM_LOG_LEVEL=INFO/AI_CRM_LOG_LEVEL=DEBUG/g' "$ENV_FILE"
+                info "Created $ENV_FILE - please update with your development API keys"
+            else
+                error "No environment template found. Please create $ENV_FILE manually."
+            fi
+        fi
+    else
+        ENV_FILE=".env.production"
+        if [[ ! -f "$ENV_FILE" ]]; then
+            error "Production environment file not found. Please copy .env.production.example to .env.production and configure it."
+        fi
     fi
     
     # Validate environment variables
-    source .env.production
+    source "$ENV_FILE"
     if [[ -z "$YOUGILE_API_KEY" ]]; then
         error "YOUGILE_API_KEY is not set in .env.production"
     fi
@@ -132,6 +156,43 @@ deploy_docker() {
     fi
     
     log "Docker deployment completed"
+}
+
+# Development Docker deployment
+deploy_dev_docker() {
+    log "Starting development Docker deployment..."
+    
+    # Use development compose file
+    COMPOSE_FILE="docker-compose.dev.yml"
+    
+    if [[ ! -f "$COMPOSE_FILE" ]]; then
+        error "Development compose file not found: $COMPOSE_FILE"
+    fi
+    
+    # Build development image
+    info "Building AI-CRM development image..."
+    docker-compose -f "$COMPOSE_FILE" build ai-crm-dev
+    
+    # Start development services
+    info "Starting development services..."
+    docker-compose -f "$COMPOSE_FILE" up -d ai-crm-dev
+    
+    # Wait for service to be ready
+    info "Waiting for development service to become ready..."
+    sleep 10
+    
+    # Check service health
+    if docker-compose -f "$COMPOSE_FILE" ps ai-crm-dev | grep -q "Up"; then
+        success "Development environment started successfully!"
+        info "View logs: docker-compose -f $COMPOSE_FILE logs -f ai-crm-dev"
+        info "Run tests: docker-compose -f $COMPOSE_FILE exec ai-crm-dev python3 test_yougile_integration.py"
+        info "Stop: docker-compose -f $COMPOSE_FILE down"
+    else
+        warning "Development service may not be healthy. Check logs:"
+        docker-compose -f "$COMPOSE_FILE" logs ai-crm-dev
+    fi
+    
+    log "Development Docker deployment completed"
 }
 
 # Manual deployment
@@ -313,10 +374,18 @@ cleanup() {
 
 # Main deployment function
 main() {
-    echo "AI-CRM Production Deployment"
+    echo "AI-CRM Deployment Script"
     echo "Deployment Mode: $DEPLOYMENT_MODE"
     echo "Log File: $LOG_FILE"
     echo "=========================="
+    
+    if [[ $DEPLOYMENT_MODE == "dev" ]]; then
+        echo "🔧 Development Mode Active"
+        echo "- Debug logging enabled"
+        echo "- File-based storage"
+        echo "- Hot-reload supported"
+        echo ""
+    fi
     
     # Set trap for cleanup
     trap cleanup EXIT
@@ -328,6 +397,8 @@ main() {
     
     if [[ $DEPLOYMENT_MODE == "docker" ]]; then
         deploy_docker
+    elif [[ $DEPLOYMENT_MODE == "dev" ]]; then
+        deploy_dev_docker
     else
         deploy_manual
     fi

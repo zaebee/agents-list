@@ -1,21 +1,20 @@
 # Multi-stage build for React frontend
 
 # Build stage
-FROM node:18-alpine as build
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including dev dependencies needed for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Add Tailwind CSS
-RUN npm install -D tailwindcss postcss autoprefixer
+# Initialize Tailwind CSS (dependencies already installed via npm ci)
 RUN npx tailwindcss init -p
 
 # Build the application

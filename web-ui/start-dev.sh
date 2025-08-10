@@ -33,7 +33,7 @@ echo "📋 YOUGILE_API_KEY: ${YOUGILE_API_KEY:0:10}..."
 
 # Start services
 echo "🐳 Starting services with Docker Compose..."
-docker-compose up --build
+docker compose up --build
 
 echo "🎉 Services should be running at:"
 echo "   Frontend: http://localhost:3000"
