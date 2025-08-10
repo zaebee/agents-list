@@ -7,6 +7,8 @@ import uuid
 from functools import wraps
 from agent_selector import suggest_agents
 from pm_agent_gateway import PMAgentGateway
+from repositories import FileProjectRepository
+from models import ProjectCreateRequest, Task, Risk
 
 # --- Configuration ---
 API_KEY = os.environ.get("YOUGILE_API_KEY")
@@ -156,6 +158,9 @@ def suggest_owner_for_task(title, description, use_pm_gateway=True):
 
 def create_task(args, config):
     """Creates a new task in the 'To Do' column with enhanced AI owner suggestion."""
+    if not API_KEY:
+        print("❌ Error: YOUGILE_API_KEY environment variable not set for this command.")
+        return
     print(f"Creating task: '{args.title}'...")
 
     todo_column_id = config["columns"].get("To Do")
@@ -205,6 +210,9 @@ def create_task(args, config):
 
 def update_task(args, config):
     """Updates an existing task with enhanced validation."""
+    if not API_KEY:
+        print("❌ Error: YOUGILE_API_KEY environment variable not set for this command.")
+        return
     if not validate_task_id(args.task_id):
         print("❌ Error: Invalid task ID format. Task ID must be a valid UUID or alphanumeric string.")
         return
@@ -243,6 +251,9 @@ def update_task(args, config):
 
 def list_tasks(args, config):
     """Lists all tasks on the board with enhanced display."""
+    if not API_KEY:
+        print("❌ Error: YOUGILE_API_KEY environment variable not set for this command.")
+        return
     print("📋 Fetching tasks from the board...")
     board_id = config["board_id"]
 
@@ -296,6 +307,9 @@ def list_tasks(args, config):
 
 def view_task(args, config):
     """Views a single task and its comments with enhanced display."""
+    if not API_KEY:
+        print("❌ Error: YOUGILE_API_KEY environment variable not set for this command.")
+        return
     task_id = args.task_id
     
     if not validate_task_id(task_id):
@@ -348,6 +362,9 @@ def view_task(args, config):
 
 def comment_on_task(args, config):
     """Adds a comment to a task."""
+    if not API_KEY:
+        print("❌ Error: YOUGILE_API_KEY environment variable not set for this command.")
+        return
     task_id = args.task_id
     
     if not validate_task_id(task_id):
@@ -366,6 +383,9 @@ def comment_on_task(args, config):
 
 def move_task(args, config):
     """Moves a task to a different column."""
+    if not API_KEY:
+        print("❌ Error: YOUGILE_API_KEY environment variable not set for this command.")
+        return
     task_id = args.task_id
     target_column_name = args.column
     
@@ -391,6 +411,9 @@ def move_task(args, config):
 
 def set_task_completion_status(args, config, completed: bool):
     """Sets the completion status of a task."""
+    if not API_KEY:
+        print("❌ Error: YOUGILE_API_KEY environment variable not set for this command.")
+        return
     task_id = args.task_id
     if not validate_task_id(task_id):
         print("❌ Error: Invalid task ID format.")
@@ -453,10 +476,6 @@ def list_agents(args, config):
 
 def main():
     """Enhanced main function with better CLI."""
-    if not API_KEY:
-        print("❌ Error: YOUGILE_API_KEY environment variable not set.")
-        return
-
     config = load_config()
     if not config:
         return
@@ -550,49 +569,94 @@ def print_agent_suggestions(description):
         print("💡 Consider using 'search-specialist' for general research tasks.")
 
 def pm_analyze_task(args, config):
-    """Use PM Agent Gateway to analyze and provide comprehensive task recommendations."""
+    """Use PM Agent Gateway to analyze, plan, and save a new project."""
     try:
+        # --- 1. Analysis ---
+        print("🤖 Activating PM Agent Gateway for analysis...")
         pm_gateway = PMAgentGateway()
         result = pm_gateway.create_managed_task(args.title, args.description or "")
         
         print(f"\n🎯 PM Agent Analysis Complete!")
         print("=" * 60)
+
+        # --- 2. Project Creation ---
+        project_repo = FileProjectRepository()
+        project_id = str(uuid.uuid4())
         
+        project_request = ProjectCreateRequest(
+            id=project_id,
+            title=args.title,
+            description=args.description or ""
+        )
+        project = project_repo.create_project(project_request)
+        print(f"✅ Project '{project.title}' created with ID: {project.id}")
+
+        # --- 3. Populate Project with Analysis ---
         if result['type'] == 'direct_assignment':
             print(f"📋 Task: {result['task']['title']}")
-            print(f"🎯 Recommended Agent: {result['assigned_agent']}")
-            print(f"📊 Priority: {result['priority']}")
-            print(f"⏰ Estimated: {result['analysis']['estimated_hours']} hours")
-            print(f"🔧 Complexity: {result['analysis']['complexity']}")
-            
-            if result['analysis']['risk_factors']:
-                print(f"⚠️  Risk Factors:")
-                for risk in result['analysis']['risk_factors']:
-                    print(f"   • {risk}")
-            
-            print(f"✅ Success Criteria:")
-            for criteria in result['analysis']['success_criteria']:
-                print(f"   • {criteria}")
-                
+            # In a direct assignment, the main task is the only task.
+            task_data = result['task']
+            task = Task(
+                id=str(uuid.uuid4()),
+                title=task_data['title'],
+                description=task_data.get('description', ''),
+                status='To Do',
+                assigned_agent=result.get('assigned_agent')
+            )
+            project_repo.add_task_to_project(project.id, task)
+            print(f"  - Task '{task.title}' added to project.")
+
         elif result['type'] == 'complex_task':
             print(f"📋 Complex Task: {result['original_task']['title']}")
-            print(f"📊 Priority: {result['priority']}")
-            print(f"⏰ Total Estimated: {result['analysis']['estimated_hours']} hours")
-            print(f"🔧 Complexity: {result['analysis']['complexity']}")
+            print(f"\n🔄 Populating project with {len(result['subtasks'])} subtasks...")
             
-            print(f"\n🔄 Recommended Subtasks ({len(result['subtasks'])}):")
-            for i, subtask in enumerate(result['subtasks'], 1):
-                print(f"   {i}. {subtask['title']}")
-                print(f"      → Agent: {subtask['agent']}")
-                print(f"      → Time: {subtask['estimated_hours']} hours")
-                if subtask.get('depends_on'):
-                    print(f"      → Depends on: {subtask['depends_on']}")
-                print()
-        
-        print(f"💡 Recommendation: {result['recommendation']}")
-        
+            subtasks_map = {} # To map titles to Task objects with IDs
+
+            # First, create all task objects to get their IDs
+            for subtask_data in result['subtasks']:
+                task_id = str(uuid.uuid4())
+                task = Task(
+                    id=task_id,
+                    title=subtask_data['title'],
+                    description=subtask_data.get('description', ''),
+                    status='To Do',
+                    assigned_agent=subtask_data.get('agent')
+                )
+                subtasks_map[task.title] = task
+
+            # Now, resolve dependencies and add tasks to project
+            for subtask_data in result['subtasks']:
+                task = subtasks_map[subtask_data['title']]
+                depends_on_title = subtask_data.get('depends_on')
+
+                if depends_on_title and depends_on_title in subtasks_map:
+                    dependency_id = subtasks_map[depends_on_title].id
+                    task.metadata.dependencies.append(dependency_id)
+
+                project_repo.add_task_to_project(project.id, task)
+                print(f"  - Subtask '{task.title}' added to project.")
+
+        # Add risks to the project
+        if result['analysis'].get('risk_factors'):
+            print("\n⚠️ Populating project with identified risks...")
+            for risk_desc in result['analysis']['risk_factors']:
+                risk = Risk(
+                    id=str(uuid.uuid4()),
+                    project_id=project.id,
+                    description=risk_desc,
+                    severity="Medium" # Default severity
+                )
+                project_repo.add_risk_to_project(project.id, risk)
+                print(f"  - Risk added: {risk.description}")
+
+        print("\n" + "=" * 60)
+        print(f"✅ Project '{project.title}' has been successfully planned and saved.")
+        print(f"💡 You can view the project details in projects.json")
+
     except Exception as e:
+        import traceback
         print(f"❌ PM Analysis failed: {e}")
+        traceback.print_exc()
         print("💡 Falling back to basic agent suggestions...")
         print_agent_suggestions(f"{args.title} {args.description or ''}")
 

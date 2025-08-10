@@ -93,3 +93,42 @@ class CommandRequest(BaseModel):
 class CommandResponse(BaseModel):
     """Response model for executing a command."""
     response: str
+
+
+class Risk(BaseModel):
+    """Risk model."""
+    id: str
+    description: str
+    severity: str  # e.g., "High", "Medium", "Low"
+    project_id: str
+
+
+class Project(BaseModel):
+    """Project model."""
+    id: str
+    title: str
+    description: str
+    tasks: List[Task] = []
+    risks: List[Risk] = []
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ProjectCreateRequest(BaseModel):
+    """Request model for creating a project."""
+    id: str
+    title: str
+    description: str
+
+
+class ProjectUpdateRequest(BaseModel):
+    """Request model for updating a project."""
+    title: Optional[str] = None
+    description: Optional[str] = None
+
+
+class HandoffProtocol(BaseModel):
+    """Defines the contract for handing off a task between agents."""
+    from_agent: str
+    to_agent: str
+    required_artifacts: List[str] = Field(default_factory=list)
+    validation_criteria: List[str] = Field(default_factory=list)

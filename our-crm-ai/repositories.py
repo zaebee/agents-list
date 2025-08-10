@@ -19,7 +19,8 @@ from pydantic import ValidationError
 
 from models import (
     Task, TaskStatus, TaskCreateRequest, TaskUpdateRequest,
-    Agent, CRMConfiguration, CRMStats, TaskMetadata
+    Agent, CRMConfiguration, CRMStats, TaskMetadata,
+    Project, ProjectCreateRequest, ProjectUpdateRequest, Risk
 )
 from exceptions import (
     APIError, TaskNotFoundError, TaskValidationError, ConfigurationError,
@@ -123,6 +124,124 @@ class ConfigurationRepository(BaseRepository):
     async def update_configuration(self, config: CRMConfiguration) -> bool:
         """Update configuration."""
         pass
+
+
+class ProjectRepository(BaseRepository):
+    """Repository for project data access."""
+
+    @abstractmethod
+    async def create_project(self, project_request: "ProjectCreateRequest") -> "Project":
+        """Create a new project."""
+        pass
+
+    @abstractmethod
+    async def get_project(self, project_id: str) -> Optional["Project"]:
+        """Get project by ID."""
+        pass
+
+    @abstractmethod
+    async def list_projects(self) -> List["Project"]:
+        """List all projects."""
+        pass
+
+    @abstractmethod
+    async def update_project(self, project_id: str, project_update: "ProjectUpdateRequest") -> "Project":
+        """Update an existing project."""
+        pass
+
+    @abstractmethod
+    async def add_task_to_project(self, project_id: str, task: "Task") -> "Project":
+        """Add a task to a project."""
+        pass
+
+    @abstractmethod
+    async def add_risk_to_project(self, project_id: str, risk: "Risk") -> "Project":
+        """Add a risk to a project."""
+        pass
+
+
+class FileProjectRepository(ProjectRepository):
+    """File-based project repository."""
+
+    def __init__(self, projects_file_path: str = "projects.json"):
+        self.file_path = Path(projects_file_path)
+        self.projects: Dict[str, "Project"] = {}
+        self._load()
+
+    def _load(self):
+        """Load projects from the JSON file."""
+        if self.file_path.exists():
+            try:
+                with open(self.file_path, 'r') as f:
+                    projects_data = json.load(f)
+                for project_id, project_data in projects_data.items():
+                    # Need to handle nested Pydantic models manually
+                    tasks = [Task(**t) for t in project_data.get('tasks', [])]
+                    risks = [Risk(**r) for r in project_data.get('risks', [])]
+                    project_data['tasks'] = tasks
+                    project_data['risks'] = risks
+                    self.projects[project_id] = Project(**project_data)
+            except (json.JSONDecodeError, ValidationError):
+                self.projects = {}
+
+    def _save(self):
+        """Save projects to the JSON file."""
+        with open(self.file_path, 'w') as f:
+            json.dump({pid: p.dict() for pid, p in self.projects.items()}, f, indent=2, default=str)
+
+    def health_check(self) -> bool:
+        """Check repository health."""
+        return self.file_path.parent.exists()
+
+    def create_project(self, project_request: "ProjectCreateRequest") -> "Project":
+        """Create a new project."""
+        if project_request.id in self.projects:
+            raise Exception(f"Project with id {project_request.id} already exists.")
+
+        project = Project(**project_request.dict())
+        self.projects[project.id] = project
+        self._save()
+        return project
+
+    def get_project(self, project_id: str) -> Optional["Project"]:
+        """Get project by ID."""
+        return self.projects.get(project_id)
+
+    def list_projects(self) -> List["Project"]:
+        """List all projects."""
+        return list(self.projects.values())
+
+    def update_project(self, project_id: str, project_update: "ProjectUpdateRequest") -> "Project":
+        """Update an existing project."""
+        project = self.projects.get(project_id)
+        if not project:
+            raise Exception(f"Project with id {project_id} not found.")
+
+        update_data = project_update.dict(exclude_unset=True)
+        updated_project = project.copy(update=update_data)
+        self.projects[project_id] = updated_project
+        self._save()
+        return updated_project
+
+    def add_task_to_project(self, project_id: str, task: "Task") -> "Project":
+        """Add a task to a project."""
+        project = self.projects.get(project_id)
+        if not project:
+            raise Exception(f"Project with id {project_id} not found.")
+
+        project.tasks.append(task)
+        self._save()
+        return project
+
+    def add_risk_to_project(self, project_id: str, risk: "Risk") -> "Project":
+        """Add a risk to a project."""
+        project = self.projects.get(project_id)
+        if not project:
+            raise Exception(f"Project with id {project_id} not found.")
+
+        project.risks.append(risk)
+        self._save()
+        return project
 
 
 class YouGileTaskRepository(TaskRepository):
