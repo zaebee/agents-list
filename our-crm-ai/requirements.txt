@@ -18,3 +18,8 @@ scipy==1.8.0
 
 # Logging and Observability
 python-json-logger==2.0.4
+sentence-transformers
+faiss-cpu
+anthropic
+black
+flake8
