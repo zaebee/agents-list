@@ -16,11 +16,14 @@ from pathlib import Path
 import httpx  # Modern async HTTP client
 import requests  # For backward compatibility
 from pydantic import ValidationError
+from sqlalchemy.orm import Session
 
 from models import (
     Task, TaskStatus, TaskCreateRequest, TaskUpdateRequest,
-    Agent, CRMConfiguration, CRMStats, TaskMetadata
+    Agent, CRMConfiguration, CRMStats, TaskMetadata,
+    Project, ProjectCreateRequest, ProjectUpdateRequest, Risk
 )
+from database_models import Project as DBProject, Task as DBTask, Risk as DBRisk
 from exceptions import (
     APIError, TaskNotFoundError, TaskValidationError, ConfigurationError,
     NetworkError, TimeoutError, AuthenticationError, create_api_exception,
@@ -123,6 +126,124 @@ class ConfigurationRepository(BaseRepository):
     async def update_configuration(self, config: CRMConfiguration) -> bool:
         """Update configuration."""
         pass
+
+
+class ProjectRepository(BaseRepository):
+    """Repository for project data access."""
+
+    @abstractmethod
+    def create_project(self, project_request: "ProjectCreateRequest") -> "Project":
+        """Create a new project."""
+        pass
+
+    @abstractmethod
+    def get_project(self, project_id: str) -> Optional["Project"]:
+        """Get project by ID."""
+        pass
+
+    @abstractmethod
+    def list_projects(self) -> List["Project"]:
+        """List all projects."""
+        pass
+
+    @abstractmethod
+    def update_project(self, project_id: str, project_update: "ProjectUpdateRequest") -> "Project":
+        """Update an existing project."""
+        pass
+
+    @abstractmethod
+    def add_task_to_project(self, project_id: str, task: "Task") -> "Project":
+        """Add a task to a project."""
+        pass
+
+    @abstractmethod
+    def add_risk_to_project(self, project_id: str, risk: "Risk") -> "Project":
+        """Add a risk to a project."""
+        pass
+
+
+class DatabaseProjectRepository(ProjectRepository):
+    """Database-backed project repository."""
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    async def health_check(self) -> bool:
+        """Check repository health."""
+        try:
+            self.db.execute("SELECT 1")
+            return True
+        except Exception:
+            return False
+
+    def create_project(self, project_request: "ProjectCreateRequest") -> "Project":
+        """Create a new project in the database."""
+        db_project = DBProject(
+            id=project_request.id,
+            title=project_request.title,
+            description=project_request.description
+        )
+        self.db.add(db_project)
+        self.db.commit()
+        self.db.refresh(db_project)
+        return Project.from_orm(db_project)
+
+    def get_project(self, project_id: str) -> Optional["Project"]:
+        """Get project by ID from the database."""
+        db_project = self.db.query(DBProject).filter(DBProject.id == project_id).first()
+        if db_project:
+            return Project.from_orm(db_project)
+        return None
+
+    def list_projects(self) -> List["Project"]:
+        """List all projects from the database."""
+        db_projects = self.db.query(DBProject).all()
+        return [Project.from_orm(p) for p in db_projects]
+
+    def update_project(self, project_id: str, project_update: "ProjectUpdateRequest") -> "Project":
+        """Update an existing project in the database."""
+        db_project = self.db.query(DBProject).filter(DBProject.id == project_id).first()
+        if not db_project:
+            raise Exception(f"Project with id {project_id} not found.")
+
+        update_data = project_update.dict(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_project, key, value)
+
+        self.db.commit()
+        self.db.refresh(db_project)
+        return Project.from_orm(db_project)
+
+    def add_task_to_project(self, project_id: str, task: "Task") -> "Project":
+        """Add a task to a project in the database."""
+        db_task = DBTask(
+            id=task.id,
+            title=task.title,
+            description=task.description,
+            status=task.status.value,
+            assigned_agent=task.assigned_agent,
+            priority=task.priority,
+            project_id=project_id
+        )
+        self.db.add(db_task)
+        self.db.commit()
+
+        db_project = self.db.query(DBProject).filter(DBProject.id == project_id).first()
+        return Project.from_orm(db_project)
+
+    def add_risk_to_project(self, project_id: str, risk: "Risk") -> "Project":
+        """Add a risk to a project in the database."""
+        db_risk = DBRisk(
+            id=risk.id,
+            description=risk.description,
+            severity=risk.severity,
+            project_id=project_id
+        )
+        self.db.add(db_risk)
+        self.db.commit()
+
+        db_project = self.db.query(DBProject).filter(DBProject.id == project_id).first()
+        return Project.from_orm(db_project)
 
 
 class YouGileTaskRepository(TaskRepository):

@@ -108,12 +108,12 @@ class AnalyticsEngine:
         }
         
         return executive_dashboard
-    
+
     def _calculate_system_health(self) -> float:
         """Internal method to calculate overall system health"""
         # Placeholder implementation
         return 85.5  # percentage
-    
+
     def _get_top_performing_agents(self, top_n: int = 5) -> List[Dict]:
         """Get top N performing agents"""
         performance_data = self.metrics['agent_performance']
