@@ -1,3 +1,12 @@
+---
+title: "AI-CRM Project Changelog"
+description: "Complete project evolution and version history"
+status: "maintained"
+format: "keepachangelog"
+created: "2025-08-09"
+updated: "2025-08-10"
+---
+
 # Changelog
 
 All notable changes to the AI-CRM project will be documented in this file.

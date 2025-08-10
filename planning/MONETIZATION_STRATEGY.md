@@ -1,3 +1,14 @@
+---
+title: "AI-CRM Monetization Strategy"
+description: "Business strategy, pricing model, and revenue projections for AI-CRM system"
+status: "approved"
+owner: "business-strategy-team"
+reviewers: ["business-analyst", "leadership"]
+created: "2025-08-09"
+updated: "2025-08-10"
+version: "2.0"
+---
+
 # AI-CRM Monetization Strategy
 
 ## Executive Summary
