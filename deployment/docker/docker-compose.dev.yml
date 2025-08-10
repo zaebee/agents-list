@@ -1,0 +1,130 @@
+# Docker Compose for Development Environment
+version: '3.8'
+
+services:
+  # Backend service
+  backend:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.backend
+      target: production
+    container_name: ai-crm-backend-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=development
+      - DEBUG=true
+      - YOUGILE_API_KEY=${YOUGILE_API_KEY:-}
+      - YOUGILE_COMPANY_ID=${YOUGILE_COMPANY_ID:-}
+    volumes:
+      - ../../web-ui/backend:/app:ro
+      - backend_logs:/app/logs
+    networks:
+      - ai-crm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend service
+  frontend:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.frontend
+      target: production
+    container_name: ai-crm-frontend-dev
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:8000
+    volumes:
+      - frontend_logs:/var/log/nginx
+    networks:
+      - ai-crm-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # CLI service (for background tasks and agent processing)
+  cli:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile.cli
+      target: production
+    container_name: ai-crm-cli-dev
+    environment:
+      - ENV=development
+      - YOUGILE_API_KEY=${YOUGILE_API_KEY:-}
+      - YOUGILE_COMPANY_ID=${YOUGILE_COMPANY_ID:-}
+    volumes:
+      - ../../our-crm-ai:/app:ro
+      - cli_data:/app/data
+    networks:
+      - ai-crm-network
+    restart: unless-stopped
+    command: ["tail", "-f", "/dev/null"]  # Keep container running for dev
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: ai-crm-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ../monitoring/redis.conf:/etc/redis.conf:ro
+    networks:
+      - ai-crm-network
+    restart: unless-stopped
+    command: ["redis-server", "/etc/redis.conf"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Development database (PostgreSQL for local development)
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-crm-postgres-dev
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=ai_crm_dev
+      - POSTGRES_USER=ai_crm_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-dev_password_123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../monitoring/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - ai-crm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_crm_user -d ai_crm_dev"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  backend_logs:
+  frontend_logs:
+  cli_data:
+  redis_data:
+  postgres_data:
+
+networks:
+  ai-crm-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

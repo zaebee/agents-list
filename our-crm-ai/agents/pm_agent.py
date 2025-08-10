@@ -1,12 +1,12 @@
 import argparse
 import re
 import os
+import subprocess
 import sys
 
 # Add project root to path to allow sibling imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from crm import CRMClient
-from rag.query_rag import query_rag
 
 
 def recognize_intent(command):
@@ -39,9 +39,7 @@ def recognize_intent(command):
 
 def execute_action(intent, params):
     """Executes the action corresponding to the intent."""
-
-    # This function is now quieter, it will not print status messages.
-    # The caller (either main() or the API) is responsible for printing.
+    print(f"Executing action for intent '{intent}' with params {params}")
 
     if intent == "list_tasks":
         try:
@@ -88,33 +86,31 @@ def execute_action(intent, params):
             query = params.get("query")
             if not query:
                 return "Error: Query not provided for 'query_rag' intent."
-            return query_rag(query)
+
+            # We need the full path to query_rag.py
+            script_path = os.path.join(
+                os.path.dirname(__file__), "../rag/query_rag.py"
+            )
+            result = subprocess.run(
+                ["python3", script_path, query],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return result.stdout
+        except FileNotFoundError:
+            return "Error: query_rag.py not found."
+        except subprocess.CalledProcessError as e:
+            return f"Error executing RAG query:\n{e.stderr}"
         except Exception as e:
-            return f"An unexpected error occurred during RAG query: {e}"
+            return f"An unexpected error occurred: {e}"
 
     else:  # unknown intent
         return "Sorry, I didn't understand that command. Please try again."
 
 
-def handle_command(command_string):
-    """
-    Handles a natural language command and returns the result.
-    This is the main entry point for using the PM agent as a library.
-    """
-    print(f"PM Agent received command: '{command_string}'")
-
-    # 1. Recognize intent
-    intent, params = recognize_intent(command_string)
-
-    # 2. Execute action
-    print(f"Executing action for intent '{intent}' with params {params}")
-    result = execute_action(intent, params)
-
-    return result
-
-
 def main():
-    """Main function for the PM Agent CLI."""
+    """Main function for the PM Agent."""
     parser = argparse.ArgumentParser(
         description="Project Manager Agent for our-crm-ai."
     )
@@ -126,9 +122,17 @@ def main():
     )
 
     args = parser.parse_args()
+
+    # Join the command words into a single string
     full_command = " ".join(args.command)
 
-    result = handle_command(full_command)
+    print(f"PM Agent received command: '{full_command}'")
+
+    # 1. Recognize intent
+    intent, params = recognize_intent(full_command)
+
+    # 2. Execute action
+    result = execute_action(intent, params)
 
     # 3. Print result
     print("\n--- PM Agent Response ---")

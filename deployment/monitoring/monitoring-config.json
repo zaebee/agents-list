@@ -1,0 +1,70 @@
+{
+  "endpoints": {
+    "backend": "http://localhost:8000/health",
+    "frontend": "http://localhost:3000/health", 
+    "pm_gateway": "http://localhost:8000/pm/health",
+    "database": "http://localhost:8000/db/health"
+  },
+  "alert_thresholds": {
+    "response_time_ms": 2000,
+    "cpu_usage_percent": 80,
+    "memory_usage_percent": 85, 
+    "disk_usage_percent": 90,
+    "error_rate_percent": 5,
+    "task_processing_time_ms": 5000,
+    "agent_response_time_ms": 3000
+  },
+  "check_intervals": {
+    "health_checks": 30,
+    "system_metrics": 60,
+    "detailed_analysis": 300,
+    "agent_performance": 120
+  },
+  "retention_days": 7,
+  "alert_channels": {
+    "email": {
+      "enabled": false,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "username": "",
+      "password": "",
+      "recipients": ["ops@company.com"]
+    },
+    "slack": {
+      "enabled": false,
+      "webhook_url": "",
+      "channel": "#ai-crm-alerts",
+      "username": "AI-CRM Monitor"
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer your-token"
+      }
+    },
+    "console": {
+      "enabled": true,
+      "log_level": "INFO"
+    }
+  },
+  "performance_metrics": {
+    "track_agent_performance": true,
+    "track_task_completion_time": true,
+    "track_pm_gateway_analysis_time": true,
+    "track_api_response_times": true
+  },
+  "business_metrics": {
+    "track_task_creation_rate": true,
+    "track_agent_utilization": true,
+    "track_user_engagement": true,
+    "track_feature_usage": true
+  },
+  "security_monitoring": {
+    "track_failed_logins": true,
+    "track_api_errors": true,
+    "track_suspicious_activity": true,
+    "log_security_events": true
+  }
+}

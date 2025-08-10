@@ -35,7 +35,7 @@ A comprehensive collection of specialized AI subagents for [Claude Code](https:/
 
 ## Overview
 
-This repository contains 58 specialized subagents that extend Claude Code's capabilities. Each subagent is an expert in a specific domain, automatically invoked based on context or explicitly called when needed. All agents are configured with specific Claude models based on task complexity for optimal performance and cost-effectiveness.
+This repository contains 59 specialized subagents that extend Claude Code's capabilities. Each subagent is an expert in a specific domain, automatically invoked based on context or explicitly called when needed. All agents are configured with specific Claude models based on task complexity for optimal performance and cost-effectiveness.
 
 ## Available Subagents
 
@@ -116,7 +116,7 @@ This repository contains 58 specialized subagents that extend Claude Code's capa
 
 ## Model Assignments
 
-All 58 subagents are configured with specific Claude models based on task complexity:
+All 59 subagents are configured with specific Claude models based on task complexity:
 
 ### 🚀 Haiku (Fast & Cost-Effective) - 9 agents
 **Model:** `haiku`
@@ -130,7 +130,7 @@ All 58 subagents are configured with specific Claude models based on task comple
 - `search-specialist` - Web research and information gathering
 - `legal-advisor` - Privacy policies and compliance documents
 
-### ⚡ Sonnet (Balanced Performance) - 36 agents
+### ⚡ Sonnet (Balanced Performance) - 37 agents
 **Model:** `sonnet`
 
 **Development & Languages:**
@@ -200,6 +200,141 @@ These subagents are automatically available when placed in `~/.claude/agents/` d
 cd ~/.claude
 git clone https://github.com/wshobson/agents.git
 ```
+
+## 🎯 AI-CRM System - Phase 2A Complete
+
+This repository includes a **production-ready AI-CRM system** that demonstrates advanced multi-agent orchestration with intelligent task routing and comprehensive project management capabilities.
+
+### ✅ **Phase 2A Achievements**
+
+**🤖 PM Agent Gateway (COMPLETED)**
+- Intelligent task analysis with complexity assessment
+- Multi-agent workflow coordination and task decomposition  
+- Strategic priority recommendations with risk analysis
+- Comprehensive business impact evaluation
+
+**🌐 Full-Stack Web Interface (READY)**
+- React/TypeScript frontend with modern UI
+- FastAPI backend with comprehensive API
+- Docker containerization with production deployment
+- Real-time task management with drag-and-drop interface
+
+**💰 Monetization Strategy (DEFINED)**
+- Three-tier pricing model (Free/Pro/Enterprise: $0-$499/user/month)
+- Revenue projections: $750K Y1 → $15M Y3
+- Target market analysis and go-to-market strategy
+- Professional services and custom agent development offerings
+
+**🚀 Production Deployment (CONFIGURED)**
+- Multi-cloud deployment scripts (AWS/GCP/Azure/DigitalOcean)
+- Docker Compose for local development
+- CI/CD pipeline automation with health checks
+- Environment-specific configuration management
+
+### 🛠️ **Enhanced Features**
+
+**PM Agent Gateway Integration**
+```bash
+# Comprehensive task analysis with PM intelligence
+python3 crm_enhanced.py pm --title "Build recommendation engine" --description "ML-powered product recommendations"
+
+# Intelligent complexity assessment and agent routing
+python3 crm_enhanced.py create --title "Optimize API performance" --description "Database queries taking too long"
+```
+
+**Web UI with AI Intelligence**
+- **Frontend**: http://localhost:3000 (React + Tailwind CSS)
+- **Backend API**: http://localhost:8000/docs (FastAPI + OpenAPI)  
+- **PM Analysis**: `/pm/analyze` endpoint for comprehensive task planning
+- **Agent Suggestions**: Real-time AI recommendations in web interface
+
+**Multi-Agent Orchestration**
+- **Direct Assignment**: Simple tasks → single specialist agent
+- **Complex Decomposition**: Large projects → coordinated subtask workflows
+- **Workflow Templates**: Pre-built patterns for common project types
+- **Dependency Management**: Sequential task coordination with blocking
+
+### 🏗️ **System Architecture**
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Web UI        │    │  PM Agent        │    │  YouGile API    │
+│  (React/TS)     │◄──►│  Gateway         │◄──►│  Integration    │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  FastAPI        │    │  Agent Selector  │    │  59 Specialized │
+│  Backend        │◄──►│  & Intelligence  │◄──►│  AI Subagents   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### 📊 **Current Implementation Status**
+
+| Component | Status | Description |
+|-----------|--------|-------------|
+| **CLI CRM** | ✅ Production Ready | Enhanced with PM Gateway integration |
+| **Web UI** | ✅ Production Ready | Full React/FastAPI stack with Docker |
+| **PM Gateway** | ✅ Production Ready | Intelligent orchestration and analysis |
+| **Agent Intelligence** | ✅ Production Ready | 59 agents with smart task routing |
+| **Deployment** | ✅ Production Ready | Multi-cloud scripts and automation |
+| **Monetization** | ✅ Strategy Complete | Business model and pricing defined |
+| **Documentation** | ✅ Comprehensive | Full setup and usage guides |
+
+### 🚀 **Quick Start (Complete System)**
+
+**1. CLI Setup**
+```bash
+cd our-crm-ai
+pip install -r requirements.txt
+export YOUGILE_API_KEY="your_api_key"
+python3 crm_setup_enhanced.py  # Creates project with all agents
+```
+
+**2. Web UI Deployment**
+```bash
+cd web-ui
+./start-dev.sh  # Automated development setup
+# Access: Frontend (http://localhost:3000), API (http://localhost:8000)
+```
+
+**3. Production Deployment**
+```bash
+deployment/ci-cd/deploy-scripts.sh deploy-local -e prod
+```
+
+### 💡 **Advanced Usage Examples**
+
+**PM-Powered Task Analysis**
+```bash
+# Complex project decomposition
+python3 crm_enhanced.py pm --title "Build e-commerce platform" --description "Full-stack marketplace with payments"
+
+# Strategic business analysis  
+python3 crm_enhanced.py pm --title "Optimize conversion funnel" --description "Improve checkout completion rates"
+```
+
+**Multi-Modal Task Creation**
+- **CLI**: Advanced terminal interface with PM intelligence
+- **Web UI**: Visual drag-and-drop with real-time agent suggestions
+- **API**: RESTful integration for external tools and automation
+
+**Business Intelligence**
+```bash
+# Backlog analysis with strategic prioritization
+python3 backlog_analyzer.py
+
+# Agent utilization and efficiency metrics
+python3 crm_enhanced.py agents --stats
+```
+
+### 🎯 **Next Steps (Phase 2B)**
+
+The system is **production-ready** for immediate deployment. Future enhancements include:
+- Enterprise SSO integration
+- Advanced analytics dashboard  
+- Custom agent training capabilities
+- API marketplace for third-party integrations
 
 ## Usage
 
@@ -305,11 +440,23 @@ Each subagent follows this structure:
 name: subagent-name
 description: When this subagent should be invoked
 model: haiku  # Optional - specify which model to use (haiku/sonnet/opus)
-tools: tool1, tool2  # Optional - defaults to all tools
+tools: Read, Edit, Grep, Glob, WebFetch  # Optional - restrict available tools
 ---
 
 System prompt defining the subagent's role and capabilities
 ```
+
+### Tool Restrictions
+
+Agents are configured with appropriate tool access based on their roles:
+
+- **Security Agents**: No direct execution tools (Bash, Write) for safety
+- **Documentation Agents**: Web research and analysis tools only
+- **Infrastructure Agents**: Full tool access including process management
+- **Language Specialists**: Development tools including Bash and NotebookEdit
+- **Business Analysts**: Web research and analysis tools
+
+This ensures agents operate within their intended scope while maintaining security.
 
 ### Model Configuration
 
