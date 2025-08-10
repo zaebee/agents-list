@@ -61,7 +61,7 @@ def parse_agent_file(file_path: Path) -> Dict:
 
 def audit_model_assignments() -> Dict:
     """Audit current model assignments against expected assignments."""
-    agents_dir = Path('.')
+    agents_dir = Path('agents')
     agent_files = list(agents_dir.glob('*.md'))
     agent_files = [f for f in agent_files if f.name not in ['README.md']]
     
@@ -111,14 +111,14 @@ def generate_corrections() -> List[Dict]:
                     'agent': agent,
                     'current_model': current_model or 'missing',
                     'expected_model': expected_model,
-                    'file_path': f'{agent}.md'
+                    'file_path': f'agents/{agent}.md'
                 })
     
     return corrections
 
 def get_all_agent_names() -> List[str]:
     """Get all agent names from markdown files."""
-    agents_dir = Path('.')
+    agents_dir = Path('agents')
     agent_files = list(agents_dir.glob('*.md'))
     agent_files = [f for f in agent_files if f.name not in ['README.md']]
     

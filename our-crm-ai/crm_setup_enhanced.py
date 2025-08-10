@@ -43,8 +43,8 @@ BOARD_NAME = "AI Team Tasks"
 COLUMN_NAMES = ["To Do", "In Progress", "Done", "Archived"]
 
 def get_all_agent_names():
-    """Load all agent names from the parent directory's markdown files."""
-    agents_dir = Path(__file__).parent.parent
+    """Load all agent names from the parent directory's agents folder."""
+    agents_dir = Path(__file__).parent.parent / 'agents'
     agent_files = [f for f in agents_dir.glob('*.md') if f.name not in ['README.md']]
     agent_names = sorted([f.stem for f in agent_files])
     print(f"Found {len(agent_names)} agents:")
