@@ -59,7 +59,7 @@ services:
     container_name: ai-crm-frontend-prod
     environment:
       - NODE_ENV=production
-      - REACT_APP_API_URL=${REACT_APP_API_URL:-/api}
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-https://api.crm.zae.life}
     volumes:
       - frontend_logs:/var/log/nginx
     networks:
