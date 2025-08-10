@@ -21,3 +21,16 @@ venv
 node_modules
 .sass-cache
 .claude
+
+# Log files
+*.log
+
+# RAG system generated data
+our-crm-ai/rag/chunks.json
+our-crm-ai/rag/index.faiss
+
+# Temporary attachment downloads
+our-crm-ai/temp_attachments/
+
+# Python cache
+__pycache__/
