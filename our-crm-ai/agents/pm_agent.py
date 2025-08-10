@@ -7,6 +7,7 @@ import sys
 # Add project root to path to allow sibling imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from crm import CRMClient
+# from rag.query_rag import query_rag # No longer used
 
 
 def recognize_intent(command):
@@ -39,7 +40,9 @@ def recognize_intent(command):
 
 def execute_action(intent, params):
     """Executes the action corresponding to the intent."""
-    print(f"Executing action for intent '{intent}' with params {params}")
+
+    # This function is now quieter, it will not print status messages.
+    # The caller (either main() or the API) is responsible for printing.
 
     if intent == "list_tasks":
         try:
@@ -87,30 +90,59 @@ def execute_action(intent, params):
             if not query:
                 return "Error: Query not provided for 'query_rag' intent."
 
-            # We need the full path to query_rag.py
-            script_path = os.path.join(
-                os.path.dirname(__file__), "../rag/query_rag.py"
+            rag_script_path = os.path.join(
+                os.path.dirname(__file__), "../rag/rag_system.py"
             )
+            index_path = os.path.join(
+                os.path.dirname(__file__), "../rag/index.faiss"
+            )
+
+            # Check if the index exists, if not, build it.
+            if not os.path.exists(index_path):
+                print("RAG index not found. Building it now...")
+                prepare_result = subprocess.run(
+                    ["python3", rag_script_path, "prepare"],
+                    capture_output=True,
+                    text=True,
+                )
+                if prepare_result.returncode != 0:
+                    return f"Error building RAG index:\n{prepare_result.stderr}"
+                print("RAG index built successfully.")
+
+            # Now, query the RAG system
             result = subprocess.run(
-                ["python3", script_path, query],
+                ["python3", rag_script_path, "query", query],
                 capture_output=True,
                 text=True,
                 check=True,
             )
             return result.stdout
-        except FileNotFoundError:
-            return "Error: query_rag.py not found."
-        except subprocess.CalledProcessError as e:
-            return f"Error executing RAG query:\n{e.stderr}"
         except Exception as e:
-            return f"An unexpected error occurred: {e}"
+            return f"An unexpected error occurred during RAG query: {e}"
 
     else:  # unknown intent
         return "Sorry, I didn't understand that command. Please try again."
 
 
+def handle_command(command_string):
+    """
+    Handles a natural language command and returns the result.
+    This is the main entry point for using the PM agent as a library.
+    """
+    print(f"PM Agent received command: '{command_string}'")
+
+    # 1. Recognize intent
+    intent, params = recognize_intent(command_string)
+
+    # 2. Execute action
+    print(f"Executing action for intent '{intent}' with params {params}")
+    result = execute_action(intent, params)
+
+    return result
+
+
 def main():
-    """Main function for the PM Agent."""
+    """Main function for the PM Agent CLI."""
     parser = argparse.ArgumentParser(
         description="Project Manager Agent for our-crm-ai."
     )
@@ -122,17 +154,9 @@ def main():
     )
 
     args = parser.parse_args()
-
-    # Join the command words into a single string
     full_command = " ".join(args.command)
 
-    print(f"PM Agent received command: '{full_command}'")
-
-    # 1. Recognize intent
-    intent, params = recognize_intent(full_command)
-
-    # 2. Execute action
-    result = execute_action(intent, params)
+    result = handle_command(full_command)
 
     # 3. Print result
     print("\n--- PM Agent Response ---")
