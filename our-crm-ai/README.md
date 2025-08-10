@@ -44,7 +44,8 @@ This project is a sophisticated, AI-powered command-line interface (CLI) for man
 3.  **Run Initial Setup:**
     Before using the CRM, you need to run the setup script once to create the project structure in YouGile. This script will create a project, board, columns, and all the necessary agent "stickers" in YouGile.
     ```bash
-    python3 crm_setup_enhanced.py
+    # Use --project-id to connect to an existing project
+python3 crm_setup_enhanced.py --project-id "your_project_id"
     ```
     This will also create the `config.json` file.
 

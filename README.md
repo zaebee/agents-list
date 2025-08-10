@@ -35,7 +35,7 @@ A comprehensive collection of specialized AI subagents for [Claude Code](https:/
 
 ## Overview
 
-This repository contains 59 specialized subagents that extend Claude Code's capabilities. Each subagent is an expert in a specific domain, automatically invoked based on context or explicitly called when needed. All agents are configured with specific Claude models based on task complexity for optimal performance and cost-effectiveness.
+This repository contains 70 specialized subagents that extend Claude Code's capabilities. Each subagent is an expert in a specific domain, automatically invoked based on context or explicitly called when needed. All agents are configured with specific Claude models based on task complexity for optimal performance and cost-effectiveness.
 
 ## Available Subagents
 
@@ -308,7 +308,8 @@ graph TD
 cd our-crm-ai
 pip install -r requirements.txt
 export YOUGILE_API_KEY="your_api_key"
-python3 crm_setup_enhanced.py  # Creates project with all agents
+# Use --project-id to connect to an existing project
+python3 crm_setup_enhanced.py --project-id "your_project_id"
 ```
 
 **2. Web UI Deployment**
@@ -319,9 +320,7 @@ cd web-ui
 ```
 
 **3. Production Deployment**
-```bash
-deployment/ci-cd/deploy-scripts.sh deploy-local -e prod
-```
+For a full production deployment on AWS, please refer to the detailed strategy in the `GEMINI.md` file. For a single-server deployment, an alternative strategy using Docker Compose and Nginx is also available in `GEMINI.md`.
 
 ### 💡 **Advanced Usage Examples**
 
