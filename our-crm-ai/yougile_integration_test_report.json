@@ -1,0 +1,86 @@
+{
+  "timestamp": "2025-08-10T09:05:05.836105",
+  "summary": {
+    "total_tests": 10,
+    "passed_tests": 10,
+    "failed_tests": 0,
+    "success_rate": 100.0
+  },
+  "detailed_results": [
+    {
+      "test_name": "Health Check",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:02.937632",
+      "details": "API health status: True",
+      "error": ""
+    },
+    {
+      "test_name": "Task Creation",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:03.009998",
+      "details": "Created task: 00e7d160-3287-4cf2-b1d4-bab27ae229e0 - '[TEST] AI-CRM Integration Test - 20250810_090502'",
+      "error": ""
+    },
+    {
+      "test_name": "Task Retrieval",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:03.077840",
+      "details": "Retrieved task: 00e7d160-3287-4cf2-b1d4-bab27ae229e0",
+      "error": ""
+    },
+    {
+      "test_name": "Task Update",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:03.401383",
+      "details": "Updated task: 00e7d160-3287-4cf2-b1d4-bab27ae229e0",
+      "error": ""
+    },
+    {
+      "test_name": "Status Transitions",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:03.812911",
+      "details": "Successfully transitioned: TODO \u2192 IN_PROGRESS \u2192 DONE",
+      "error": ""
+    },
+    {
+      "test_name": "Task Comments",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:03.937328",
+      "details": "Added and retrieved comments (count: 1)",
+      "error": ""
+    },
+    {
+      "test_name": "Task Listing",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:04.283429",
+      "details": "All: 10, TODO: 5, DONE: 5",
+      "error": ""
+    },
+    {
+      "test_name": "Agent Assignment",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:05.174346",
+      "details": "Successfully tested assignment for 3 agents",
+      "error": ""
+    },
+    {
+      "test_name": "CRM Service Integration",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:05.642524",
+      "details": "Task: 40a15e19-e40c-4cb4-b1c3-6454f6b4a94c, PM Analysis: simple, Suggestions: 3",
+      "error": ""
+    },
+    {
+      "test_name": "Error Handling",
+      "success": true,
+      "timestamp": "2025-08-10T09:05:05.835524",
+      "details": "Invalid ID handled: True, Validation handled: True",
+      "error": ""
+    }
+  ],
+  "environment": {
+    "config_file": "config_enhanced.json",
+    "api_endpoint": "https://yougile.com/api-v2",
+    "project_id": "dc08147c-055a-4600-b768-ca3177dff71e"
+  }
+}

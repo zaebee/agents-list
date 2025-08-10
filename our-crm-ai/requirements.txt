@@ -1,25 +1,41 @@
-# Core Dependencies
+# Core dependencies for AI-CRM refactored architecture
+pydantic>=2.0.0,<3.0.0
+httpx>=0.24.0
+aiofiles>=23.0.0
+aiosqlite>=0.19.0
+
+# Optional AI/ML dependencies for enhanced features  
+sentence-transformers>=2.2.0  # For semantic matching
+faiss-cpu>=1.7.0  # For fast similarity search
+numpy>=1.24.0  # For numerical operations
+anthropic>=0.25.0  # For Anthropic API integration
+
+# CLI and UI enhancements
+rich>=13.0.0  # For beautiful CLI output
+click>=8.1.0  # Alternative CLI framework
+
+# Testing dependencies
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
+
+# Development dependencies
+black>=23.0.0  # Code formatting
+flake8>=6.0.0  # Code linting
+mypy>=1.0.0  # Type checking
+
+# Legacy dependencies (for backward compatibility)
 Flask==2.1.0
 requests==2.26.0
 flask-cors==3.0.10
-
-# Analytics and Monitoring Dependencies
 pandas==2.0.1
 seaborn==0.12.2
 plotly==5.14.1
-
-# Performance and Monitoring
 prometheus-client==0.16.0
 gunicorn==20.1.0
-
-# Data Processing and Visualization
-numpy==1.22.3
 scipy==1.8.0
-
-# Logging and Observability
 python-json-logger==2.0.4
-sentence-transformers
-faiss-cpu
-anthropic
-black
-flake8
+
+# Documentation
+mkdocs>=1.4.0  # Documentation generation
+mkdocs-material>=9.0.0  # Material theme for docs
