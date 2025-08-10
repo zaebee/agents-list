@@ -7,8 +7,9 @@ import uuid
 from functools import wraps
 from agent_selector import suggest_agents
 from pm_agent_gateway import PMAgentGateway
-from repositories import FileProjectRepository
-from models import ProjectCreateRequest, Task, Risk
+from repositories import DatabaseProjectRepository
+from models import ProjectCreateRequest, Task, Risk, TaskMetadata
+from database import init_db, get_db
 
 # --- Configuration ---
 API_KEY = os.environ.get("YOUGILE_API_KEY")
@@ -235,7 +236,7 @@ def update_task(args, config):
         owner_state_id = owner_sticker_config.get("states", {}).get(args.owner)
 
         if not owner_state_id:
-            print(f"Error: Owner '{args.owner}' is not a valid AI agent role in config.")
+            print(f"Error: Owner '{owner}' is not a valid AI agent role in config.")
             available_agents = list(owner_sticker_config.get("states", {}).keys())
             print(f"Available agents ({len(available_agents)}): {', '.join(sorted(available_agents)[:5])}...")
             return
@@ -476,6 +477,7 @@ def list_agents(args, config):
 
 def main():
     """Enhanced main function with better CLI."""
+    init_db()
     config = load_config()
     if not config:
         return
@@ -570,6 +572,8 @@ def print_agent_suggestions(description):
 
 def pm_analyze_task(args, config):
     """Use PM Agent Gateway to analyze, plan, and save a new project."""
+    db_session_gen = get_db()
+    db = next(db_session_gen)
     try:
         # --- 1. Analysis ---
         print("🤖 Activating PM Agent Gateway for analysis...")
@@ -579,8 +583,8 @@ def pm_analyze_task(args, config):
         print(f"\n🎯 PM Agent Analysis Complete!")
         print("=" * 60)
 
-        # --- 2. Project Creation ---
-        project_repo = FileProjectRepository()
+        # --- 2. Project Creation and Population ---
+        project_repo = DatabaseProjectRepository(db)
         project_id = str(uuid.uuid4())
         
         project_request = ProjectCreateRequest(
@@ -601,7 +605,8 @@ def pm_analyze_task(args, config):
                 title=task_data['title'],
                 description=task_data.get('description', ''),
                 status='To Do',
-                assigned_agent=result.get('assigned_agent')
+                assigned_agent=result.get('assigned_agent'),
+                metadata=TaskMetadata()
             )
             project_repo.add_task_to_project(project.id, task)
             print(f"  - Task '{task.title}' added to project.")
@@ -620,7 +625,8 @@ def pm_analyze_task(args, config):
                     title=subtask_data['title'],
                     description=subtask_data.get('description', ''),
                     status='To Do',
-                    assigned_agent=subtask_data.get('agent')
+                    assigned_agent=subtask_data.get('agent'),
+                    metadata=TaskMetadata()
                 )
                 subtasks_map[task.title] = task
 
@@ -631,7 +637,8 @@ def pm_analyze_task(args, config):
 
                 if depends_on_title and depends_on_title in subtasks_map:
                     dependency_id = subtasks_map[depends_on_title].id
-                    task.metadata.dependencies.append(dependency_id)
+                    if task.metadata:
+                        task.metadata.dependencies.append(dependency_id)
 
                 project_repo.add_task_to_project(project.id, task)
                 print(f"  - Subtask '{task.title}' added to project.")
@@ -651,7 +658,7 @@ def pm_analyze_task(args, config):
 
         print("\n" + "=" * 60)
         print(f"✅ Project '{project.title}' has been successfully planned and saved.")
-        print(f"💡 You can view the project details in projects.json")
+        print(f"💡 You can now query the project from the database.")
 
     except Exception as e:
         import traceback
@@ -659,6 +666,8 @@ def pm_analyze_task(args, config):
         traceback.print_exc()
         print("💡 Falling back to basic agent suggestions...")
         print_agent_suggestions(f"{args.title} {args.description or ''}")
+    finally:
+        next(db_session_gen, None) # Close the session
 
 if __name__ == "__main__":
     main()

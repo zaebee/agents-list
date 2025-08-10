@@ -10,7 +10,6 @@ This module acts as a Project Manager agent that:
 5. Provides intelligent task decomposition
 """
 
-import os
 import json
 import time
 from typing import List, Dict, Optional, Tuple
@@ -63,8 +62,6 @@ class PMAgentGateway:
     
     def __init__(self, config_path: str = "config.json"):
         """Initialize the PM Agent Gateway."""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        config_path = os.path.join(script_dir, config_path)
         with open(config_path, 'r') as f:
             self.config = json.load(f)
         

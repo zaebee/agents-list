@@ -23,7 +23,7 @@ class Task(BaseModel):
     """Core Task model."""
     id: str
     title: str
-    description: str
+    description: Optional[str] = None
     status: TaskStatus
     priority: str = "medium"
     assigned_agent: Optional[str] = None
@@ -32,7 +32,10 @@ class Task(BaseModel):
     stickers: Dict[str, Any] = {}
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    metadata: TaskMetadata = Field(default_factory=TaskMetadata)
+    metadata: Optional[TaskMetadata] = None
+
+    class Config:
+        from_attributes = True
 
 
 class TaskCreateRequest(BaseModel):
@@ -102,6 +105,9 @@ class Risk(BaseModel):
     severity: str  # e.g., "High", "Medium", "Low"
     project_id: str
 
+    class Config:
+        from_attributes = True
+
 
 class Project(BaseModel):
     """Project model."""
@@ -111,6 +117,9 @@ class Project(BaseModel):
     tasks: List[Task] = []
     risks: List[Risk] = []
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        from_attributes = True
 
 
 class ProjectCreateRequest(BaseModel):

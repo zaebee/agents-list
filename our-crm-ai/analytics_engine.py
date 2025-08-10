@@ -2,8 +2,6 @@ import json
 import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Any
-from repositories import FileProjectRepository
-from models import Project, Task, Risk, TaskStatus
 
 class AnalyticsEngine:
     """
@@ -11,14 +9,8 @@ class AnalyticsEngine:
     Handles metrics collection, processing, and reporting
     """
     def __init__(self, config_path: str = 'config.json'):
-        try:
-            with open(config_path, 'r') as f:
-                self.config = json.load(f)
-        except FileNotFoundError:
-            self.config = {} # Handle case where config is not found
-
-        self.project_repo = FileProjectRepository()
-        self.projects = self.project_repo.list_projects()
+        with open(config_path, 'r') as f:
+            self.config = json.load(f)
         
         self.metrics = {
             'task_completion': {},
@@ -92,31 +84,24 @@ class AnalyticsEngine:
     
     def generate_executive_dashboard(self) -> Dict:
         """
-        Generate high-level executive dashboard from real project data.
+        Generate high-level executive dashboard
         
         Returns:
             Dict: Executive-level business metrics
         """
-        all_tasks = [task for project in self.projects for task in project.tasks]
-        total_tasks = len(all_tasks)
-        completed_tasks = len([task for task in all_tasks if task.status == TaskStatus.DONE])
-        completion_rate = (completed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
-
-        all_agents = [task.assigned_agent for task in all_tasks if task.assigned_agent]
-        unique_agents = set(all_agents)
-
         executive_dashboard = {
             'system_overview': {
-                'total_projects': len(self.projects),
-                'total_tasks': total_tasks,
-                'total_agents': len(unique_agents),
+                'total_agents': len(self.config.get('agents', [])),
+                'active_integrations': len(self.config.get('integrations', [])),
+                'system_health': self._calculate_system_health()
             },
             'performance_kpis': {
-                'task_completion_rate': round(completion_rate, 2),
-                'tasks_by_status': self._get_tasks_by_status(all_tasks),
-                'top_performing_agents': self._get_top_performing_agents(all_tasks),
+                'task_completion_rate': self.metrics['task_completion'].get('completion_rate', 0),
+                'top_performing_agents': self._get_top_performing_agents(),
+                'workflow_efficiency': self._calculate_workflow_efficiency()
             },
             'business_insights': {
+                'trending_tasks': self._identify_trending_tasks(),
                 'potential_optimizations': self._recommend_optimizations()
             },
             'timestamp': datetime.now().isoformat()
@@ -124,43 +109,19 @@ class AnalyticsEngine:
         
         return executive_dashboard
 
-    def _get_tasks_by_status(self, tasks: List[Task]) -> Dict[str, int]:
-        """Get a count of tasks for each status."""
-        status_counts = {status.value: 0 for status in TaskStatus}
-        for task in tasks:
-            if task.status.value in status_counts:
-                status_counts[task.status.value] += 1
-        return status_counts
+    def _calculate_system_health(self) -> float:
+        """Internal method to calculate overall system health"""
+        # Placeholder implementation
+        return 85.5  # percentage
 
-    def _get_top_performing_agents(self, tasks: List[Task], top_n: int = 5) -> List[Dict]:
-        """Get top N performing agents based on completed tasks."""
-        agent_performance = {}
-        for task in tasks:
-            if not task.assigned_agent:
-                continue
-
-            agent_name = task.assigned_agent
-            if agent_name not in agent_performance:
-                agent_performance[agent_name] = {'completed': 0, 'total': 0}
-
-            agent_performance[agent_name]['total'] += 1
-            if task.status == TaskStatus.DONE:
-                agent_performance[agent_name]['completed'] += 1
-
-        # Calculate success rate
-        for agent, stats in agent_performance.items():
-            stats['success_rate'] = (stats['completed'] / stats['total']) * 100 if stats['total'] > 0 else 0
-
-        # Sort agents by success rate and then by completed tasks
-        sorted_agents = sorted(
-            agent_performance.items(),
-            key=lambda item: (item[1]['success_rate'], item[1]['completed']),
+    def _get_top_performing_agents(self, top_n: int = 5) -> List[Dict]:
+        """Get top N performing agents"""
+        performance_data = self.metrics['agent_performance']
+        return sorted(
+            [{'agent': k, **v} for k, v in performance_data.items()],
+            key=lambda x: x['success_rate'],
             reverse=True
-        )
-
-        return [
-            {'agent': agent, **stats} for agent, stats in sorted_agents
-        ][:top_n]
+        )[:top_n]
     
     def _calculate_workflow_efficiency(self) -> float:
         """Calculate overall workflow efficiency"""
