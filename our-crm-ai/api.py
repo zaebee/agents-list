@@ -1,30 +1,42 @@
-from flask import Flask, request, jsonify
-import sys
-import os
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from models import CommandRequest, CommandResponse
+import crm_service
 
-# Add project root to path to allow sibling imports
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), ".")))
-from agents.pm_agent import handle_command
+class CommandExecutionError(Exception):
+    pass
 
-app = Flask(__name__)
+app = FastAPI(
+    title="AI-CRM API",
+    description="API for interacting with the AI-CRM and its team of agents.",
+    version="1.0.0",
+)
 
-@app.route("/api/command", methods=["POST"])
-def command():
+@app.exception_handler(CommandExecutionError)
+async def command_execution_exception_handler(request: Request, exc: CommandExecutionError):
+    return JSONResponse(
+        status_code=400,
+        content={"message": f"Command execution failed: {exc}"},
+    )
+
+@app.get("/health", summary="Check API health")
+async def health_check():
     """
-    API endpoint to receive and execute natural language commands.
+    Returns a 200 OK response if the API is healthy.
     """
-    data = request.get_json()
-    if not data or "command" not in data:
-        return jsonify({"error": "Invalid request. 'command' field is required."}), 400
+    return {"status": "ok"}
 
-    command_text = data["command"]
-
+@app.post("/api/command", response_model=CommandResponse, summary="Execute a natural language command")
+async def execute_command(request: CommandRequest):
+    """
+    Receives and executes a natural language command.
+    """
     try:
-        # Call the refactored PM agent logic
-        result = handle_command(command_text)
-        return jsonify({"response": result})
+        result = crm_service.execute_command(request.command)
+        return CommandResponse(response=result)
     except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {e}"}), 500
+        raise CommandExecutionError(str(e))
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000, reload=True)
