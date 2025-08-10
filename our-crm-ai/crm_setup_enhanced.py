@@ -1,11 +1,10 @@
 import requests
-import json
 import os
-import sys
-import time
+import json
 import argparse
 from pathlib import Path
 from functools import wraps
+import time
 
 # --- Configuration ---
 API_KEY = os.environ.get("YOUGILE_API_KEY")
@@ -37,11 +36,11 @@ def rate_limited_request(delay=RATE_LIMIT_DELAY):
 @rate_limited_request()
 def make_api_request(method: str, url: str, **kwargs):
     """Rate-limited API request wrapper."""
-    return requests.request(method, url, **kwargs)
+    return requests.request(method, url, headers=HEADERS, **kwargs)
 
 PROJECT_NAME = "AI Team Communication"
 BOARD_NAME = "AI Team Tasks"
-COLUMN_NAMES = ["To Do", "In Progress", "Done"]
+COLUMN_NAMES = ["To Do", "In Progress", "Done", "Archived"]
 
 def get_all_agent_names():
     """Load all agent names from the parent directory's markdown files."""
@@ -58,13 +57,13 @@ def get_or_create_project(project_id=None):
     if project_id:
         print(f"Using existing project with ID: {project_id}")
         # Verify project exists
-        res = make_api_request("GET", f"{BASE_URL}/projects/{project_id}", headers=HEADERS)
+        res = make_api_request("GET", f"{BASE_URL}/projects/{project_id}")
         res.raise_for_status()
         return project_id
     else:
         print(f"Creating project: '{PROJECT_NAME}'...")
         project_data = {"title": PROJECT_NAME}
-        project_res = make_api_request("POST", f"{BASE_URL}/projects", headers=HEADERS, json=project_data)
+        project_res = make_api_request("POST", f"{BASE_URL}/projects", json=project_data)
         project_res.raise_for_status()
         new_project_id = project_res.json().get("id")
         print(f"Project created with ID: {new_project_id}")
@@ -72,7 +71,7 @@ def get_or_create_project(project_id=None):
 
 def get_or_create_board(project_id):
     """Get an existing board or create a new one."""
-    boards_res = make_api_request("GET", f"{BASE_URL}/projects/{project_id}/boards", headers=HEADERS)
+    boards_res = make_api_request("GET", f"{BASE_URL}/projects/{project_id}/boards")
     boards_res.raise_for_status()
     boards = boards_res.json()
     
@@ -84,7 +83,7 @@ def get_or_create_board(project_id):
 
     print(f"Creating board: '{BOARD_NAME}'...")
     board_data = {"title": BOARD_NAME, "projectId": project_id}
-    board_res = make_api_request("POST", f"{BASE_URL}/boards", headers=HEADERS, json=board_data)
+    board_res = make_api_request("POST", f"{BASE_URL}/boards", json=board_data)
     board_res.raise_for_status()
     new_board_id = board_res.json().get("id")
     print(f"Board created with ID: {new_board_id}")
@@ -92,7 +91,7 @@ def get_or_create_board(project_id):
 
 def get_or_create_columns(board_id):
     """Get existing columns or create new ones."""
-    columns_res = make_api_request("GET", f"{BASE_URL}/boards/{board_id}/columns", headers=HEADERS)
+    columns_res = make_api_request("GET", f"{BASE_URL}/boards/{board_id}/columns")
     columns_res.raise_for_status()
     existing_columns = {c['title']: c['id'] for c in columns_res.json()}
     
@@ -104,7 +103,7 @@ def get_or_create_columns(board_id):
         else:
             print(f"Creating column: '{name}'...")
             column_data = {"title": name, "boardId": board_id}
-            column_res = make_api_request("POST", f"{BASE_URL}/columns", headers=HEADERS, json=column_data)
+            column_res = make_api_request("POST", f"{BASE_URL}/columns", json=column_data)
             column_res.raise_for_status()
             column_id = column_res.json().get("id")
             column_ids[name] = column_id
@@ -145,13 +144,13 @@ def main():
 
         print("Creating 'AI Owner' sticker...")
         sticker_data = {"name": "AI Owner"}
-        sticker_res = make_api_request("POST", f"{BASE_URL}/string-stickers", headers=HEADERS, json=sticker_data)
+        sticker_res = make_api_request("POST", f"{BASE_URL}/string-stickers", json=sticker_data)
         sticker_res.raise_for_status()
         sticker_id = sticker_res.json().get("id")
         print(f"'AI Owner' sticker created with ID: {sticker_id}")
 
         print(f"Associating sticker with board '{BOARD_NAME}'...")
-        board_details_res = make_api_request("GET", f"{BASE_URL}/boards/{board_id}", headers=HEADERS)
+        board_details_res = make_api_request("GET", f"{BASE_URL}/boards/{board_id}")
         board_details_res.raise_for_status()
         board_stickers = board_details_res.json().get("stickers", {})
         if "custom" not in board_stickers:
@@ -159,7 +158,7 @@ def main():
         board_stickers["custom"][sticker_id] = True
 
         update_board_data = {"stickers": board_stickers}
-        update_board_res = make_api_request("PUT", f"{BASE_URL}/boards/{board_id}", headers=HEADERS, json=update_board_data)
+        update_board_res = make_api_request("PUT", f"{BASE_URL}/boards/{board_id}", json=update_board_data)
         update_board_res.raise_for_status()
         print("Sticker associated successfully.")
 
@@ -174,7 +173,7 @@ def main():
             for role_name in batch:
                 try:
                     state_data = {"name": role_name}
-                    state_res = make_api_request("POST", f"{BASE_URL}/string-stickers/{sticker_id}/states", headers=HEADERS, json=state_data)
+                    state_res = make_api_request("POST", f"{BASE_URL}/string-stickers/{sticker_id}/states", json=state_data)
                     state_res.raise_for_status()
                     state_id = state_res.json().get("id")
                     owner_state_ids[role_name] = state_id
@@ -198,7 +197,7 @@ def main():
             },
             "metadata": {
                 "total_agents": len(ai_owner_roles),
-                "setup_version": "enhanced_v1.1",
+                "setup_version": "enhanced_v1.2",
                 "created_with": "crm_setup_enhanced.py"
             }
         }
