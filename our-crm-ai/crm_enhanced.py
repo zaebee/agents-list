@@ -63,14 +63,9 @@ def validate_task_id(task_id: str) -> bool:
 @retry_api_call()
 def make_api_request(method: str, url: str, **kwargs):
     """Enhanced API request wrapper with timeout and retry logic."""
-    # Add default timeout if not specified
     if 'timeout' not in kwargs:
         kwargs['timeout'] = DEFAULT_TIMEOUT
-    
-    # Ensure SSL verification
     kwargs['verify'] = True
-    
-    # Add headers
     if 'headers' not in kwargs:
         kwargs['headers'] = HEADERS
     
@@ -121,13 +116,12 @@ def suggest_owner_for_task(title, description, use_pm_gateway=True):
                 print(f"🔄 PM Gateway recommends breaking into {len(result['subtasks'])} subtasks")
                 print(f"📊 Priority: {result['priority']}")
                 
-                for i, subtask in enumerate(result['subtasks'][:3], 1):  # Show first 3
+                for i, subtask in enumerate(result['subtasks'][:3], 1):
                     print(f"  {i}. {subtask['title']} → {subtask['agent']}")
                 
                 if len(result['subtasks']) > 3:
                     print(f"  ... and {len(result['subtasks']) - 3} more subtasks")
                 
-                # For complex tasks, suggest the primary agent
                 primary_agent = result['analysis']['required_agents'][0] if result['analysis']['required_agents'] else 'business-analyst'
                 
                 create_subtasks = input(f"Create as complex task with primary agent ({primary_agent})? (y/n): ").strip().lower()
@@ -137,7 +131,6 @@ def suggest_owner_for_task(title, description, use_pm_gateway=True):
         except Exception as e:
             print(f"⚠️  PM Gateway error: {e}, falling back to basic agent selector...")
     
-    # Fallback to basic agent selector
     combined_text = f"{title} {description}"
     suggestions = suggest_agents(combined_text, max_suggestions=3)
     
@@ -153,7 +146,6 @@ def suggest_owner_for_task(title, description, use_pm_gateway=True):
         top_suggestion = suggestions[0]['agent']
         print(f"\n💡 Recommended: {top_suggestion}")
         
-        # Ask user if they want to use the suggestion
         use_suggestion = input(f"Use {top_suggestion} as owner? (y/n): ").strip().lower()
         if use_suggestion == 'y':
             return top_suggestion
@@ -177,10 +169,8 @@ def create_task(args, config):
         "columnId": todo_column_id
     }
 
-    # Handle AI Owner sticker
     owner = args.owner
     
-    # If no owner specified, suggest one based on task content
     if not owner and not args.no_ai_suggest:
         print("\n🔍 Analyzing task for AI agent suggestions...")
         suggested_owner = suggest_owner_for_task(args.title, args.description)
@@ -215,7 +205,6 @@ def create_task(args, config):
 
 def update_task(args, config):
     """Updates an existing task with enhanced validation."""
-    # Validate task ID format
     if not validate_task_id(args.task_id):
         print("❌ Error: Invalid task ID format. Task ID must be a valid UUID or alphanumeric string.")
         return
@@ -259,7 +248,6 @@ def list_tasks(args, config):
 
     all_tasks = []
     try:
-        # Get tasks from each column
         for column_name, column_id in config["columns"].items():
             params = {"columnId": column_id, "limit": 1000}
             response = make_api_request("GET", f"{BASE_URL}/task-list", params=params)
@@ -273,7 +261,6 @@ def list_tasks(args, config):
             print("No tasks found on the board.")
             return
 
-        # Group by status
         by_status = {}
         for task in all_tasks:
             status = task['columnName']
@@ -292,7 +279,6 @@ def list_tasks(args, config):
                 print(f"  🎫 ID: {task['id'][:8]}...")
                 print(f"     Title: {task['title']}")
                 
-                # Show AI Owner if present
                 owner_sticker_config = config.get("ai_owner_sticker", {})
                 sticker_id = owner_sticker_config.get("id")
                 task_stickers = task.get("stickers", {})
@@ -312,7 +298,6 @@ def view_task(args, config):
     """Views a single task and its comments with enhanced display."""
     task_id = args.task_id
     
-    # Validate task ID format
     if not validate_task_id(task_id):
         print("❌ Error: Invalid task ID format. Task ID must be a valid UUID or alphanumeric string.")
         return
@@ -320,7 +305,6 @@ def view_task(args, config):
     print(f"📖 Fetching details for task: {task_id}...")
 
     try:
-        # Get task details
         task_response = make_api_request("GET", f"{BASE_URL}/tasks/{task_id}")
         task_response.raise_for_status()
         task = task_response.json()
@@ -331,7 +315,6 @@ def view_task(args, config):
         print(f"ID: {task.get('id')}")
         print(f"Title: {task.get('title')}")
 
-        # Display AI Owner if present
         owner_sticker_config = config.get("ai_owner_sticker", {})
         sticker_id = owner_sticker_config.get("id")
         task_stickers = task.get("stickers", {})
@@ -345,7 +328,6 @@ def view_task(args, config):
         print(f"\nDescription:")
         print(f"{task.get('description', 'No description.')}")
 
-        # Get task comments
         print("\n" + "-" * 60)
         print("💬 COMMENTS")
         print("-" * 60)
@@ -368,7 +350,6 @@ def comment_on_task(args, config):
     """Adds a comment to a task."""
     task_id = args.task_id
     
-    # Validate task ID format
     if not validate_task_id(task_id):
         print("❌ Error: Invalid task ID format. Task ID must be a valid UUID or alphanumeric string.")
         return
@@ -388,7 +369,6 @@ def move_task(args, config):
     task_id = args.task_id
     target_column_name = args.column
     
-    # Validate task ID format
     if not validate_task_id(task_id):
         print("❌ Error: Invalid task ID format. Task ID must be a valid UUID or alphanumeric string.")
         return
@@ -409,10 +389,31 @@ def move_task(args, config):
     else:
         handle_api_error(response)
 
+def set_task_completion_status(args, config, completed: bool):
+    """Sets the completion status of a task."""
+    task_id = args.task_id
+    if not validate_task_id(task_id):
+        print("❌ Error: Invalid task ID format.")
+        return
+
+    action = "Completing" if completed else "Un-completing"
+    print(f"🔄 {action} task: {task_id}...")
+
+    update_data = {"completed": completed}
+    response = make_api_request("PUT", f"{BASE_URL}/tasks/{task_id}", json=update_data)
+
+    if response.status_code == 200:
+        print("✅ Task status updated successfully.")
+    else:
+        handle_api_error(response)
+
 def complete_task(args, config):
-    """Marks a task as complete by moving it to the 'Done' column."""
-    args.column = "Done"
-    move_task(args, config)
+    """Marks a task as complete."""
+    set_task_completion_status(args, config, True)
+
+def uncomplete_task(args, config):
+    """Marks a task as not complete."""
+    set_task_completion_status(args, config, False)
 
 def list_agents(args, config):
     """Lists all available AI agents."""
@@ -426,7 +427,6 @@ def list_agents(args, config):
     print(f"🤖 Available AI Agents ({len(agents)}):")
     print("=" * 50)
     
-    # Group by category (rough categorization)
     categories = {
         'Language Specialists': [a for a in agents if any(lang in a for lang in ['python', 'javascript', 'java', 'golang', 'rust', 'cpp', 'csharp', 'php', 'scala', 'elixir'])],
         'Architecture & Backend': [a for a in agents if any(arch in a for arch in ['architect', 'backend', 'api', 'graphql'])],
@@ -475,7 +475,6 @@ Examples:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # Create command
     create_parser = subparsers.add_parser("create", help="Create a new task with AI agent suggestions.")
     create_parser.add_argument("--title", required=True, help="The title of the task.")
     create_parser.add_argument("--description", default="", help="The description of the task.")
@@ -483,48 +482,43 @@ Examples:
     create_parser.add_argument("--no-ai-suggest", action="store_true", help="Skip AI agent suggestions.")
     create_parser.set_defaults(func=create_task)
 
-    # Update command
     update_parser = subparsers.add_parser("update", help="Update an existing task.")
     update_parser.add_argument("task_id", help="The ID of the task to update.")
     update_parser.add_argument("--owner", help="The new AI agent owner for the task.")
     update_parser.set_defaults(func=update_task)
 
-    # List command
     list_parser = subparsers.add_parser("list", help="List all tasks grouped by status.")
     list_parser.set_defaults(func=list_tasks)
 
-    # View command
     view_parser = subparsers.add_parser("view", help="View a specific task with details.")
     view_parser.add_argument("task_id", help="The ID of the task to view.")
     view_parser.set_defaults(func=view_task)
 
-    # Comment command
     comment_parser = subparsers.add_parser("comment", help="Add a comment to a task.")
     comment_parser.add_argument("task_id", help="The ID of the task to comment on.")
     comment_parser.add_argument("--message", required=True, help="The comment message.")
     comment_parser.set_defaults(func=comment_on_task)
 
-    # Move command
     move_parser = subparsers.add_parser("move", help="Move a task to a different column.")
     move_parser.add_argument("task_id", help="The ID of the task to move.")
     move_parser.add_argument("--column", required=True, help="The name of the target column.")
     move_parser.set_defaults(func=move_task)
 
-    # Complete command
     complete_parser = subparsers.add_parser("complete", help="Mark a task as complete.")
     complete_parser.add_argument("task_id", help="The ID of the task to complete.")
     complete_parser.set_defaults(func=complete_task)
+
+    uncomplete_parser = subparsers.add_parser("uncomplete", help="Mark a task as not complete.")
+    uncomplete_parser.add_argument("task_id", help="The ID of the task to un-complete.")
+    uncomplete_parser.set_defaults(func=uncomplete_task)
     
-    # Agents command
     agents_parser = subparsers.add_parser("agents", help="List all available AI agents.")
     agents_parser.set_defaults(func=list_agents)
 
-    # Suggest command (standalone agent suggestion)
     suggest_parser = subparsers.add_parser("suggest", help="Suggest AI agents for a task description.")
     suggest_parser.add_argument("description", help="Task description to analyze.")
     suggest_parser.set_defaults(func=lambda args, config: print_agent_suggestions(args.description))
     
-    # PM Analyze command (comprehensive task analysis)
     pm_parser = subparsers.add_parser("pm", help="PM Agent Gateway - comprehensive task analysis and workflow planning.")
     pm_parser.add_argument("--title", required=True, help="Task title to analyze.")
     pm_parser.add_argument("--description", help="Task description for detailed analysis.")
