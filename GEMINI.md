@@ -34,3 +34,16 @@
 - **Actions**:
     - Reran the full test suite via `tests/run_all_tests.py`.
 - **Findings**: All 28 tests now pass. The project's core functionality appears stable.
+
+## Production Domain Implementation: zae.life
+
+### 1. Objective
+- Configure the project to use `zae.life` as the production domain for the web UI and API.
+
+### 2. Plan
+- Update the `GEMINI.md` to document the process.
+- Create a task in the AI-CRM to track the work.
+- Modify the Terraform configuration to use the new domain.
+- Update the web UI backend CORS policy.
+- Configure the frontend to use the correct API endpoint.
+- Commit all changes to the repository.
