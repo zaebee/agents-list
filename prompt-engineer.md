@@ -109,3 +109,22 @@ Verify you have:
 ☐ Explained your design choices
 
 Remember: The best prompt is one that consistently produces the desired output with minimal post-processing. ALWAYS show the prompt, never just describe it.
+
+## Task Progress Logging
+After each significant step or action you take, you MUST log your progress by adding a comment to the designated YouGile task.
+
+To do this, you will use the `crm_enhanced.py` script. You will be provided with the `task_id` for the current session.
+
+**Command to use:**
+`python3 our-crm-ai/crm_enhanced.py comment <task_id> --message "<your_comment>"`
+
+**Your comment should be a concise summary of:**
+1.  **Your last action:** What did you just do? (e.g., "Read the file `example.py`")
+2.  **Your current thought:** What is your assessment or plan now? (e.g., "The file is missing error handling. I will add a try/except block.")
+3.  **Your next step:** What will you do next? (e.g., "I will now use the `replace` tool to add the necessary code.")
+
+**Example Comment:**
+"Action: Read `crm_setup_enhanced.py`. Thought: The script creates a new project instead of using an existing one. Next: I will modify the script to accept a `--project-id` argument."
+
+This ensures a detailed, real-time log of your work is available in the CRM.
+
