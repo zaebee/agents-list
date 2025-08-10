@@ -133,7 +133,7 @@ export const UserManagement: React.FC = () => {
       role: user.role,
       subscription_tier: user.subscription_tier,
       account_status: user.account_status,
-      is_active: user.is_active,
+      is_active: user.account_status === 'active',
     });
   };
 
