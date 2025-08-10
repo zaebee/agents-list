@@ -1,0 +1,53 @@
+# Development-only dependencies for AI-CRM
+# These packages are only needed for development, testing, and debugging
+
+# Development tools
+ipython>=8.10.0          # Interactive Python shell
+ipdb>=0.13.0             # Debugger
+watchdog>=3.0.0          # File system event monitoring
+python-dotenv>=1.0.0     # Environment file loading
+
+# Testing and quality assurance
+pytest>=7.2.0           # Testing framework  
+pytest-asyncio>=0.21.0  # Async testing support
+pytest-cov>=4.0.0       # Coverage reporting
+pytest-mock>=3.10.0     # Mocking support
+coverage>=7.2.0         # Code coverage
+
+# Code quality and formatting
+black>=23.1.0           # Code formatter
+isort>=5.12.0           # Import sorter
+flake8>=6.0.0           # Linting
+pylint>=2.16.0          # Advanced linting
+mypy>=1.1.0             # Type checking
+pre-commit>=3.1.0       # Git hooks
+
+# Documentation
+mkdocs>=1.4.0           # Documentation generator
+mkdocs-material>=9.0.0  # Material theme
+mkdocs-mermaid2-plugin>=1.0.0  # Mermaid diagrams
+
+# Development utilities
+rich>=13.3.0            # Rich text and beautiful formatting
+click>=8.1.0            # Command line interface creation
+tabulate>=0.9.0         # Pretty-print tabular data
+colorama>=0.4.6         # Cross-platform colored terminal text
+
+# Performance profiling
+py-spy>=0.3.0           # Sampling profiler
+memory-profiler>=0.60.0 # Memory profiling
+line-profiler>=4.0.0    # Line-by-line profiling
+
+# Development database tools
+sqlite-web>=0.4.0       # Web-based SQLite browser
+sqlalchemy-utils>=0.40.0 # SQLAlchemy utilities
+
+# API development and testing
+httpie>=3.2.0           # HTTP client
+faker>=18.0.0           # Generate fake data for testing
+factory-boy>=3.2.0      # Test data generation
+
+# Jupyter notebook support (for data analysis)
+jupyter>=1.0.0          # Jupyter notebook
+notebook>=6.5.0         # Jupyter notebook server
+ipywidgets>=8.0.0       # Interactive widgets

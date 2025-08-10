@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  ai-crm-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      - AI_CRM_DEBUG=true
+      - AI_CRM_LOG_LEVEL=DEBUG
+      - AI_CRM_DEV_MODE=true
+      - AI_CRM_YOUGILE_API_KEY=${YOUGILE_API_KEY}
+      - AI_CRM_AI_API_KEY=${AI_API_KEY}
+      - AI_CRM_STORAGE_BACKEND=file
+      - DATABASE_URL=sqlite:///data/ai_crm_dev.db
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount source code for hot-reload
+      - .:/app
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./workflow_storage:/app/workflow_storage
+    working_dir: /app
+    command: >
+      python3 -c "
+      import asyncio
+      import os
+      from crm_service import create_crm_service
+      from datetime import datetime
+      
+      async def start_dev_server():
+          print('🚀 AI-CRM Development Server (Docker)')
+          print('====================================')
+          print(f'Started at: {datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")}')
+          print('Debug mode: ENABLED')
+          print('Hot-reload: ENABLED')
+          print('Storage: File-based (development)')
+          print('Database: SQLite (development)')
+          print('')
+          
+          try:
+              service = await create_crm_service(
+                  api_key=os.getenv('AI_CRM_YOUGILE_API_KEY'),
+                  config_path='config_dev.json'
+              )
+              
+              health = await service.health_check()
+              print('🔍 System Health:')
+              for component, status in health.get('components', {}).items():
+                  print(f'   {component}: {status.get(\"status\", \"unknown\")}')
+              
+              print('')
+              print('✅ Development server ready!')
+              print('🌐 URL: http://localhost:8000')
+              print('🧪 Run tests: docker-compose exec ai-crm-dev python3 test_yougile_integration.py')
+              print('📄 View logs: docker-compose logs -f ai-crm-dev')
+              
+              # Keep server running
+              while True:
+                  await asyncio.sleep(60)
+                  
+          except Exception as e:
+              print(f'❌ Error starting server: {e}')
+              import traceback
+              traceback.print_exc()
+      
+      if __name__ == '__main__':
+          asyncio.run(start_dev_server())
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Optional: PostgreSQL for advanced development
+  postgres-dev:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=ai_crm_dev
+      - POSTGRES_USER=ai_crm
+      - POSTGRES_PASSWORD=dev_password
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    profiles: ["database"]  # Only start when specifically requested
+
+  # Optional: Redis for caching development
+  redis-dev:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts
+    volumes:
+      - redis_dev_data:/data
+    profiles: ["cache"]  # Only start when specifically requested
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+# Development networks
+networks:
+  default:
+    name: ai-crm-dev-network

@@ -24,12 +24,18 @@ node_modules
 
 # Log files
 *.log
+*.log.txt
+our-crm-ai/2025-08-10-this-session-is-being-continued-from-a-previous-co.txt
 
 # RAG system generated data
 our-crm-ai/rag/chunks.json
 our-crm-ai/rag/index.faiss
 our-crm-ai/config.json
 our-crm-ai/config_*.json
+
+# Build artifacts
+web-ui/frontend/build/
+
 
 # Temporary attachment downloads
 our-crm-ai/temp_attachments/
