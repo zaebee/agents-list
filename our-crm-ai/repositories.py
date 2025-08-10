@@ -134,13 +134,15 @@ class YouGileTaskRepository(TaskRepository):
         config: CRMConfiguration,
         base_url: str = "https://yougile.com/api-v2",
         timeout: int = 30,
-        max_retries: int = 3
+        max_retries: int = 3,
+        max_concurrent_requests: int = 5
     ):
         self.api_key = api_key
         self.config = config
         self.base_url = base_url.rstrip('/')
         self.timeout = timeout
         self.max_retries = max_retries
+        self.semaphore = asyncio.Semaphore(max_concurrent_requests)
         
         # Synchronous client for backward compatibility
         self.sync_headers = {
@@ -175,35 +177,36 @@ class YouGileTaskRepository(TaskRepository):
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         client = await self._get_async_client()
         
-        for attempt in range(self.max_retries + 1):
-            try:
-                response = await client.request(method, url, json=json_data, params=params)
-                
-                # Try to parse JSON response
+        async with self.semaphore:
+            for attempt in range(self.max_retries + 1):
                 try:
-                    response_data = response.json() if response.content else {}
-                except Exception:
-                    response_data = {}
-                
-                if response.status_code == 200 or response.status_code == 201:
-                    return response_data
-                else:
-                    error = create_api_exception(response.status_code, f"API request failed", response_data)
-                    if not is_retryable_error(error) or attempt == self.max_retries:
+                    response = await client.request(method, url, json=json_data, params=params)
+                    
+                    # Try to parse JSON response
+                    try:
+                        response_data = response.json() if response.content else {}
+                    except Exception:
+                        response_data = {}
+                    
+                    if response.status_code == 200 or response.status_code == 201:
+                        return response_data
+                    else:
+                        error = create_api_exception(response.status_code, f"API request failed", response_data)
+                        if not is_retryable_error(error) or attempt == self.max_retries:
+                            raise error
+                        
+                        delay = get_retry_delay(error, attempt)
+                        await asyncio.sleep(delay)
+                        
+                except httpx.RequestError as e:
+                    error = NetworkError(f"Network error: {str(e)}", endpoint=endpoint)
+                    if attempt == self.max_retries:
                         raise error
                     
                     delay = get_retry_delay(error, attempt)
                     await asyncio.sleep(delay)
-                    
-            except httpx.RequestError as e:
-                error = NetworkError(f"Network error: {str(e)}", endpoint=endpoint)
-                if attempt == self.max_retries:
-                    raise error
-                
-                delay = get_retry_delay(error, attempt)
-                await asyncio.sleep(delay)
-        
-        raise NetworkError(f"Max retries exceeded for {endpoint}")
+            
+            raise NetworkError(f"Max retries exceeded for {endpoint}")
     
     def _make_sync_request(
         self, 
@@ -411,29 +414,21 @@ class YouGileTaskRepository(TaskRepository):
         """List tasks with optional filters."""
         all_tasks = []
         
-        # If status filter specified, only check that column
+        params = {"limit": 1000}
         if status:
             column_id = self.config.columns.get(status.value)
             if column_id:
-                params = {"columnId": str(column_id), "limit": min(limit, 1000)}
-                response_data = await self._make_request("GET", "/task-list", params=params)
-                tasks = response_data.get("content", [])
-                
-                for task_data in tasks:
-                    task = self._convert_api_task_to_model(task_data)
-                    if not assigned_agent or task.assigned_agent == assigned_agent:
-                        all_tasks.append(task)
+                params["columnId"] = str(column_id)
         else:
-            # Get tasks from all columns
-            for column_name, column_id in self.config.columns.items():
-                params = {"columnId": str(column_id), "limit": 1000}
-                response_data = await self._make_request("GET", "/task-list", params=params)
-                tasks = response_data.get("content", [])
-                
-                for task_data in tasks:
-                    task = self._convert_api_task_to_model(task_data)
-                    if not assigned_agent or task.assigned_agent == assigned_agent:
-                        all_tasks.append(task)
+            params["boardId"] = str(self.config.board_id)
+
+        response_data = await self._make_request("GET", "/task-list", params=params)
+        tasks = response_data.get("content", [])
+        
+        for task_data in tasks:
+            task = self._convert_api_task_to_model(task_data)
+            if not assigned_agent or task.assigned_agent == assigned_agent:
+                all_tasks.append(task)
         
         # Apply offset and limit
         return all_tasks[offset:offset + limit]

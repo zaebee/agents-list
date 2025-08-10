@@ -10,7 +10,7 @@ import TaskDetailsModal from './TaskDetailsModal';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import ConnectionStatus, { useConnectionStatus } from './ConnectionStatus';
 import NotificationSettings from './NotificationSettings';
-import { useTasks } from '../hooks/useTasks';
+import { useTaskContext } from '../contexts/TaskContext';
 import notificationService from '../services/notifications';
 import { ColumnName } from '../types';
 import ArchivedTasks from './ArchivedTasks';
@@ -25,7 +25,7 @@ const Dashboard: React.FC = () => {
     moveTask,
     taskAnimations,
     isTaskAnimating
-  } = useTasks();
+  } = useTaskContext();
 
   const { connectionState, isConnected } = useConnectionStatus();
 

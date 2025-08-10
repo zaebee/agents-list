@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { User, Clock, Sparkles, ArrowRight, MoreVertical, Archive } from 'lucide-react';
 import { Task, TaskAnimationState } from '../types';
-import { useTasks } from '../hooks/useTasks';
+import { useTaskContext } from '../contexts/TaskContext';
 
 interface TaskCardProps {
   task: Task;
@@ -12,7 +12,7 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange, animationState }) => {
-  const { archiveTask } = useTasks();
+  const { archiveTask } = useTaskContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [{ isDragging }, drag] = useDrag(() => ({

@@ -14,16 +14,6 @@ anthropic>=0.25.0  # For Anthropic API integration
 rich>=13.0.0  # For beautiful CLI output
 click>=8.1.0  # Alternative CLI framework
 
-# Testing dependencies
-pytest>=7.0.0
-pytest-asyncio>=0.21.0
-pytest-mock>=3.10.0
-
-# Development dependencies
-black>=23.0.0  # Code formatting
-flake8>=6.0.0  # Code linting
-mypy>=1.0.0  # Type checking
-
 # Legacy dependencies (for backward compatibility)
 Flask==2.1.0
 requests==2.26.0
@@ -35,7 +25,3 @@ prometheus-client==0.16.0
 gunicorn==20.1.0
 scipy>=1.9.0
 python-json-logger==2.0.4
-
-# Documentation
-mkdocs>=1.4.0  # Documentation generation
-mkdocs-material>=9.0.0  # Material theme for docs

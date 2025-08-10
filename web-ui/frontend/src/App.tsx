@@ -4,6 +4,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './contexts/AuthContext';
+import { TaskProvider } from './contexts/TaskContext';
 import Dashboard from './components/Dashboard';
 import { LoginForm } from './components/auth/LoginForm';
 import { RegisterForm } from './components/auth/RegisterForm';
@@ -26,7 +27,9 @@ function App() {
               path="/dashboard" 
               element={
                 <VerifiedRoute>
-                  <Dashboard />
+                  <TaskProvider>
+                    <Dashboard />
+                  </TaskProvider>
                 </VerifiedRoute>
               } 
             />

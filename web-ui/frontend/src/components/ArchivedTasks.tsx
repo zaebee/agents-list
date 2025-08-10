@@ -1,12 +1,12 @@
 // src/components/ArchivedTasks.tsx
 
 import React from 'react';
-import { useTasks } from '../hooks/useTasks';
+import { useTaskContext } from '../contexts/TaskContext';
 import { Task } from '../types';
 import { ArchiveRestore } from 'lucide-react';
 
 const ArchivedTasks: React.FC = () => {
-  const { archivedTasks, archiveTask, loading } = useTasks();
+  const { archivedTasks, archiveTask, loading } = useTaskContext();
 
   if (loading) {
     return (
