@@ -24,6 +24,7 @@ export interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitializing: boolean;
   error: string | null;
 }
 
@@ -59,7 +60,8 @@ type AuthAction =
   | { type: 'AUTH_FAILURE'; payload: string }
   | { type: 'LOGOUT' }
   | { type: 'UPDATE_USER'; payload: User }
-  | { type: 'CLEAR_ERROR' };
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'AUTH_INIT_COMPLETE' };
 
 // Initial state
 const initialState: AuthState = {
@@ -68,6 +70,7 @@ const initialState: AuthState = {
   refreshToken: localStorage.getItem('refresh_token'),
   isAuthenticated: false,
   isLoading: false,
+  isInitializing: true,
   error: null,
 };
 
@@ -126,6 +129,12 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         error: null,
       };
 
+    case 'AUTH_INIT_COMPLETE':
+      return {
+        ...state,
+        isInitializing: false,
+      };
+
     default:
       return state;
   }
@@ -157,29 +166,69 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  const refreshTokens = async () => {
+    if (!state.refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    try {
+      const response = await authAPI.refreshToken(state.refreshToken);
+      
+      localStorage.setItem('access_token', response.access_token);
+      localStorage.setItem('refresh_token', response.refresh_token);
+
+      dispatch({
+        type: 'AUTH_SUCCESS',
+        payload: {
+          user: response.user,
+          token: response.access_token,
+          refreshToken: response.refresh_token,
+        },
+      });
+    } catch (error) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      dispatch({ type: 'LOGOUT' });
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      if (state.token) {
+        await authAPI.logout();
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      dispatch({ type: 'LOGOUT' });
+    }
+  };
+
   // Initialize auth state on app load
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem('access_token');
       const refreshToken = localStorage.getItem('refresh_token');
 
-      if (token && refreshToken) {
-        try {
-          // Try to get user profile to validate token
+      try {
+        if (token && refreshToken) {
           const user = await authAPI.getProfile();
           dispatch({
             type: 'AUTH_SUCCESS',
             payload: { user, token, refreshToken },
           });
-        } catch (error) {
-          // Token might be expired, try to refresh
-          try {
-            await refreshTokens();
-          } catch (refreshError) {
-            // Both tokens are invalid, logout
-            logout();
-          }
         }
+      } catch (error) {
+        try {
+          await refreshTokens();
+        } catch (refreshError) {
+          dispatch({ type: 'LOGOUT' });
+        }
+      } finally {
+        dispatch({ type: 'AUTH_INIT_COMPLETE' });
       }
     };
 
@@ -189,7 +238,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Auto-refresh token before expiry
   useEffect(() => {
     if (state.isAuthenticated && state.refreshToken) {
-      // Set up token refresh timer (refresh 5 minutes before expiry)
       const refreshInterval = setInterval(async () => {
         try {
           await refreshTokens();
@@ -209,7 +257,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await authAPI.login(credentials);
       
-      // Store tokens
       localStorage.setItem('access_token', response.access_token);
       localStorage.setItem('refresh_token', response.refresh_token);
 
@@ -233,29 +280,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     try {
       await authAPI.register(data);
-      // Registration successful, but user needs to verify email
-      dispatch({ type: 'LOGOUT' }); // Clear loading state
+      await login({
+        username_or_email: data.email,
+        password: data.password,
+      });
     } catch (error: any) {
       const message = error.response?.data?.detail?.message || 
                      error.response?.data?.detail || 
                      'Registration failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
       throw error;
-    }
-  };
-
-  const logout = async () => {
-    try {
-      if (state.token) {
-        await authAPI.logout();
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Clear local storage and state regardless of API call result
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      dispatch({ type: 'LOGOUT' });
     }
   };
 
@@ -270,34 +304,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       dispatch({ type: 'LOGOUT' });
-    }
-  };
-
-  const refreshTokens = async () => {
-    if (!state.refreshToken) {
-      throw new Error('No refresh token available');
-    }
-
-    try {
-      const response = await authAPI.refreshToken(state.refreshToken);
-      
-      // Update stored tokens
-      localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('refresh_token', response.refresh_token);
-
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: {
-          user: response.user,
-          token: response.access_token,
-          refreshToken: response.refresh_token,
-        },
-      });
-    } catch (error) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      dispatch({ type: 'LOGOUT' });
-      throw error;
     }
   };
 

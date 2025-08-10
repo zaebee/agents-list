@@ -4,7 +4,7 @@ import axios, { AxiosResponse } from 'axios';
 import { LoginCredentials, RegisterData, User, UserFeatures } from '../contexts/AuthContext';
 
 // API base URL - adjust based on environment
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://zae.life:8000';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -53,10 +53,8 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, redirect to login
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        // Refresh failed, let the calling function handle the logout
+        // The AuthContext will handle clearing storage and state
       }
     }
 

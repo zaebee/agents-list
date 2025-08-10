@@ -126,29 +126,19 @@ async def register_user(
         )
     
     try:
-        # Generate verification token
-        verification_token = await generate_verification_token()
-        
         # Create user
         user = User(
             username=user_data.username,
             email=user_data.email,
             hashed_password=get_password_hash(user_data.password),
             full_name=user_data.full_name,
-            email_verification_token=verification_token,
-            account_status=AccountStatus.PENDING_VERIFICATION
+            is_verified=True,  # Email verification disabled
+            account_status=AccountStatus.ACTIVE
         )
         
         db.add(user)
         db.commit()
         db.refresh(user)
-        
-        # Send verification email
-        background_tasks.add_task(
-            send_verification_email,
-            user_data.email,
-            verification_token
-        )
         
         # Log successful registration
         await log_auth_event(
@@ -157,9 +147,9 @@ async def register_user(
         )
         
         return {
-            "message": "User registered successfully. Please check your email for verification.",
+            "message": "User registered successfully.",
             "user_id": user.id,
-            "requires_verification": True
+            "requires_verification": False
         }
     
     except Exception as e:
@@ -273,16 +263,6 @@ async def login_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Account is suspended"
-        )
-    
-    if user.account_status == AccountStatus.PENDING_VERIFICATION:
-        await log_auth_event(
-            db, user.id, "LOGIN_ATTEMPT", "FAILURE", request,
-            f"Unverified account login attempt: {user.username}", risk_score=3
-        )
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Please verify your email address before logging in"
         )
     
     try:

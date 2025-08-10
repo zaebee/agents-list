@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 
 interface LoginFormProps {
@@ -12,6 +12,7 @@ interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, redirectTo = '/dashboard' }) => {
   const { login, isLoading, error, clearError } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username_or_email: '',
     password: '',
@@ -68,7 +69,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, redirectTo = '/
       onSuccess?.();
       
       // Redirect to dashboard or specified route
-      window.location.href = redirectTo;
+      navigate(redirectTo);
     } catch (error) {
       // Error is handled by the auth context
       console.error('Login failed:', error);

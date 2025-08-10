@@ -1,6 +1,6 @@
 // API service for communicating with the FastAPI backend
 
-import axios, { AxiosResponse } from 'axios';
+import api from './authAPI';
 import {
   Task,
   TaskCreate,
@@ -12,25 +12,6 @@ import {
   ApiResponse,
   PMAnalysis
 } from '../types';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 30000, // 30 second timeout
-});
-
-// Response interceptor for error handling
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error.response?.data || error.message);
-    return Promise.reject(error);
-  }
-);
 
 export const apiService = {
   // Health check

@@ -1,13 +1,12 @@
-import axios from 'axios';
+import api from './authAPI';
+import { AnalyticsData } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
-export const fetchAnalytics = async () => {
+export const fetchAnalytics = async (): Promise<AnalyticsData> => {
   try {
     const [taskCompletion, agentPerformance, executiveDashboard] = await Promise.all([
-      axios.get(`${API_BASE_URL}/analytics/task-completion`),
-      axios.get(`${API_BASE_URL}/analytics/agent-performance`),
-      axios.get(`${API_BASE_URL}/analytics/executive-dashboard`)
+      api.get('/analytics/task-completion'),
+      api.get('/analytics/agent-performance'),
+      api.get('/analytics/executive-dashboard')
     ]);
 
     return {
@@ -23,7 +22,7 @@ export const fetchAnalytics = async () => {
 
 export const exportAnalytics = async (format: 'csv' | 'json' = 'csv') => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/analytics/export`, {
+    const response = await api.get('/analytics/export', {
       params: { format },
       responseType: 'blob'
     });

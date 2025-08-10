@@ -20,13 +20,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredSubscription,
   requireVerification = false,
 }) => {
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const { isAuthenticated, user, isInitializing } = useAuth();
   const { subscriptionTier, hasProOrHigher, hasEnterpriseOnly } = useSubscription();
   const { role, hasManagerAccess, hasAdminAccess } = useRole();
   const location = useLocation();
 
   // Show loading spinner while checking authentication
-  if (isLoading) {
+  if (isInitializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

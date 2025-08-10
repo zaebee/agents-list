@@ -38,8 +38,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
             "Content-Security-Policy": (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline'; "
-                "style-src 'self' 'unsafe-inline'; "
+                "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
                 "img-src 'self' data: https:; "
                 "connect-src 'self' https:; "
                 "font-src 'self'; "
@@ -323,17 +323,20 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
-def get_cors_middleware() -> CORSMiddleware:
-    """Get configured CORS middleware."""
-    return CORSMiddleware(
-        allow_origins=[
+def get_cors_params() -> Dict[str, Any]:
+    """Get CORS middleware parameters."""
+    return {
+        "allow_origins": [
             "http://localhost:3000",
             "http://127.0.0.1:3000",
+            "http://zae.life:8000",
+            "http://zae.life:8888",
+            "http://zae.life:3000",
             "https://crm.zae.life"
         ],
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
-        allow_headers=[
+        "allow_credentials": True,
+        "allow_methods": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+        "allow_headers": [
             "Authorization",
             "Content-Type",
             "X-Requested-With",
@@ -347,13 +350,13 @@ def get_cors_middleware() -> CORSMiddleware:
             "X-Requested-With",
             "If-Modified-Since"
         ],
-        expose_headers=[
+        "expose_headers": [
             "X-Request-ID",
             "X-RateLimit-Limit",
             "X-RateLimit-Remaining",
             "X-RateLimit-Reset"
         ]
-    )
+    }
 
 
 def setup_security_middleware(app):
@@ -371,15 +374,7 @@ def setup_security_middleware(app):
         app.add_middleware(IPWhitelistMiddleware, admin_whitelist=admin_whitelist)
     
     # CORS middleware (should be last)
-    cors_middleware = get_cors_middleware()
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=cors_middleware.allow_origins,
-        allow_credentials=cors_middleware.allow_credentials,
-        allow_methods=cors_middleware.allow_methods,
-        allow_headers=cors_middleware.allow_headers,
-        expose_headers=cors_middleware.expose_headers
-    )
+    app.add_middleware(CORSMiddleware, **get_cors_params())
 
 
 class SecurityConfig:

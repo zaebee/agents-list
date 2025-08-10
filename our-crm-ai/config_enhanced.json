@@ -13,7 +13,8 @@
     "columns": {
       "To Do": "bc167d0b-f0f7-4f20-8a30-4a8f7176a56c",
       "In Progress": "6ea80145-074f-4c79-8530-a17aa0d018b3",
-      "Done": "4df1d900-11a7-4cca-b0d0-5b3a6b54e1fc"
+      "Done": "4df1d900-11a7-4cca-b0d0-5b3a6b54e1fc",
+      "Archived": "f5c3b48c-860d-4d92-9f00-4d4603aa4fcd"
     },
     "ai_owner_sticker": {
       "id": "6a036406-dbf0-433a-87af-03a1381f7802",
@@ -38,16 +39,16 @@
   },
   "agents": {
     "enabled_agents": [
-      "python-pro", 
-      "javascript-pro", 
-      "frontend-developer", 
+      "python-pro",
+      "javascript-pro",
+      "frontend-developer",
       "backend-architect",
       "devops-troubleshooter",
       "security-auditor",
       "data-scientist",
       "ai-engineer",
       "api-documenter",
-      "deployment-engineer", 
+      "deployment-engineer",
       "business-analyst",
       "general-purpose"
     ],
@@ -55,110 +56,296 @@
       "python-pro": {
         "name": "python-pro",
         "description": "Python development expert specializing in APIs, frameworks, and backend systems",
-        "keywords": ["python", "api", "backend", "django", "flask", "fastapi", "async", "database"],
+        "keywords": [
+          "python",
+          "api",
+          "backend",
+          "django",
+          "flask",
+          "fastapi",
+          "async",
+          "database"
+        ],
         "max_concurrent_tasks": 5,
         "average_response_time_hours": 4.0,
-        "specializations": ["backend", "api", "database", "testing"],
-        "tools": ["python", "pytest", "sqlalchemy", "redis"]
+        "specializations": [
+          "backend",
+          "api",
+          "database",
+          "testing"
+        ],
+        "tools": [
+          "python",
+          "pytest",
+          "sqlalchemy",
+          "redis"
+        ]
       },
       "javascript-pro": {
         "name": "javascript-pro",
         "description": "JavaScript and Node.js expert for modern web development",
-        "keywords": ["javascript", "nodejs", "typescript", "react", "vue", "angular", "npm"],
+        "keywords": [
+          "javascript",
+          "nodejs",
+          "typescript",
+          "react",
+          "vue",
+          "angular",
+          "npm"
+        ],
         "max_concurrent_tasks": 4,
         "average_response_time_hours": 3.5,
-        "specializations": ["frontend", "nodejs", "typescript"],
-        "tools": ["node", "npm", "webpack", "babel"]
+        "specializations": [
+          "frontend",
+          "nodejs",
+          "typescript"
+        ],
+        "tools": [
+          "node",
+          "npm",
+          "webpack",
+          "babel"
+        ]
       },
       "frontend-developer": {
-        "name": "frontend-developer", 
+        "name": "frontend-developer",
         "description": "Frontend UI/UX specialist for responsive web applications",
-        "keywords": ["react", "vue", "angular", "html", "css", "javascript", "ui", "ux"],
+        "keywords": [
+          "react",
+          "vue",
+          "angular",
+          "html",
+          "css",
+          "javascript",
+          "ui",
+          "ux"
+        ],
         "max_concurrent_tasks": 3,
         "average_response_time_hours": 5.0,
-        "specializations": ["ui", "ux", "responsive", "accessibility"],
-        "tools": ["react", "css", "sass", "figma"]
+        "specializations": [
+          "ui",
+          "ux",
+          "responsive",
+          "accessibility"
+        ],
+        "tools": [
+          "react",
+          "css",
+          "sass",
+          "figma"
+        ]
       },
       "backend-architect": {
         "name": "backend-architect",
         "description": "Backend architecture and system design specialist",
-        "keywords": ["architecture", "system design", "microservices", "database", "api"],
+        "keywords": [
+          "architecture",
+          "system design",
+          "microservices",
+          "database",
+          "api"
+        ],
         "max_concurrent_tasks": 3,
         "average_response_time_hours": 8.0,
-        "specializations": ["architecture", "scalability", "performance"],
-        "tools": ["docker", "kubernetes", "postgres", "redis"]
+        "specializations": [
+          "architecture",
+          "scalability",
+          "performance"
+        ],
+        "tools": [
+          "docker",
+          "kubernetes",
+          "postgres",
+          "redis"
+        ]
       },
       "devops-troubleshooter": {
         "name": "devops-troubleshooter",
         "description": "DevOps and infrastructure specialist for deployment and operations",
-        "keywords": ["devops", "docker", "kubernetes", "aws", "deployment", "monitoring"],
+        "keywords": [
+          "devops",
+          "docker",
+          "kubernetes",
+          "aws",
+          "deployment",
+          "monitoring"
+        ],
         "max_concurrent_tasks": 4,
         "average_response_time_hours": 3.0,
-        "specializations": ["deployment", "monitoring", "infrastructure"],
-        "tools": ["docker", "kubernetes", "terraform", "ansible"]
+        "specializations": [
+          "deployment",
+          "monitoring",
+          "infrastructure"
+        ],
+        "tools": [
+          "docker",
+          "kubernetes",
+          "terraform",
+          "ansible"
+        ]
       },
       "security-auditor": {
         "name": "security-auditor",
         "description": "Security specialist for vulnerability assessment and secure coding",
-        "keywords": ["security", "vulnerability", "audit", "encryption", "auth"],
+        "keywords": [
+          "security",
+          "vulnerability",
+          "audit",
+          "encryption",
+          "auth"
+        ],
         "max_concurrent_tasks": 2,
         "average_response_time_hours": 6.0,
-        "specializations": ["security", "compliance", "penetration-testing"],
-        "tools": ["nmap", "burp", "owasp", "vault"]
+        "specializations": [
+          "security",
+          "compliance",
+          "penetration-testing"
+        ],
+        "tools": [
+          "nmap",
+          "burp",
+          "owasp",
+          "vault"
+        ]
       },
       "data-scientist": {
         "name": "data-scientist",
         "description": "Data analysis and machine learning specialist",
-        "keywords": ["data", "analysis", "machine learning", "python", "pandas", "ml"],
+        "keywords": [
+          "data",
+          "analysis",
+          "machine learning",
+          "python",
+          "pandas",
+          "ml"
+        ],
         "max_concurrent_tasks": 3,
         "average_response_time_hours": 6.0,
-        "specializations": ["data-analysis", "machine-learning", "statistics"],
-        "tools": ["python", "jupyter", "pandas", "tensorflow"]
+        "specializations": [
+          "data-analysis",
+          "machine-learning",
+          "statistics"
+        ],
+        "tools": [
+          "python",
+          "jupyter",
+          "pandas",
+          "tensorflow"
+        ]
       },
       "ai-engineer": {
         "name": "ai-engineer",
-        "description": "AI/ML systems integration and LLM specialist", 
-        "keywords": ["ai", "llm", "gpt", "chatbot", "nlp", "machine learning"],
+        "description": "AI/ML systems integration and LLM specialist",
+        "keywords": [
+          "ai",
+          "llm",
+          "gpt",
+          "chatbot",
+          "nlp",
+          "machine learning"
+        ],
         "max_concurrent_tasks": 2,
         "average_response_time_hours": 8.0,
-        "specializations": ["ai", "nlp", "llm-integration"],
-        "tools": ["openai", "langchain", "transformers", "pytorch"]
+        "specializations": [
+          "ai",
+          "nlp",
+          "llm-integration"
+        ],
+        "tools": [
+          "openai",
+          "langchain",
+          "transformers",
+          "pytorch"
+        ]
       },
       "api-documenter": {
         "name": "api-documenter",
         "description": "API documentation and technical writing specialist",
-        "keywords": ["documentation", "api", "openapi", "swagger", "technical writing"],
+        "keywords": [
+          "documentation",
+          "api",
+          "openapi",
+          "swagger",
+          "technical writing"
+        ],
         "max_concurrent_tasks": 4,
         "average_response_time_hours": 2.0,
-        "specializations": ["documentation", "api-design", "technical-writing"],
-        "tools": ["swagger", "postman", "markdown", "gitbook"]
+        "specializations": [
+          "documentation",
+          "api-design",
+          "technical-writing"
+        ],
+        "tools": [
+          "swagger",
+          "postman",
+          "markdown",
+          "gitbook"
+        ]
       },
       "deployment-engineer": {
-        "name": "deployment-engineer", 
+        "name": "deployment-engineer",
         "description": "Deployment automation and CI/CD specialist",
-        "keywords": ["deployment", "ci/cd", "github actions", "jenkins", "automation"],
+        "keywords": [
+          "deployment",
+          "ci/cd",
+          "github actions",
+          "jenkins",
+          "automation"
+        ],
         "max_concurrent_tasks": 3,
         "average_response_time_hours": 4.0,
-        "specializations": ["ci-cd", "automation", "deployment"],
-        "tools": ["github-actions", "jenkins", "docker", "helm"]
+        "specializations": [
+          "ci-cd",
+          "automation",
+          "deployment"
+        ],
+        "tools": [
+          "github-actions",
+          "jenkins",
+          "docker",
+          "helm"
+        ]
       },
       "business-analyst": {
         "name": "business-analyst",
         "description": "Business requirements and project analysis specialist",
-        "keywords": ["business", "requirements", "analysis", "project management"],
+        "keywords": [
+          "business",
+          "requirements",
+          "analysis",
+          "project management"
+        ],
         "max_concurrent_tasks": 5,
         "average_response_time_hours": 2.0,
-        "specializations": ["requirements", "analysis", "project-management"],
-        "tools": ["jira", "confluence", "excel", "figma"]
+        "specializations": [
+          "requirements",
+          "analysis",
+          "project-management"
+        ],
+        "tools": [
+          "jira",
+          "confluence",
+          "excel",
+          "figma"
+        ]
       },
       "general-purpose": {
         "name": "general-purpose",
         "description": "General-purpose AI agent for various tasks",
-        "keywords": ["general", "misc", "support", "help"],
+        "keywords": [
+          "general",
+          "misc",
+          "support",
+          "help"
+        ],
         "max_concurrent_tasks": 10,
         "average_response_time_hours": 1.0,
-        "specializations": ["general"],
-        "tools": ["various"]
+        "specializations": [
+          "general"
+        ],
+        "tools": [
+          "various"
+        ]
       }
     },
     "default_agent": "general-purpose",
@@ -209,7 +396,7 @@
   "debug": false,
   "features": {
     "semantic_matching": true,
-    "learning_system": true, 
+    "learning_system": true,
     "workflow_persistence": true,
     "agent_routing": true,
     "pm_analysis": true,
