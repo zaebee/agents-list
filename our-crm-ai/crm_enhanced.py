@@ -409,6 +409,11 @@ def move_task(args, config):
     else:
         handle_api_error(response)
 
+def complete_task(args, config):
+    """Marks a task as complete by moving it to the 'Done' column."""
+    args.column = "Done"
+    move_task(args, config)
+
 def list_agents(args, config):
     """Lists all available AI agents."""
     owner_sticker_config = config.get("ai_owner_sticker", {})
@@ -504,6 +509,11 @@ Examples:
     move_parser.add_argument("task_id", help="The ID of the task to move.")
     move_parser.add_argument("--column", required=True, help="The name of the target column.")
     move_parser.set_defaults(func=move_task)
+
+    # Complete command
+    complete_parser = subparsers.add_parser("complete", help="Mark a task as complete.")
+    complete_parser.add_argument("task_id", help="The ID of the task to complete.")
+    complete_parser.set_defaults(func=complete_task)
     
     # Agents command
     agents_parser = subparsers.add_parser("agents", help="List all available AI agents.")

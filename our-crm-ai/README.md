@@ -111,6 +111,7 @@ python3 crm_enhanced.py update <task_id> --owner <new_agent_name>
 
 - **`comment <task_id> --message "<...>`**: Add a comment to a task.
 - **`move <task_id> --column "<...>`**: Move a task to a different column (e.g., "In Progress", "Done").
+- **`complete <task_id>`**: Mark a task as complete by moving it to the "Done" column.
 - **`agents`**: List all available AI agents in the system.
 - **`suggest "<description>"`**: Get AI agent suggestions for a task without creating it.
 
