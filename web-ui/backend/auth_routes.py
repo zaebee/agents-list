@@ -31,7 +31,7 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 # Pydantic models for requests/responses
 class UserCreate(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50, regex="^[a-zA-Z0-9_-]+$")
+    username: str = Field(..., min_length=3, max_length=50, pattern="^[a-zA-Z0-9_-]+$")
     email: EmailStr
     password: str = Field(..., min_length=8)
     full_name: Optional[str] = Field(None, max_length=100)
