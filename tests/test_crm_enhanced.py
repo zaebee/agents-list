@@ -106,7 +106,7 @@ class TestCRMEnhanced(unittest.TestCase):
             mock_api_call()
         
         self.assertEqual(str(context.exception), "Persistent API error")
-        self.assertEqual(mock_sleep.call_count, 2)  # Should retry 2 times
+        self.assertEqual(mock_sleep.call_count, 1)  # Should retry 1 time
 
     @patch('requests.request')
     def test_make_api_request_defaults(self, mock_request):

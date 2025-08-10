@@ -145,10 +145,7 @@ def calculate_agent_scores(task_description: str) -> List[Tuple[str, float, List
                 score += keyword_weight
         
         if matched_keywords:
-            # Normalize score by total possible score for this agent
-            max_possible = sum(len(kw.split()) for kw in keywords)
-            normalized_score = score / max_possible
-            scores.append((agent, normalized_score, matched_keywords))
+            scores.append((agent, score, matched_keywords))
     
     # Sort by score descending
     scores.sort(key=lambda x: x[1], reverse=True)
@@ -163,7 +160,7 @@ def suggest_agents(task_description: str, max_suggestions: int = 5) -> List[Dict
         if score > 0:  # Only include agents with positive scores
             suggestions.append({
                 'agent': agent,
-                'confidence': min(score * 100, 100),  # Convert to percentage, cap at 100%
+                'confidence': min(score * 10, 100),  # Convert to percentage, cap at 100%
                 'matched_keywords': keywords,
                 'reasoning': f"Matched keywords: {', '.join(keywords)}"
             })

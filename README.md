@@ -254,20 +254,40 @@ python3 crm_enhanced.py create --title "Optimize API performance" --description 
 - **Workflow Templates**: Pre-built patterns for common project types
 - **Dependency Management**: Sequential task coordination with blocking
 
-### 🏗️ **System Architecture**
+### 🏗️ System Architecture
 
+```mermaid
+graph TD
+    subgraph User Interfaces
+        A[Web UI <br>(React/TypeScript)]
+        B[CLI <br>(crm_enhanced.py)]
+    end
+
+    subgraph Core Logic
+        C[FastAPI Backend]
+        D[PM Agent Gateway]
+        E[Agent Selector]
+    end
+
+    subgraph AI Agents
+        F[59+ Specialized AI Subagents]
+    end
+
+    subgraph Backend
+        G[YouGile API]
+    end
+
+    A -- HTTP Requests --> C
+    B -- Python Calls --> D
+    B -- Python Calls --> E
+    C -- Interacts with --> D
+    C -- Interacts with --> E
+    D -- Orchestrates --> F
+    E -- Selects --> F
+    D -- Updates --> G
+    F -- Use Tools --> G
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Web UI        │    │  PM Agent        │    │  YouGile API    │
-│  (React/TS)     │◄──►│  Gateway         │◄──►│  Integration    │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  FastAPI        │    │  Agent Selector  │    │  59 Specialized │
-│  Backend        │◄──►│  & Intelligence  │◄──►│  AI Subagents   │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-```
+
 
 ### 📊 **Current Implementation Status**
 

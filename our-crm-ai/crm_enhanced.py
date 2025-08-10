@@ -31,7 +31,7 @@ def retry_api_call(max_retries=MAX_RETRIES, delay=RETRY_DELAY):
             for attempt in range(max_retries):
                 try:
                     return func(*args, **kwargs)
-                except requests.exceptions.RequestException as e:
+                except Exception as e:
                     last_exception = e
                     if attempt == max_retries - 1:
                         print(f"❌ API call failed after {max_retries} attempts: {e}")
