@@ -8,11 +8,20 @@ import sys
 import os
 from pathlib import Path
 from typing import List, Dict, Optional
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uvicorn
 import json
+import logging
+
+# Import authentication components
+from database import create_tables, get_db, User, seed_default_data, SessionLocal
+from auth import get_current_user, require_subscription_tier, require_feature_access, check_feature_access
+from auth_routes import router as auth_router
+from user_routes import router as user_router
+from security import setup_security_middleware
+from database import SubscriptionTier
 
 # Add the CRM directory to Python path for imports
 # In Docker container, this will be /app/crm, locally it's ../our-crm-ai
@@ -31,21 +40,26 @@ except ImportError as e:
     print("Please ensure the CRM system is properly set up")
     sys.exit(1)
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 # FastAPI app initialization
 app = FastAPI(
     title="AI-CRM Web API",
-    description="RESTful API for the AI-powered YouGile CRM system",
-    version="1.0.0"
+    description="RESTful API for the AI-powered YouGile CRM system with authentication",
+    version="2.0.0"
 )
 
-# CORS middleware for frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://crm.zae.life"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Setup security middleware
+setup_security_middleware(app)
+
+# Include authentication and user management routers
+app.include_router(auth_router)
+app.include_router(user_router)
 
 # Pydantic models for request/response
 class TaskCreate(BaseModel):
@@ -86,11 +100,32 @@ config = None
 
 @app.on_event("startup")
 async def startup_event():
-    """Load configuration on startup."""
+    """Load configuration and initialize database on startup."""
     global config
-    config = load_config()
-    if not config:
-        raise RuntimeError("Failed to load CRM configuration")
+    
+    try:
+        # Initialize database
+        logger.info("Creating database tables...")
+        create_tables()
+        
+        # Seed default data
+        db = SessionLocal()
+        try:
+            seed_default_data(db)
+            logger.info("Database initialized successfully")
+        finally:
+            db.close()
+        
+        # Load CRM configuration
+        config = load_config()
+        if not config:
+            raise RuntimeError("Failed to load CRM configuration")
+        
+        logger.info("Application startup completed successfully")
+    
+    except Exception as e:
+        logger.error(f"Startup failed: {e}")
+        raise
 
 @app.get("/")
 async def root():
@@ -107,7 +142,10 @@ async def health_check():
     return {"status": "healthy", "config_loaded": config is not None}
 
 @app.get("/tasks", response_model=List[TaskResponse])
-async def list_tasks():
+async def list_tasks(
+    current_user: User = Depends(require_feature_access("task_creation")),
+    db = Depends(get_db)
+):
     """List all tasks grouped by status."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
@@ -148,10 +186,36 @@ async def list_tasks():
         raise HTTPException(status_code=500, detail=f"Failed to fetch tasks: {str(e)}")
 
 @app.post("/tasks", response_model=ApiResponse)
-async def create_task(task_data: TaskCreate):
+async def create_task(
+    task_data: TaskCreate,
+    current_user: User = Depends(require_feature_access("task_creation")),
+    db = Depends(get_db)
+):
     """Create a new task with AI agent suggestions."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
+    
+    # Check monthly task limits for free tier
+    if current_user.subscription_tier == SubscriptionTier.FREE:
+        # Reset monthly counter if needed
+        from datetime import datetime, timezone
+        current_date = datetime.now(timezone.utc)
+        if (current_user.last_task_reset.month != current_date.month or 
+            current_user.last_task_reset.year != current_date.year):
+            current_user.monthly_tasks_created = 0
+            current_user.last_task_reset = current_date
+            db.commit()
+        
+        # Check if user has reached their monthly limit
+        has_access = await check_feature_access(
+            "task_creation", current_user, db, current_user.monthly_tasks_created + 1
+        )
+        
+        if not has_access:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Monthly task limit reached. Upgrade to Pro for unlimited tasks."
+            )
     
     try:
         todo_column_id = config["columns"].get("To Do")
@@ -194,6 +258,11 @@ async def create_task(task_data: TaskCreate):
 
         if response.status_code == 201:
             task_id = response.json().get("id")
+            
+            # Update user's monthly task counter
+            current_user.monthly_tasks_created += 1
+            db.commit()
+            
             return ApiResponse(
                 success=True,
                 message=f"Task created successfully with ID: {task_id}",
@@ -208,7 +277,11 @@ async def create_task(task_data: TaskCreate):
         raise HTTPException(status_code=500, detail=f"Error creating task: {str(e)}")
 
 @app.put("/tasks/{task_id}/move", response_model=ApiResponse)
-async def move_task(task_id: str, move_data: TaskMove):
+async def move_task(
+    task_id: str, 
+    move_data: TaskMove,
+    current_user: User = Depends(require_feature_access("task_creation"))
+):
     """Move a task to a different column."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
@@ -242,7 +315,11 @@ async def move_task(task_id: str, move_data: TaskMove):
         raise HTTPException(status_code=500, detail=f"Error moving task: {str(e)}")
 
 @app.put("/tasks/{task_id}", response_model=ApiResponse)
-async def update_task(task_id: str, update_data: TaskUpdate):
+async def update_task(
+    task_id: str, 
+    update_data: TaskUpdate,
+    current_user: User = Depends(require_feature_access("task_creation"))
+):
     """Update a task (currently supports owner assignment)."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
@@ -285,7 +362,10 @@ async def update_task(task_id: str, update_data: TaskUpdate):
         raise HTTPException(status_code=500, detail=f"Error updating task: {str(e)}")
 
 @app.get("/tasks/{task_id}")
-async def get_task_details(task_id: str):
+async def get_task_details(
+    task_id: str,
+    current_user: User = Depends(require_feature_access("task_creation"))
+):
     """Get detailed information about a specific task."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
@@ -329,7 +409,11 @@ async def get_task_details(task_id: str):
         raise HTTPException(status_code=500, detail=f"Error fetching task details: {str(e)}")
 
 @app.post("/tasks/{task_id}/comments", response_model=ApiResponse)
-async def add_comment(task_id: str, comment_data: TaskComment):
+async def add_comment(
+    task_id: str, 
+    comment_data: TaskComment,
+    current_user: User = Depends(require_feature_access("task_creation"))
+):
     """Add a comment to a task."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
@@ -355,8 +439,11 @@ async def add_comment(task_id: str, comment_data: TaskComment):
         raise HTTPException(status_code=500, detail=f"Error adding comment: {str(e)}")
 
 @app.get("/agents", response_model=List[str])
-async def list_agents():
-    """Get all available AI agents."""
+async def list_agents(
+    current_user: User = Depends(require_feature_access("ai_agent_access")),
+    db = Depends(get_db)
+):
+    """Get all available AI agents based on subscription tier."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
     
@@ -365,7 +452,10 @@ async def list_agents():
     return sorted(agents)
 
 @app.post("/agents/suggest", response_model=List[AgentSuggestion])
-async def suggest_agents_for_task(task_data: TaskCreate):
+async def suggest_agents_for_task(
+    task_data: TaskCreate,
+    current_user: User = Depends(require_feature_access("ai_agent_access"))
+):
     """Get AI agent suggestions for a task."""
     try:
         combined_text = f"{task_data.title} {task_data.description}"
@@ -384,8 +474,11 @@ async def suggest_agents_for_task(task_data: TaskCreate):
         raise HTTPException(status_code=500, detail=f"Error getting suggestions: {str(e)}")
 
 @app.post("/pm/analyze")
-async def pm_analyze_task(task_data: TaskCreate):
-    """Use PM Agent Gateway to analyze a task comprehensively."""
+async def pm_analyze_task(
+    task_data: TaskCreate,
+    current_user: User = Depends(require_subscription_tier(SubscriptionTier.PRO))
+):
+    """Use PM Agent Gateway to analyze a task comprehensively (Pro+ only)."""
     try:
         # Try multiple config file locations
         config_files = [
@@ -410,8 +503,10 @@ async def pm_analyze_task(task_data: TaskCreate):
         raise HTTPException(status_code=500, detail=f"PM analysis failed: {str(e)}")
 
 @app.get("/analytics/task-completion")
-async def get_task_completion_analytics():
-    """Get task completion analytics."""
+async def get_task_completion_analytics(
+    current_user: User = Depends(require_feature_access("analytics_dashboard"))
+):
+    """Get task completion analytics (Pro+ only)."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
     
@@ -442,8 +537,10 @@ async def get_task_completion_analytics():
         raise HTTPException(status_code=500, detail=f"Failed to fetch task completion analytics: {str(e)}")
 
 @app.get("/analytics/agent-performance")
-async def get_agent_performance_analytics():
-    """Get agent performance analytics."""
+async def get_agent_performance_analytics(
+    current_user: User = Depends(require_feature_access("analytics_dashboard"))
+):
+    """Get agent performance analytics (Pro+ only)."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
     
@@ -493,8 +590,10 @@ async def get_agent_performance_analytics():
         raise HTTPException(status_code=500, detail=f"Failed to fetch agent performance analytics: {str(e)}")
 
 @app.get("/analytics/executive-dashboard") 
-async def get_executive_dashboard_analytics():
-    """Get executive dashboard analytics."""
+async def get_executive_dashboard_analytics(
+    current_user: User = Depends(require_subscription_tier(SubscriptionTier.ENTERPRISE))
+):
+    """Get executive dashboard analytics (Enterprise only)."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
     
@@ -535,8 +634,11 @@ async def get_executive_dashboard_analytics():
         raise HTTPException(status_code=500, detail=f"Failed to fetch executive dashboard analytics: {str(e)}")
 
 @app.get("/analytics/export")
-async def export_analytics(format: str = "csv"):
-    """Export analytics data."""
+async def export_analytics(
+    format: str = "csv",
+    current_user: User = Depends(require_feature_access("analytics_dashboard"))
+):
+    """Export analytics data (Pro+ only)."""
     if not config:
         raise HTTPException(status_code=500, detail="Configuration not loaded")
     

@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { useDrop } from 'react-dnd';
-import { Plus } from 'lucide-react';
+import { Plus, Activity } from 'lucide-react';
 import TaskCard from './TaskCard';
-import { Task, ColumnName } from '../types';
+import { Task, ColumnName, TaskAnimationState } from '../types';
 
 interface TaskColumnProps {
   title: string;
@@ -13,6 +13,8 @@ interface TaskColumnProps {
   onTaskMove: (taskId: string, targetColumn: ColumnName) => void;
   onTaskClick: (taskId: string) => void;
   onAddTask?: () => void;
+  getTaskAnimation?: (taskId: string) => TaskAnimationState | undefined;
+  isRealTimeActive?: boolean;
 }
 
 const TaskColumn: React.FC<TaskColumnProps> = ({
@@ -21,7 +23,9 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
   tasks,
   onTaskMove,
   onTaskClick,
-  onAddTask
+  onAddTask,
+  getTaskAnimation,
+  isRealTimeActive = false
 }) => {
   const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: 'task',
@@ -78,6 +82,13 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
           <span className="text-sm font-medium bg-white bg-opacity-50 px-2 py-1 rounded-full">
             {tasks.length}
           </span>
+          {/* Real-time activity indicator */}
+          {isRealTimeActive && tasks.some(task => getTaskAnimation?.(task.id)) && (
+            <div className="flex items-center space-x-1 text-xs">
+              <Activity className="animate-pulse" size={14} />
+              <span className="opacity-75">Live</span>
+            </div>
+          )}
         </div>
         
         {/* Add Task Button (only for To Do column) */}
@@ -107,6 +118,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
                 key={task.id}
                 task={task}
                 onTaskClick={onTaskClick}
+                animationState={getTaskAnimation?.(task.id)}
               />
             ))
           )}

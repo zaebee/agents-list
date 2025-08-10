@@ -2,16 +2,17 @@
 
 import React from 'react';
 import { useDrag } from 'react-dnd';
-import { User, Clock, MessageSquare } from 'lucide-react';
-import { Task } from '../types';
+import { User, Clock, Sparkles, ArrowRight } from 'lucide-react';
+import { Task, TaskAnimationState } from '../types';
 
 interface TaskCardProps {
   task: Task;
   onTaskClick: (taskId: string) => void;
   onOwnerChange?: (taskId: string, owner: string) => void;
+  animationState?: TaskAnimationState;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange, animationState }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'task',
     item: { id: task.id, currentColumn: task.column_name },
@@ -41,13 +42,38 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange })
     return agent.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  // Get animation classes based on state
+  const getAnimationClasses = () => {
+    if (!animationState) return '';
+    
+    const classes = [];
+    
+    if (animationState.isNew) {
+      classes.push('animate-pulse border-green-300 bg-green-50');
+    }
+    
+    if (animationState.isMoving) {
+      classes.push('animate-bounce border-blue-300 bg-blue-50');
+    }
+    
+    if (animationState.isUpdating) {
+      classes.push('animate-pulse border-yellow-300 bg-yellow-50');
+    }
+    
+    return classes.join(' ');
+  };
+
+  const isAnimating = animationState && (animationState.isNew || animationState.isMoving || animationState.isUpdating);
+
   return (
     <div
       ref={drag}
       className={`
         bg-white rounded-lg border border-gray-200 p-4 shadow-sm cursor-pointer
-        transition-all duration-200 hover:shadow-md hover:border-gray-300
-        ${isDragging ? 'opacity-50 rotate-2' : ''}
+        transition-all duration-300 hover:shadow-md hover:border-gray-300
+        ${isDragging ? 'opacity-50 rotate-2 scale-105' : ''}
+        ${getAnimationClasses()}
+        ${isAnimating ? 'relative overflow-hidden' : ''}
       `}
       onClick={() => onTaskClick(task.id)}
     >
@@ -86,11 +112,40 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange })
         </div>
       </div>
       
+      {/* Animation Indicators */}
+      {isAnimating && !isDragging && (
+        <div className="absolute top-2 right-2 z-10">
+          {animationState?.isNew && (
+            <div className="flex items-center space-x-1 px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+              <Sparkles size={12} />
+              <span>New</span>
+            </div>
+          )}
+          {animationState?.isMoving && (
+            <div className="flex items-center space-x-1 px-2 py-1 bg-blue-500 text-white text-xs rounded-full">
+              <ArrowRight size={12} />
+              <span>Moving</span>
+            </div>
+          )}
+          {animationState?.isUpdating && (
+            <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-500 text-white text-xs rounded-full">
+              <Clock size={12} />
+              <span>Updating</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Drag indicator */}
       {isDragging && (
         <div className="absolute inset-0 bg-blue-50 border-2 border-blue-300 border-dashed rounded-lg flex items-center justify-center">
           <div className="text-blue-500 font-medium">Moving task...</div>
         </div>
+      )}
+
+      {/* Shimmer effect for animations */}
+      {isAnimating && (
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
       )}
     </div>
   );

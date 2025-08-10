@@ -113,3 +113,82 @@ export interface AnalyticsData {
   agentPerformance: AgentPerformanceData;
   executiveDashboard: ExecutiveDashboardData;
 }
+
+// WebSocket and Real-time Types
+export interface WebSocketMessage {
+  type: 'task_updated' | 'task_created' | 'task_moved' | 'task_assigned' | 'task_completed' | 'connection_status';
+  data: any;
+  timestamp: string;
+}
+
+export interface TaskUpdateEvent {
+  taskId: string;
+  task: Task;
+  previousState?: Partial<Task>;
+  updatedBy?: string;
+}
+
+export interface TaskMoveEvent {
+  taskId: string;
+  task: Task;
+  fromColumn: ColumnName;
+  toColumn: ColumnName;
+  movedBy?: string;
+}
+
+export interface TaskAssignedEvent {
+  taskId: string;
+  task: Task;
+  assignedTo: string;
+  assignedBy?: string;
+}
+
+export interface TaskCreatedEvent {
+  task: Task;
+  createdBy?: string;
+}
+
+export interface TaskCompletedEvent {
+  taskId: string;
+  task: Task;
+  completedBy?: string;
+  completedAt: string;
+}
+
+export interface ConnectionStatusEvent {
+  status: 'connected' | 'disconnected' | 'reconnecting' | 'error';
+  message?: string;
+}
+
+export type WebSocketEventType = 
+  | 'task_updated'
+  | 'task_created'
+  | 'task_moved'
+  | 'task_assigned'
+  | 'task_completed'
+  | 'connection_status';
+
+// Notification Types
+export interface NotificationPreferences {
+  enabled: boolean;
+  taskAssigned: boolean;
+  taskCompleted: boolean;
+  taskMoved: boolean;
+  taskCreated: boolean;
+  soundEnabled: boolean;
+}
+
+// Real-time UI State
+export interface ConnectionState {
+  status: 'connected' | 'disconnected' | 'reconnecting' | 'error';
+  message?: string;
+  lastConnected?: Date;
+  reconnectAttempts?: number;
+}
+
+export interface TaskAnimationState {
+  isMoving: boolean;
+  isUpdating: boolean;
+  isNew: boolean;
+  lastUpdate?: Date;
+}

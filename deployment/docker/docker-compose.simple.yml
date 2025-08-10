@@ -1,0 +1,98 @@
+# Simplified production deployment for AI-CRM system
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-crm-postgres
+    environment:
+      - POSTGRES_DB=aicrm
+      - POSTGRES_USER=aicrm_user
+      - POSTGRES_PASSWORD=secure_production_password_2025
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - ai-crm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aicrm_user -d aicrm"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: ai-crm-redis
+    command: ["redis-server", "--requirepass", "redis_password_2025"]
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"
+    networks:
+      - ai-crm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_password_2025", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API Service
+  backend:
+    image: ai-crm-backend:prod
+    container_name: ai-crm-backend
+    environment:
+      - ENV=production
+      - DEBUG=false
+      - DATABASE_URL=postgresql://aicrm_user:secure_production_password_2025@postgres:5432/aicrm
+      - REDIS_URL=redis://:redis_password_2025@redis:6379
+      - SECRET_KEY=super-secure-secret-key-for-production-2025-crm-zae-life
+      - ALLOWED_HOSTS=*
+    ports:
+      - "8000:8000"
+    networks:
+      - ai-crm-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Service (simplified)
+  frontend:
+    image: nginx:1.25-alpine
+    container_name: ai-crm-frontend
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ../monitoring/nginx-prod.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - ai-crm-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+  nginx_logs:
+
+networks:
+  ai-crm-network:
+    driver: bridge

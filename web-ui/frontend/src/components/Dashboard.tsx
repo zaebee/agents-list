@@ -1,14 +1,17 @@
 // Main dashboard component with task board layout
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Plus, Bot, RefreshCw, Activity, BarChart3, Kanban } from 'lucide-react';
+import { Plus, Bot, RefreshCw, Activity, BarChart3, Kanban, Bell } from 'lucide-react';
 import TaskColumn from './TaskColumn';
 import CreateTaskModal from './CreateTaskModal';
 import TaskDetailsModal from './TaskDetailsModal';
 import AnalyticsDashboard from './AnalyticsDashboard';
+import ConnectionStatus, { useConnectionStatus } from './ConnectionStatus';
+import NotificationSettings from './NotificationSettings';
 import { useTasks } from '../hooks/useTasks';
+import notificationService from '../services/notifications';
 import { ColumnName } from '../types';
 
 const Dashboard: React.FC = () => {
@@ -18,13 +21,47 @@ const Dashboard: React.FC = () => {
     error,
     fetchTasks,
     createTask,
-    moveTask
+    moveTask,
+    taskAnimations,
+    isTaskAnimating
   } = useTasks();
+
+  const { connectionState, isConnected } = useConnectionStatus();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'board' | 'analytics'>('board');
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+
+  // Check notification permission and show prompt if needed
+  useEffect(() => {
+    const checkNotificationPermission = async () => {
+      if (notificationService.isSupported()) {
+        const permission = Notification.permission;
+        setNotificationPermission(permission);
+        
+        // Show prompt after a short delay if permission is default
+        if (permission === 'default') {
+          setTimeout(() => setShowNotificationPrompt(true), 3000);
+        }
+      }
+    };
+    
+    checkNotificationPermission();
+  }, []);
+
+  const handleRequestNotificationPermission = async () => {
+    const permission = await notificationService.requestPermission();
+    setNotificationPermission(permission);
+    setShowNotificationPrompt(false);
+    
+    if (permission === 'granted') {
+      await notificationService.testNotification();
+    }
+  };
 
   const handleTaskMove = async (taskId: string, targetColumn: ColumnName) => {
     try {
@@ -80,6 +117,8 @@ const Dashboard: React.FC = () => {
                   <Bot className="text-blue-600" size={28} />
                   <h1 className="text-xl font-bold text-gray-900">AI-CRM Dashboard</h1>
                 </div>
+                {/* Connection Status */}
+                <ConnectionStatus className="ml-4" />
               </div>
 
               {/* Stats */}
@@ -124,6 +163,13 @@ const Dashboard: React.FC = () => {
 
               {/* Actions */}
               <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setShowNotificationSettings(true)}
+                  className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                  title="Notification settings"
+                >
+                  <Bell size={18} />
+                </button>
                 <button
                   onClick={fetchTasks}
                   disabled={loading}
@@ -179,6 +225,8 @@ const Dashboard: React.FC = () => {
                   onTaskMove={handleTaskMove}
                   onTaskClick={handleTaskClick}
                   onAddTask={() => setIsCreateModalOpen(true)}
+                  getTaskAnimation={(taskId) => taskAnimations.get(taskId)}
+                  isRealTimeActive={isConnected}
                 />
                 <TaskColumn
                   title="In Progress"
@@ -186,6 +234,8 @@ const Dashboard: React.FC = () => {
                   tasks={tasksByColumn['In Progress']}
                   onTaskMove={handleTaskMove}
                   onTaskClick={handleTaskClick}
+                  getTaskAnimation={(taskId) => taskAnimations.get(taskId)}
+                  isRealTimeActive={isConnected}
                 />
                 <TaskColumn
                   title="Done"
@@ -193,6 +243,8 @@ const Dashboard: React.FC = () => {
                   tasks={tasksByColumn['Done']}
                   onTaskMove={handleTaskMove}
                   onTaskClick={handleTaskClick}
+                  getTaskAnimation={(taskId) => taskAnimations.get(taskId)}
+                  isRealTimeActive={isConnected}
                 />
               </div>
 
@@ -229,6 +281,48 @@ const Dashboard: React.FC = () => {
           isOpen={isTaskDetailsOpen}
           onClose={handleCloseTaskDetails}
         />
+
+        <NotificationSettings
+          isOpen={showNotificationSettings}
+          onClose={() => setShowNotificationSettings(false)}
+        />
+
+        {/* Notification Permission Prompt */}
+        {showNotificationPrompt && (
+          <div className="fixed bottom-4 right-4 max-w-md bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50">
+            <div className="flex items-start space-x-3">
+              <Bell className="text-blue-500 flex-shrink-0 mt-1" size={20} />
+              <div className="flex-1">
+                <h4 className="font-medium text-gray-900 mb-1">
+                  Enable Notifications
+                </h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Stay updated with real-time task notifications. Get notified when tasks are assigned, completed, or updated.
+                </p>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleRequestNotificationPermission}
+                    className="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Enable
+                  </button>
+                  <button
+                    onClick={() => setShowNotificationPrompt(false)}
+                    className="px-3 py-2 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-100 transition-colors"
+                  >
+                    Not Now
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowNotificationPrompt(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </DndProvider>
   );

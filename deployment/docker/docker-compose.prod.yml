@@ -23,6 +23,9 @@ services:
     networks:
       - ai-crm-network
       - monitoring-network
+    depends_on:
+      - postgres
+      - redis
     restart: unless-stopped
     deploy:
       replicas: 2
@@ -123,25 +126,54 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # CLI service for background processing
-  cli:
-    build:
-      context: ../..
-      dockerfile: deployment/docker/Dockerfile.cli
-      target: production
-    container_name: ai-crm-cli-prod
+  # CLI service for background processing (disabled temporarily)
+  # cli:
+  #   build:
+  #     context: ../..
+  #     dockerfile: deployment/docker/Dockerfile.cli
+  #     target: production
+  #   container_name: ai-crm-cli-prod
+  #   environment:
+  #     - ENV=production
+  #     - YOUGILE_API_KEY=${YOUGILE_API_KEY}
+  #     - YOUGILE_COMPANY_ID=${YOUGILE_COMPANY_ID}
+  #     - DATABASE_URL=${DATABASE_URL}
+  #     - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+  #   volumes:
+  #     - cli_data:/app/data
+  #     - cli_logs:/app/logs
+  #   networks:
+  #     - ai-crm-network
+  #     - monitoring-network
+  #   restart: unless-stopped
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '1.0'
+  #         memory: 1G
+  #       reservations:
+  #         cpus: '0.5'
+  #         memory: 512M
+  #   command: ["python", "pm_agent_gateway.py"]
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+
+  # PostgreSQL Database for production
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-crm-postgres-prod
     environment:
-      - ENV=production
-      - YOUGILE_API_KEY=${YOUGILE_API_KEY}
-      - YOUGILE_COMPANY_ID=${YOUGILE_COMPANY_ID}
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - POSTGRES_DB=${DB_NAME:-aicrm}
+      - POSTGRES_USER=${DB_USER:-aicrm_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - cli_data:/app/data
-      - cli_logs:/app/logs
+      - postgres_data:/var/lib/postgresql/data
+      - ../../web-ui/backend/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
     networks:
       - ai-crm-network
-      - monitoring-network
     restart: unless-stopped
     deploy:
       resources:
@@ -151,7 +183,11 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
-    command: ["python", "pm_agent_gateway.py"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-aicrm_user} -d ${DB_NAME:-aicrm}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     logging:
       driver: "json-file"
       options:
@@ -238,6 +274,7 @@ services:
           memory: 512M
 
 volumes:
+  postgres_data:
   backend_logs:
   frontend_logs:
   nginx_logs:

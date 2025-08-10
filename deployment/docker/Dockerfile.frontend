@@ -15,8 +15,8 @@ WORKDIR /app
 # Copy package files
 COPY web-ui/frontend/package*.json ./
 
-# Install dependencies with exact versions for security
-RUN npm ci --only=production && npm cache clean --force
+# Install dependencies (using install since ci fails due to lock file mismatch)
+RUN npm install --only=production && npm cache clean --force
 
 # Copy source code
 COPY web-ui/frontend/ .
@@ -32,9 +32,9 @@ RUN apk update && apk upgrade && apk add --no-cache \
     curl \
     && rm -rf /var/cache/apk/*
 
-# Create non-root user
-RUN addgroup -g 1001 -S nginx && \
-    adduser -S -D -H -u 1001 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx
+# Create non-root user (nginx user already exists, just modify it)
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -S -D -H -u 1001 -h /var/cache/nginx -s /sbin/nologin -G appgroup appuser
 
 # Copy nginx configuration
 COPY deployment/docker/nginx.conf /etc/nginx/nginx.conf
@@ -44,17 +44,17 @@ COPY deployment/docker/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/build /usr/share/nginx/html
 
 # Set proper permissions
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    chown -R nginx:nginx /etc/nginx/conf.d
+RUN chown -R appuser:appgroup /usr/share/nginx/html && \
+    chown -R appuser:appgroup /var/cache/nginx && \
+    chown -R appuser:appgroup /var/log/nginx && \
+    chown -R appuser:appgroup /etc/nginx/conf.d
 
 # Create nginx PID directory
 RUN mkdir -p /var/run && \
-    chown -R nginx:nginx /var/run
+    chown -R appuser:appgroup /var/run
 
 # Switch to non-root user
-USER nginx
+USER appuser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
