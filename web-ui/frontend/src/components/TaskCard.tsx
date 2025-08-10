@@ -1,9 +1,8 @@
-// Individual task card component with drag and drop functionality
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useDrag } from 'react-dnd';
-import { User, Clock, Sparkles, ArrowRight } from 'lucide-react';
+import { User, Clock, Sparkles, ArrowRight, MoreVertical, Archive } from 'lucide-react';
 import { Task, TaskAnimationState } from '../types';
+import { useTasks } from '../hooks/useTasks';
 
 interface TaskCardProps {
   task: Task;
@@ -13,6 +12,9 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange, animationState }) => {
+  const { archiveTask } = useTasks();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'task',
     item: { id: task.id, currentColumn: task.column_name },
@@ -20,6 +22,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange, a
       isDragging: monitor.isDragging(),
     }),
   }));
+
+  const handleArchive = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    archiveTask(task.id, true);
+    setIsMenuOpen(false);
+  };
 
   const getOwnerColor = (owner?: string) => {
     if (!owner) return 'bg-gray-100 text-gray-500';
@@ -77,21 +85,41 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange, a
       `}
       onClick={() => onTaskClick(task.id)}
     >
-      {/* Task Title */}
-      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-        {task.title}
-      </h3>
+      <div className="flex justify-between items-start">
+        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 pr-4">
+          {task.title}
+        </h3>
+        <div className="relative">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(!isMenuOpen);
+            }}
+            className="p-1 rounded-full hover:bg-gray-100"
+          >
+            <MoreVertical size={16} />
+          </button>
+          {isMenuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+              <button
+                onClick={handleArchive}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+              >
+                <Archive size={14} />
+                <span>Archive</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
       
-      {/* Task Description */}
       {task.description && (
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
           {task.description}
         </p>
       )}
       
-      {/* Task Metadata */}
       <div className="flex items-center justify-between">
-        {/* AI Owner Badge */}
         <div className="flex items-center space-x-2">
           {task.owner ? (
             <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${getOwnerColor(task.owner)}`}>
@@ -106,13 +134,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange, a
           )}
         </div>
         
-        {/* Task ID (shortened) */}
         <div className="text-xs text-gray-400 font-mono">
           #{task.id.slice(-8)}
         </div>
       </div>
       
-      {/* Animation Indicators */}
       {isAnimating && !isDragging && (
         <div className="absolute top-2 right-2 z-10">
           {animationState?.isNew && (
@@ -136,14 +162,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onTaskClick, onOwnerChange, a
         </div>
       )}
 
-      {/* Drag indicator */}
       {isDragging && (
         <div className="absolute inset-0 bg-blue-50 border-2 border-blue-300 border-dashed rounded-lg flex items-center justify-center">
           <div className="text-blue-500 font-medium">Moving task...</div>
         </div>
       )}
 
-      {/* Shimmer effect for animations */}
       {isAnimating && (
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
       )}

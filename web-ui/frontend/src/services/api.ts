@@ -22,7 +22,12 @@ export const apiService = {
 
   // Task operations
   async listTasks(): Promise<Task[]> {
-    const response = await api.get('/tasks');
+    const response = await api.get('/tasks?archived=false');
+    return response.data;
+  },
+
+  async listArchivedTasks(): Promise<Task[]> {
+    const response = await api.get('/tasks?archived=true');
     return response.data;
   },
 

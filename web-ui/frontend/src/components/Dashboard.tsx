@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Plus, Bot, RefreshCw, Activity, BarChart3, Kanban, Bell } from 'lucide-react';
+import { Plus, Bot, RefreshCw, Activity, BarChart3, Kanban, Bell, Archive } from 'lucide-react';
 import TaskColumn from './TaskColumn';
 import CreateTaskModal from './CreateTaskModal';
 import TaskDetailsModal from './TaskDetailsModal';
@@ -13,6 +13,7 @@ import NotificationSettings from './NotificationSettings';
 import { useTasks } from '../hooks/useTasks';
 import notificationService from '../services/notifications';
 import { ColumnName } from '../types';
+import ArchivedTasks from './ArchivedTasks';
 
 const Dashboard: React.FC = () => {
   const {
@@ -31,7 +32,7 @@ const Dashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'board' | 'analytics'>('board');
+  const [activeTab, setActiveTab] = useState<'board' | 'analytics' | 'archived'>('board');
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
@@ -149,6 +150,17 @@ const Dashboard: React.FC = () => {
                   <span>Task Board</span>
                 </button>
                 <button
+                  onClick={() => setActiveTab('archived')}
+                  className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${
+                    activeTab === 'archived'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Archive size={16} />
+                  <span>Archived</span>
+                </button>
+                <button
                   onClick={() => setActiveTab('analytics')}
                   className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${
                     activeTab === 'analytics'
@@ -196,6 +208,8 @@ const Dashboard: React.FC = () => {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {activeTab === 'analytics' ? (
             <AnalyticsDashboard />
+          ) : activeTab === 'archived' ? (
+            <ArchivedTasks />
           ) : loading && tasksByColumn['To Do'].length === 0 ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">

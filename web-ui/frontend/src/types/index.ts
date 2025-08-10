@@ -6,6 +6,7 @@ export interface Task {
   description: string;
   column_name: 'To Do' | 'In Progress' | 'Done';
   owner?: string;
+  archived?: boolean;
 }
 
 export interface TaskCreate {
@@ -17,6 +18,7 @@ export interface TaskCreate {
 
 export interface TaskUpdate {
   owner?: string;
+  archived?: boolean;
 }
 
 export interface TaskMove {
