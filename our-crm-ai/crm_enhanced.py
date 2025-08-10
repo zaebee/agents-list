@@ -276,7 +276,7 @@ def list_tasks(args, config):
             print("-" * 40)
             
             for task in tasks:
-                print(f"  🎫 ID: {task['id'][:8]}...")
+                print(f"  🎫 ID: {task['id']}")
                 print(f"     Title: {task['title']}")
                 
                 owner_sticker_config = config.get("ai_owner_sticker", {})
@@ -415,6 +415,33 @@ def uncomplete_task(args, config):
     """Marks a task as not complete."""
     set_task_completion_status(args, config, False)
 
+def set_task_archived_status(args, config, archived: bool):
+    """Sets the archived status of a task."""
+    task_id = args.task_id
+    if not validate_task_id(task_id):
+        print("❌ Error: Invalid task ID format.")
+        return
+
+    action = "Archiving" if archived else "Un-archiving"
+    print(f"🔄 {action} task: {task_id}...")
+
+    update_data = {"archived": archived}
+    response = make_api_request("PUT", f"{BASE_URL}/tasks/{task_id}", json=update_data)
+
+    if response.status_code == 200:
+        print("✅ Task status updated successfully.")
+    else:
+        handle_api_error(response)
+
+def archive_task(args, config):
+    """Marks a task as archived."""
+    set_task_archived_status(args, config, True)
+
+def unarchive_task(args, config):
+    """Marks a task as not archived."""
+    set_task_archived_status(args, config, False)
+
+
 def list_agents(args, config):
     """Lists all available AI agents."""
     owner_sticker_config = config.get("ai_owner_sticker", {})
@@ -511,6 +538,14 @@ Examples:
     uncomplete_parser = subparsers.add_parser("uncomplete", help="Mark a task as not complete.")
     uncomplete_parser.add_argument("task_id", help="The ID of the task to un-complete.")
     uncomplete_parser.set_defaults(func=uncomplete_task)
+
+    archive_parser = subparsers.add_parser("archive", help="Archive a task by marking it as complete.")
+    archive_parser.add_argument("task_id", help="The ID of the task to archive.")
+    archive_parser.set_defaults(func=archive_task)
+
+    unarchive_parser = subparsers.add_parser("unarchive", help="Unarchive a task.")
+    unarchive_parser.add_argument("task_id", help="The ID of the task to unarchive.")
+    unarchive_parser.set_defaults(func=unarchive_task)
     
     agents_parser = subparsers.add_parser("agents", help="List all available AI agents.")
     agents_parser.set_defaults(func=list_agents)
