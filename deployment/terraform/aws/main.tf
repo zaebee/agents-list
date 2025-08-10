@@ -61,7 +61,7 @@ variable "project_name" {
 variable "domain_name" {
   description = "Domain name for the application"
   type        = string
-  default     = "zae.life"
+  default     = "crm.zae.life"
 }
 
 variable "vpc_cidr" {

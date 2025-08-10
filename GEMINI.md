@@ -47,3 +47,31 @@
 - Update the web UI backend CORS policy.
 - Configure the frontend to use the correct API endpoint.
 - Commit all changes to the repository.
+
+## Deployment Analysis and Strategy
+
+### 1. Deployment Process Analysis
+- **Infrastructure as Code (IaC):** The project uses Terraform to define and manage the entire AWS infrastructure, ensuring consistency and version control.
+- **CI/CD Pipeline:** A GitHub Actions workflow automates security scanning, testing, Docker image building, and deployments to staging and production.
+- **Containerization:** The application is fully containerized with Docker, promoting portability and scalability.
+
+### 2. Production Domain Verification
+- The production domain `zae.life` is correctly configured across all relevant files, including Terraform scripts, backend CORS policies, and frontend environment variables.
+
+### 3. Suggested Production Deployment Strategy
+1.  **Prerequisites:**
+    - AWS account with appropriate permissions.
+    - Configured AWS CLI and Terraform installed.
+    - `zae.life` domain ready to be managed by Route53.
+2.  **Infrastructure Provisioning:**
+    - Use Terraform to provision the AWS infrastructure as defined in `deployment/terraform/aws/main.tf`.
+3.  **CI/CD Configuration:**
+    - Set up the necessary secrets in the GitHub repository for the production environment.
+4.  **Deployment:**
+    - Create a new release on GitHub to trigger the production deployment workflow.
+    - **Blocker:** The Terraform CLI is not installed in the environment, preventing infrastructure provisioning.
+- **Alternative Strategy:** A Docker Compose-based deployment was prepared.
+- **CRITICAL BLOCKER:** The production domain `zae.life` is already in use.
+- **New Strategy:** The deployment will now target the subdomain `crm.zae.life`.
+5.  **Post-Deployment:**
+    - Verify the application is live at `https://crm.zae.life` and monitor its health.
