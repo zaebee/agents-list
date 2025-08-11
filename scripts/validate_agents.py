@@ -60,6 +60,8 @@ EXPECTED_MODEL_ASSIGNMENTS = {
         "legacy-modernizer",
         "payment-integration",
         "mermaid-expert",
+        "documentation-linter",
+        "project-scaffolder",
     ],
     "opus": [
         "ai-engineer",
@@ -75,6 +77,7 @@ EXPECTED_MODEL_ASSIGNMENTS = {
         "risk-manager",
         "docs-architect",
         "tutorial-engineer",
+        "test-generator",
     ],
 }
 
