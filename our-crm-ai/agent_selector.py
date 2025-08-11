@@ -298,6 +298,9 @@ AGENT_KEYWORDS = {
     "minecraft-bukkit-pro": ["minecraft", "bukkit", "spigot", "plugin", "server"],
     "dx-optimizer": ["developer experience", "tooling", "workflow", "setup"],
     "context-manager": ["multi-agent", "coordination", "context", "workflow"],
+    "documentation-linter": ["documentation", "linter", "consistency", "sync", "update"],
+    "test-generator": ["test", "generator", "coverage", "unit", "integration", "e2e"],
+    "project-scaffolder": ["scaffold", "generator", "project", "feature", "new"],
 }
 
 
@@ -416,6 +419,9 @@ class SemanticMatcher:
             "security-auditor": "Focuses on security, vulnerabilities, and compliance",
             "data-scientist": "Analyzes data and builds predictive models",
             "ai-engineer": "Develops AI/ML systems and integrations",
+            "documentation-linter": "Ensures documentation is consistent with the codebase",
+            "test-generator": "Generates new tests for the codebase",
+            "project-scaffolder": "Scaffolds new projects and features",
         }
 
         return contexts.get(agent_name, "Specialized technical expert")
