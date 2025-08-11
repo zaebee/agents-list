@@ -27,9 +27,9 @@ class TaskComplexity(str, Enum):
     EPIC = "epic"
 
 
-
 class TaskMetadata(BaseModel):
     """Metadata for a task."""
+
     priority: str = "medium"
     tags: List[str] = []
     dependencies: List[str] = []
@@ -37,6 +37,7 @@ class TaskMetadata(BaseModel):
 
 class Task(BaseModel):
     """Core Task model."""
+
     id: str
     title: str
     description: str
@@ -50,18 +51,18 @@ class Task(BaseModel):
     updated_at: Optional[datetime] = None
     metadata: TaskMetadata = Field(default_factory=TaskMetadata)
 
-    @validator('title')
+    @validator("title")
     def title_must_not_be_empty(cls, v):
         if not v:
-            raise ValueError('title must not be empty')
+            raise ValueError("title must not be empty")
         if len(v) > 200:
-            raise ValueError('title must not be longer than 200 characters')
+            raise ValueError("title must not be longer than 200 characters")
         return v
-
 
 
 class TaskCreateRequest(BaseModel):
     """Request model for creating a task."""
+
     title: str
     description: str
     priority: str = "medium"
@@ -71,6 +72,7 @@ class TaskCreateRequest(BaseModel):
 
 class TaskUpdateRequest(BaseModel):
     """Request model for updating a task."""
+
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[TaskStatus] = None
@@ -81,6 +83,7 @@ class TaskUpdateRequest(BaseModel):
 
 class Agent(BaseModel):
     """Agent model."""
+
     name: str
     category: str
     keywords: List[str] = []
@@ -97,6 +100,7 @@ class Agent(BaseModel):
 
 class CRMConfiguration(BaseModel):
     """CRM configuration model."""
+
     project_id: str
     board_id: str
     columns: Dict[str, str]
@@ -110,6 +114,7 @@ class CRMConfiguration(BaseModel):
 
 class CRMStats(BaseModel):
     """CRM statistics model."""
+
     total_tasks: int
     tasks_by_status: Dict[TaskStatus, int]
     agent_workload: Dict[str, int]
@@ -117,11 +122,13 @@ class CRMStats(BaseModel):
 
 class CommandRequest(BaseModel):
     """Request model for executing a command."""
+
     command: str
 
 
 class CommandResponse(BaseModel):
     """Response model for executing a command."""
+
     response: str
 
 
