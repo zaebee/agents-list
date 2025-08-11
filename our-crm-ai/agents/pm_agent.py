@@ -93,9 +93,7 @@ def execute_action(intent, params):
             rag_script_path = os.path.join(
                 os.path.dirname(__file__), "../rag/rag_system.py"
             )
-            index_path = os.path.join(
-                os.path.dirname(__file__), "../rag/index.faiss"
-            )
+            index_path = os.path.join(os.path.dirname(__file__), "../rag/index.faiss")
 
             # Check if the index exists, if not, build it.
             if not os.path.exists(index_path):
