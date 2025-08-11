@@ -172,3 +172,6 @@ class RoutingContext(BaseModel):
     task_priority: TaskPriority
     task_complexity: TaskComplexity
     estimated_hours: float
+    previous_agent: Optional[str] = None
+    user_preferences: Optional[Dict[str, Any]] = None
+    deadline: Optional[datetime] = None
