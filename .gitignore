@@ -36,6 +36,7 @@ our-crm-ai/config_*.json
 
 # Build artifacts
 web-ui/frontend/build/
+our-ai-crm/frontend/build/
 
 
 # Temporary attachment downloads
