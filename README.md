@@ -41,6 +41,12 @@ version: "2.0.0"
 
 This repository contains a **production-ready AI-CRM system** featuring 59 specialized AI subagents designed to transform enterprise workflow management. The system combines intelligent task orchestration, multi-agent coordination, and a comprehensive business strategy to deliver scalable AI-powered project management.
 
+### 🚧 Project Status
+
+**This project is currently in a transitional phase.** The documentation reflects a future vision for the project, while the codebase is in an earlier stage of development. The project has recently undergone a major architectural change, moving from a YouGile-based backend to a PostgreSQL-based backend. This change has not yet been fully reflected in the documentation or the test suite.
+
+**The `README.md` and other documentation files are aspirational and should be treated as a product roadmap.** They describe a feature-rich and mature system that is not yet fully implemented.
+
 ### 🎉 Phase 2A Complete - Production Ready!
 
 The AI-CRM system has reached full production readiness with:
@@ -77,6 +83,17 @@ The AI-CRM system has reached full production readiness with:
 - **Revenue Projections** - $750K Y1 → $15M Y3 growth trajectory
 - **Comprehensive Analytics** - Task performance, agent utilization, business metrics
 - **Enterprise Ready** - SSO, custom integrations, dedicated support
+
+---
+
+##  discrepancies
+
+**The following discrepancies have been identified between the documentation and the codebase:**
+
+*   **Backend:** The documentation is heavily focused on YouGile as the backend, but the codebase has moved to a PostgreSQL backend.
+*   **Web UI:** The documentation describes a full-stack web interface with a React frontend, but there is no frontend code in the `web-ui` directory. The `start-dev.sh` script for starting the web UI is also missing.
+*   **Testing:** The documentation claims high test coverage, but the `test_ai_integration.py` script is failing, and the `tests/run_all_tests.py` script only covers a fraction of the application's functionality.
+*   **Features:** The documentation describes a number of advanced features that are not implemented in the codebase, such as a sophisticated PM Gateway, multi-agent workflows, and an advanced analytics dashboard.
 
 ---
 

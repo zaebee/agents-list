@@ -77,3 +77,21 @@
     - Verify the application is live at `https://crm.zae.life` and monitor its health.
 
 All configurations are now aligned with the codebase and documentation, following best practices.
+
+## New Agent Implementation Plan
+
+### 1. Objective
+- Implement three new agents to address key project challenges:
+    - `documentation-linter`: To ensure documentation stays in sync with the codebase.
+    - `test-generator`: To improve test coverage and stability.
+    - `project-scaffolder`: To streamline the creation of new projects and features.
+
+### 2. Plan
+1.  **Analyze Existing Agent Structure:** Examine the `agents` directory to understand the structure and format of the existing agent definition files.
+2.  **Propose New Agent Definitions:** Propose the creation of three new agent files: `documentation-linter.md`, `test-generator.md`, and `project-scaffolder.md`.
+3.  **Define Agent Characteristics:** For each new agent, define its key characteristics, including its specialization, the optimal Claude model for its tasks, a list of keywords to trigger the agent, and a list of the tools that the agent will need to perform its tasks.
+4.  **Create Agent Files:** Create the new agent files in the `agents` directory.
+5.  **Update `validate_agents.py`:** Update the `validate_agents.py` script to include the new agents in the validation process.
+6.  **Implement Agent Logic:** Create new Python modules in the `our-crm-ai` directory to implement the logic for each new agent.
+7.  **Write Tests:** Write new unit and integration tests for the new agents to ensure that they are working correctly.
+8.  **Update Documentation:** Update the `AGENT_GUIDE.md` and other relevant documentation to include the new agents.
