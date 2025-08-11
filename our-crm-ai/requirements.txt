@@ -9,6 +9,8 @@ sentence-transformers>=2.2.0  # For semantic matching
 faiss-cpu>=1.7.0  # For fast similarity search
 numpy>=1.24.0  # For numerical operations
 anthropic>=0.25.0  # For Anthropic API integration
+mistralai>=0.0.12  # For Mistral AI API integration
+openai>=1.0.0  # For OpenAI API integration
 
 # CLI and UI enhancements
 rich>=13.0.0  # For beautiful CLI output

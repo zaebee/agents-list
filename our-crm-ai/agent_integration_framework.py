@@ -302,6 +302,117 @@ Please provide a comprehensive response addressing all requirements.
 """
 
 
+class MistralProvider(AgentProviderInterface):
+    """Mistral AI agent provider."""
+
+    async def execute_task(
+        self, config: AgentConfig, task: TaskExecution
+    ) -> Dict[str, Any]:
+        """Execute task using Mistral AI API."""
+        try:
+            async with httpx.AsyncClient() as client:
+                headers = {
+                    "Authorization": f"Bearer {config.api_key}",
+                    "Content-Type": "application/json",
+                }
+
+                data = {
+                    "model": config.model,
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": f"You are a {config.agent_name} specialized in {', '.join(config.specializations or [])}. Provide detailed, actionable responses.",
+                        },
+                        {"role": "user", "content": self._prepare_prompt(task)},
+                    ],
+                    "max_tokens": config.max_tokens,
+                    "temperature": 0.7,
+                    "top_p": 1.0,
+                    "stream": False,
+                }
+
+                response = await client.post(
+                    config.api_endpoint,
+                    headers=headers,
+                    json=data,
+                    timeout=config.timeout,
+                )
+
+                if response.status_code == 200:
+                    result = response.json()
+                    result_text = result["choices"][0]["message"]["content"]
+                    tokens_used = result["usage"]["total_tokens"]
+
+                    return {
+                        "success": True,
+                        "result": result_text,
+                        "tokens_used": tokens_used,
+                        "model": config.model,
+                        "provider": "mistral",
+                    }
+                else:
+                    return {
+                        "success": False,
+                        "error": f"Mistral API error: {response.status_code} - {response.text}",
+                        "tokens_used": 0,
+                    }
+
+        except Exception as e:
+            return {"success": False, "error": str(e), "tokens_used": 0}
+
+    async def health_check(self, config: AgentConfig) -> bool:
+        """Check Mistral AI API health."""
+        try:
+            async with httpx.AsyncClient() as client:
+                headers = {
+                    "Authorization": f"Bearer {config.api_key}",
+                    "Content-Type": "application/json",
+                }
+
+                # Test with minimal request
+                data = {
+                    "model": config.model,
+                    "messages": [{"role": "user", "content": "Hi"}],
+                    "max_tokens": 5,
+                    "temperature": 0.1,
+                }
+
+                response = await client.post(
+                    config.api_endpoint, headers=headers, json=data, timeout=15
+                )
+
+                return response.status_code == 200
+
+        except Exception as e:
+            logger.warning(f"Mistral health check failed: {e}")
+            return False
+
+    def calculate_cost(self, tokens_used: int, config: AgentConfig) -> float:
+        """Calculate Mistral AI API cost."""
+        return tokens_used * config.cost_per_token
+
+    def _prepare_prompt(self, task: TaskExecution) -> str:
+        """Prepare prompt for Mistral AI."""
+        context_str = json.dumps(task.context, indent=2) if task.context else ""
+
+        return f"""Task Type: {task.task_type}
+Task ID: {task.task_id}
+
+Context:
+{context_str}
+
+Instructions:
+{task.prompt}
+
+Please provide a comprehensive response that includes:
+1. Analysis of the task requirements
+2. Detailed solution or recommendations
+3. Implementation steps if applicable
+4. Any risks, considerations, or next steps
+
+Keep your response well-structured and actionable."""
+
+
 class LocalAgentProvider(AgentProviderInterface):
     """Local agent provider for self-hosted models."""
 
@@ -371,6 +482,7 @@ class AgentIntegrationFramework:
         self.providers: Dict[str, AgentProviderInterface] = {
             "anthropic": AnthropicProvider(),
             "openai": OpenAIProvider(),
+            "mistral": MistralProvider(),
             "local": LocalAgentProvider(),
         }
         self.agent_status: Dict[str, AgentStatus] = {}
@@ -444,6 +556,51 @@ class AgentIntegrationFramework:
                     "compliance",
                 ],
                 "cost_per_token": 0.000003,
+            },
+            {
+                "agent_id": "code-reviewer",
+                "agent_name": "Code Reviewer",
+                "provider": "mistral",
+                "api_endpoint": "https://api.mistral.ai/v1/chat/completions",
+                "api_key": os.getenv("MISTRAL_API_KEY", ""),
+                "model": "mistral-large-latest",
+                "specializations": [
+                    "code review",
+                    "quality assurance",
+                    "best practices",
+                    "refactoring",
+                ],
+                "cost_per_token": 0.000008,
+            },
+            {
+                "agent_id": "data-analyst",
+                "agent_name": "Data Analyst",
+                "provider": "mistral",
+                "api_endpoint": "https://api.mistral.ai/v1/chat/completions",
+                "api_key": os.getenv("MISTRAL_API_KEY", ""),
+                "model": "mistral-medium-latest",
+                "specializations": [
+                    "data analysis",
+                    "statistical analysis",
+                    "data visualization",
+                    "reporting",
+                ],
+                "cost_per_token": 0.0000027,
+            },
+            {
+                "agent_id": "technical-writer",
+                "agent_name": "Technical Writer",
+                "provider": "mistral",
+                "api_endpoint": "https://api.mistral.ai/v1/chat/completions",
+                "api_key": os.getenv("MISTRAL_API_KEY", ""),
+                "model": "mistral-small-latest",
+                "specializations": [
+                    "technical documentation",
+                    "user guides",
+                    "api documentation",
+                    "content creation",
+                ],
+                "cost_per_token": 0.000001,
             },
         ]
 

@@ -843,7 +843,7 @@ def create_production_app():
         )
 
     # AI Agent Endpoints
-    @app.route("/api/agents/list")
+    @app.route("/api/agents")
     @token_required
     def list_agents():
         """List all available AI agents."""

@@ -1,465 +1,208 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Grid,
-  Paper,
-  Typography,
-  Card,
-  CardContent,
-  Chip,
-  Avatar,
-  Button,
-  LinearProgress,
-  IconButton,
-  Tooltip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
-import {
-  SmartToy,
-  Psychology,
-  Code,
-  Business,
-  Science,
-  Analytics,
-  Refresh,
-  PlayArrow,
-  Pause,
-  Info,
-  CheckCircle,
-  Warning,
-  Error,
-  Settings,
-} from '@mui/icons-material';
-import { ApiService, Agent, AgentSystemStatus } from '../services/ApiService';
+import React from 'react';
+import { Bot, Play, Settings, Zap, Brain, Cpu } from 'lucide-react';
+import { useAgents } from '../contexts/AgentContext';
 
-interface AgentCardProps {
-  agent: Agent;
-  onTest: (agentId: string) => void;
-  onInfo: (agent: Agent) => void;
-  testing: boolean;
-}
+export default function AgentDashboard() {
+  const { agents, systemStatus, loading, testAgent } = useAgents();
 
-function AgentCard({ agent, onTest, onInfo, testing }: AgentCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available':
-        return 'success';
-      case 'demo':
-        return 'info';
+        return 'bg-green-100 text-green-800';
       case 'busy':
-        return 'warning';
+        return 'bg-blue-100 text-blue-800';
       case 'offline':
-        return 'error';
+        return 'bg-gray-100 text-gray-800';
       default:
-        return 'default';
+        return 'bg-yellow-100 text-yellow-800';
     }
   };
 
   const getProviderIcon = (provider: string) => {
-    switch (provider.toLowerCase()) {
-      case 'anthropic':
-        return <Psychology sx={{ color: '#FF6B35' }} />;
-      case 'openai':
-        return <SmartToy sx={{ color: '#00A67E' }} />;
+    switch (provider?.toLowerCase()) {
       case 'mistral':
-        return <Science sx={{ color: '#FF7000' }} />;
+        return <Zap className="text-orange-500" />;
+      case 'anthropic':
+        return <Brain className="text-purple-500" />;
+      case 'openai':
+        return <Cpu className="text-green-500" />;
       default:
-        return <SmartToy />;
+        return <Bot className="text-blue-500" />;
     }
   };
 
-  return (
-    <Card 
-      sx={{ 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: 4,
-        }
-      }}
-    >
-      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
-            {getProviderIcon(agent.provider)}
-          </Avatar>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" component="div" noWrap>
-              {agent.name}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
-              <Chip
-                label={agent.status}
-                color={getStatusColor(agent.status) as any}
-                size="small"
-              />
-              <Chip
-                label={agent.provider}
-                variant="outlined"
-                size="small"
-              />
-            </Box>
-          </Box>
-        </Box>
-
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flex: 1 }}>
-          {agent.description}
-        </Typography>
-
-        {agent.specializations && agent.specializations.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
-              Specializations:
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {agent.specializations.slice(0, 3).map((spec, index) => (
-                <Chip
-                  key={index}
-                  label={spec}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontSize: '0.7rem', height: 20 }}
-                />
-              ))}
-              {agent.specializations.length > 3 && (
-                <Chip
-                  label={`+${agent.specializations.length - 3}`}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontSize: '0.7rem', height: 20 }}
-                />
-              )}
-            </Box>
-          </Box>
-        )}
-
-        <Box sx={{ display: 'flex', gap: 1, mt: 'auto' }}>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<Info />}
-            onClick={() => onInfo(agent)}
-            fullWidth
-          >
-            Details
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={testing ? <CircularProgress size={16} /> : <PlayArrow />}
-            onClick={() => onTest(agent.id)}
-            disabled={testing || agent.status === 'offline'}
-            fullWidth
-          >
-            {testing ? 'Testing...' : 'Test'}
-          </Button>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
-
-export default function AgentDashboard() {
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [systemStatus, setSystemStatus] = useState<AgentSystemStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [testing, setTesting] = useState<string | null>(null);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
-
-  useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 10000); // Refresh every 10 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadData = async () => {
-    try {
-      const [agentsResponse, statusResponse] = await Promise.all([
-        ApiService.get('/api/agents'),
-        ApiService.get('/api/agents/status'),
-      ]);
-      
-      setAgents(agentsResponse.data.agents || []);
-      setSystemStatus(statusResponse.data);
-    } catch (error) {
-      console.error('Failed to load agent data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTestAgent = async (agentId: string) => {
-    setTesting(agentId);
-    try {
-      const response = await ApiService.post('/api/agents/execute', {
-        agent_id: agentId,
-        task: 'Hello! This is a test message. Please respond to confirm you are working correctly.',
-      });
-      
-      // Show success feedback
-      console.log('Test successful:', response.data);
-    } catch (error) {
-      console.error('Test failed:', error);
-    } finally {
-      setTesting(null);
-    }
-  };
-
-  const handleShowInfo = (agent: Agent) => {
-    setSelectedAgent(agent);
-    setInfoDialogOpen(true);
-  };
-
-  const getSystemStatusIcon = () => {
-    if (!systemStatus) return <Warning />;
-    
-    switch (systemStatus.system_status) {
-      case 'ready':
-        return <CheckCircle sx={{ color: 'success.main' }} />;
-      case 'demo_mode':
-        return <Warning sx={{ color: 'warning.main' }} />;
-      case 'offline':
-        return <Error sx={{ color: 'error.main' }} />;
+  const getProviderColor = (provider: string) => {
+    switch (provider?.toLowerCase()) {
+      case 'mistral':
+        return 'bg-orange-100';
+      case 'anthropic':
+        return 'bg-purple-100';
+      case 'openai':
+        return 'bg-green-100';
       default:
-        return <Warning />;
+        return 'bg-blue-100';
     }
   };
 
-  const getSystemStatusMessage = () => {
-    if (!systemStatus) return 'Loading system status...';
-    
-    switch (systemStatus.system_status) {
-      case 'ready':
-        return 'All systems operational';
-      case 'demo_mode':
-        return 'Running in demo mode - some features limited';
-      case 'offline':
-        return 'System offline - agents unavailable';
+  const getProviderBorder = (provider: string) => {
+    switch (provider?.toLowerCase()) {
+      case 'mistral':
+        return 'border-l-orange-400';
+      case 'anthropic':
+        return 'border-l-purple-400';
+      case 'openai':
+        return 'border-l-green-400';
       default:
-        return 'System status unknown';
+        return 'border-l-blue-400';
+    }
+  };
+
+  const getProviderName = (provider: string) => {
+    switch (provider?.toLowerCase()) {
+      case 'mistral':
+        return 'Mistral AI';
+      case 'anthropic':
+        return 'Anthropic';
+      case 'openai':
+        return 'OpenAI';
+      default:
+        return 'Unknown';
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-center text-white">
+          <div className="loading-spinner w-12 h-12 mx-auto mb-4"></div>
+          <p>Loading agents...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">AI Agent Dashboard</h1>
+        <p className="text-gray-600">Monitor and manage your AI agents</p>
+      </div>
+
       {/* System Status */}
-      <Paper sx={{ p: 3, mb: 3, bgcolor: 'rgba(102, 126, 234, 0.05)' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {getSystemStatusIcon()}
-            AI Agent System Status
-          </Typography>
-          <Tooltip title="Refresh status">
-            <IconButton onClick={loadData} disabled={loading}>
-              <Refresh />
-            </IconButton>
-          </Tooltip>
-        </Box>
-
-        <Alert severity={systemStatus?.system_status === 'ready' ? 'success' : 'warning'}>
-          {getSystemStatusMessage()}
-        </Alert>
-
-        {systemStatus && (
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 2, textAlign: 'center' }}>
-                <Typography variant="h4" color="primary.main">
-                  {systemStatus.total_agents}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Agents
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 2, textAlign: 'center' }}>
-                <Typography variant="h4" color="success.main">
-                  {systemStatus.active_agents}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Active Agents
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 2, textAlign: 'center' }}>
-                <Typography variant="h4" color="info.main">
-                  {systemStatus.demo_agents}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Demo Agents
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Paper sx={{ p: 2, textAlign: 'center' }}>
-                <Typography variant="h4" color="warning.main">
-                  {Object.keys(systemStatus.providers).length}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Providers
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-        )}
-      </Paper>
-
-      {/* Agent Grid */}
-      <Typography variant="h5" gutterBottom>
-        Available AI Agents
-      </Typography>
-      
-      <Grid container spacing={3}>
-        {agents.map((agent) => (
-          <Grid item xs={12} sm={6} md={4} key={agent.id}>
-            <AgentCard
-              agent={agent}
-              onTest={handleTestAgent}
-              onInfo={handleShowInfo}
-              testing={testing === agent.id}
-            />
-          </Grid>
-        ))}
-      </Grid>
-
-      {agents.length === 0 && (
-        <Alert severity="info" sx={{ mt: 3 }}>
-          No AI agents available. Please check your configuration.
-        </Alert>
+      {systemStatus && (
+        <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">System Overview</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary-600">{systemStatus.total_agents}</div>
+              <div className="text-sm text-gray-600">Total Agents</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{systemStatus.active_agents}</div>
+              <div className="text-sm text-gray-600">Active Agents</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{agents.filter(a => a.provider?.toLowerCase() === 'mistral').length}</div>
+              <div className="text-sm text-gray-600">Mistral Agents</div>
+            </div>
+            <div className="text-center">
+              <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                systemStatus.system_status === 'ready' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {systemStatus.system_status}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">System Status</div>
+            </div>
+          </div>
+          
+          {/* Provider breakdown */}
+          <div className="border-t pt-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">AI Providers</h3>
+            <div className="flex flex-wrap gap-3">
+              {['mistral', 'anthropic', 'openai'].map(provider => {
+                const count = agents.filter(a => a.provider?.toLowerCase() === provider).length;
+                if (count === 0) return null;
+                return (
+                  <div key={provider} className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${getProviderColor(provider)}`}>
+                    {getProviderIcon(provider)}
+                    <span className="text-sm font-medium">{getProviderName(provider)}</span>
+                    <span className="text-xs bg-white px-2 py-1 rounded-full">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* Agent Details Dialog */}
-      <Dialog
-        open={infoDialogOpen}
-        onClose={() => setInfoDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: 'primary.main' }}>
-              <SmartToy />
-            </Avatar>
-            {selectedAgent?.name}
-            <Chip
-              label={selectedAgent?.status}
-              color={selectedAgent?.status === 'available' ? 'success' : 'default'}
-              size="small"
-            />
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {selectedAgent && (
-            <Box>
-              <Typography variant="body1" paragraph>
-                {selectedAgent.description}
-              </Typography>
-              
-              <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-                Technical Details
-              </Typography>
-              <List dense>
-                <ListItem>
-                  <ListItemIcon>
-                    <Settings />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary="Provider"
-                    secondary={selectedAgent.provider}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <Code />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary="Model"
-                    secondary={selectedAgent.model || 'Default'}
-                  />
-                </ListItem>
-              </List>
+      {/* Agents Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {agents.length === 0 ? (
+          <div className="col-span-full card text-center py-12">
+            <Bot size={48} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No agents available</h3>
+            <p className="text-gray-500">Agents will appear here when they are configured.</p>
+          </div>
+        ) : (
+          agents.map((agent) => (
+            <div key={agent.id} className={`card hover:shadow-xl transition-shadow border-l-4 ${getProviderBorder(agent.provider)}`}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-lg ${getProviderColor(agent.provider)}`}>
+                    {getProviderIcon(agent.provider)}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{agent.name}</h3>
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <span>{getProviderName(agent.provider)}</span>
+                      <span>•</span>
+                      <span className="font-mono text-xs">{agent.model}</span>
+                    </div>
+                  </div>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}>
+                  {agent.status}
+                </span>
+              </div>
 
-              {selectedAgent.specializations && selectedAgent.specializations.length > 0 && (
-                <>
-                  <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                    Specializations
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {selectedAgent.specializations.map((spec, index) => (
-                      <Chip
-                        key={index}
-                        label={spec}
-                        variant="outlined"
-                        size="small"
-                      />
+              <p className="text-gray-700 text-sm mb-4">{agent.description}</p>
+
+              {agent.specializations.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-xs font-medium text-gray-600 mb-2">Specializations</div>
+                  <div className="flex flex-wrap gap-1">
+                    {agent.specializations.map((spec, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                      >
+                        {spec}
+                      </span>
                     ))}
-                  </Box>
-                </>
+                  </div>
+                </div>
               )}
 
-              {selectedAgent.capabilities && selectedAgent.capabilities.length > 0 && (
-                <>
-                  <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                    Capabilities
-                  </Typography>
-                  <List dense>
-                    {selectedAgent.capabilities.map((capability, index) => (
-                      <ListItem key={index}>
-                        <ListItemIcon>
-                          <CheckCircle color="success" />
-                        </ListItemIcon>
-                        <ListItemText primary={capability} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </>
-              )}
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setInfoDialogOpen(false)}>
-            Close
-          </Button>
-          {selectedAgent && (
-            <Button
-              variant="contained"
-              startIcon={testing === selectedAgent.id ? <CircularProgress size={16} /> : <PlayArrow />}
-              onClick={() => {
-                handleTestAgent(selectedAgent.id);
-                setInfoDialogOpen(false);
-              }}
-              disabled={testing === selectedAgent.id || selectedAgent.status === 'offline'}
-            >
-              {testing === selectedAgent.id ? 'Testing...' : 'Test Agent'}
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
-    </Box>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => testAgent(agent.id)}
+                  className="btn-primary flex-1 text-sm py-2 flex items-center justify-center space-x-1"
+                >
+                  <Play size={16} />
+                  <span>Test</span>
+                </button>
+                <button className="btn-outline flex-1 text-sm py-2 flex items-center justify-center space-x-1">
+                  <Settings size={16} />
+                  <span>Config</span>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }
