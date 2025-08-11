@@ -17,6 +17,7 @@ from commands import (
 )
 from agent_selector import suggest_agents
 from pm_agent_gateway import PMAgentGateway
+from business_pm_gateway import BusinessPMGateway
 
 
 def load_config():
@@ -103,6 +104,104 @@ def pm_analyze_task(args, config):
         print_agent_suggestions(f"{args.title} {args.description or ''}")
 
 
+def business_plan_project(args, config):
+    """Use Business PM Gateway to create comprehensive business-driven project plans."""
+    try:
+        business_gateway = BusinessPMGateway()
+        project_plan = business_gateway.create_business_project_plan(
+            args.title, args.description
+        )
+
+        print("\n🎯 Business Project Plan Generated Successfully!")
+        print(f"📁 Project: {project_plan.project_name}")
+        print(f"💼 Total Investment: ${project_plan.estimated_cost:,.0f}")
+        print(
+            f"⏰ Timeline: {project_plan.resource_requirements['timeline_weeks']} weeks"
+        )
+        print(
+            f"👥 Team Size: {project_plan.resource_requirements['team_size']} specialists"
+        )
+
+        # Offer to create tasks from the plan
+        if (
+            input("\n❓ Create tasks in CRM from this project plan? (y/n): ")
+            .lower()
+            .startswith("y")
+        ):
+            print("🚀 Creating tasks from project plan...")
+            # This would integrate with the create_task function
+            for i, phase in enumerate(project_plan.technical_phases):
+                task_title = f"{project_plan.project_name} - {phase['phase']}"
+                task_description = f"Phase {i + 1}: {phase['phase']}\nEstimated: {phase['duration_hours']} hours"
+
+                try:
+                    # Create task using existing create_task function
+                    task_args = argparse.Namespace()
+                    task_args.title = task_title
+                    task_args.description = task_description
+                    task_args.owner = phase["agent"]
+                    task_args.no_ai_suggest = True
+
+                    create_task(task_args, config)
+                    print(f"   ✅ Created: {task_title}")
+                except Exception as e:
+                    print(f"   ❌ Failed to create: {task_title} - {e}")
+
+            print("\n🎉 Project plan implementation started!")
+            print("📋 Use 'python3 crm_enhanced.py list' to see all created tasks")
+
+    except Exception as e:
+        print(f"❌ Business planning failed: {e}")
+        import traceback
+
+        traceback.print_exc()
+
+
+def quick_business_analysis(args, config):
+    """Provide quick business goal analysis."""
+    try:
+        business_gateway = BusinessPMGateway()
+        business_context = business_gateway.parse_business_context(args.goal)
+        project_type, scale = business_gateway.identify_project_type(args.goal, "")
+
+        print("🎯 Quick Business Analysis:")
+        print("=" * 50)
+        print(f"📊 Project Type: {project_type.replace('_', ' ').title()}")
+        print(f"📈 Project Scale: {scale.name}")
+        print(f"🎯 Target Market: {business_context.target_market or 'Not identified'}")
+        print(f"💼 Business Goals: {len(business_context.business_goals)} identified")
+
+        if business_context.compliance_requirements:
+            print(
+                f"⚖️  Compliance: {', '.join(business_context.compliance_requirements)}"
+            )
+
+        # Quick effort estimation
+        complexity_hours = {
+            "FEATURE": 40,
+            "INITIATIVE": 160,
+            "STRATEGIC": 400,
+            "TRANSFORMATION": 800,
+        }
+
+        estimated_hours = complexity_hours.get(scale.name, 80)
+        estimated_cost = estimated_hours * 150
+
+        print("\n💰 Quick Estimates:")
+        print(
+            f"   Effort: {estimated_hours} hours ({estimated_hours / 40:.1f} person-weeks)"
+        )
+        print(f"   Cost: ${estimated_cost:,.0f} (ballpark)")
+        print(
+            f"   Timeline: {int(estimated_hours / 160)}-{int(estimated_hours / 80)} months"
+        )
+
+        print("\n💡 Recommendation: Use 'business-plan' command for detailed analysis")
+
+    except Exception as e:
+        print(f"❌ Analysis failed: {e}")
+
+
 def main():
     """Enhanced main function with better CLI."""
     API_KEY = os.environ.get("YOUGILE_API_KEY")
@@ -124,6 +223,8 @@ Examples:
   %(prog)s list
   %(prog)s agents
   %(prog)s suggest "optimize database performance"
+  %(prog)s business-plan --title "Launch B2B marketplace" --description "Target: $2M ARR, mid-market procurement, React/Node.js stack"
+  %(prog)s business-analyze "Build AI-powered analytics platform for 10k users"
         """,
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -213,6 +314,30 @@ Examples:
         "--description", help="Task description for detailed analysis."
     )
     pm_parser.set_defaults(func=pm_analyze_task)
+
+    # Business PM Gateway commands
+    business_plan_parser = subparsers.add_parser(
+        "business-plan",
+        help="AI Project Manager - create comprehensive business-driven project plans.",
+    )
+    business_plan_parser.add_argument(
+        "--title", required=True, help="Business goal or project title."
+    )
+    business_plan_parser.add_argument(
+        "--description",
+        required=True,
+        help="Detailed business context, goals, metrics, and constraints.",
+    )
+    business_plan_parser.set_defaults(func=business_plan_project)
+
+    business_analyze_parser = subparsers.add_parser(
+        "business-analyze",
+        help="Quick business goal analysis and effort estimation.",
+    )
+    business_analyze_parser.add_argument(
+        "goal", help="Business goal statement to analyze."
+    )
+    business_analyze_parser.set_defaults(func=quick_business_analysis)
 
     args = parser.parse_args()
     args.func(args, config)
