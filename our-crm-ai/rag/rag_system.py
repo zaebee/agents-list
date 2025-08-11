@@ -3,14 +3,12 @@ import json
 import numpy as np
 import faiss
 import re
-import requests
 import argparse
 from sentence_transformers import SentenceTransformer
 import sys
 
 # Add project root to path to allow sibling imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from crm import CRMClient
 from utils import download_file
 
 # --- Configuration ---
@@ -27,6 +25,7 @@ TOP_K = 5
 
 # --- Data Preparation Functions ---
 
+
 def find_local_files(start_path, extensions):
     """Finds all local files with given extensions in a directory tree."""
     file_paths = []
@@ -38,32 +37,37 @@ def find_local_files(start_path, extensions):
                 file_paths.append(os.path.join(root, file))
     return file_paths
 
+
 def find_attached_files(client):
     """Finds and downloads text file attachments from all tasks."""
     print("Searching for attached text files in CRM tasks...")
     attached_files = []
     tasks = client.list_tasks()
-    attachment_regex = re.compile(r'\[(.*?)\]\((https?://.*?)\)')
+    attachment_regex = re.compile(r"\[(.*?)\]\((https?://.*?)\)")
     for task_summary in tasks:
-        task_details = client.view_task(task_summary['id'])
-        if not task_details or not task_details.get('comments'):
+        task_details = client.view_task(task_summary["id"])
+        if not task_details or not task_details.get("comments"):
             continue
-        for comment in task_details['comments']:
-            text = comment.get('text', '')
+        for comment in task_details["comments"]:
+            text = comment.get("text", "")
             matches = attachment_regex.findall(text)
             for filename, url in matches:
                 if any(filename.endswith(ext) for ext in TEXT_EXTENSIONS):
-                    downloaded_path = download_file(url, ATTACHMENTS_DIR, client.api_key)
+                    downloaded_path = download_file(
+                        url, ATTACHMENTS_DIR, client.api_key
+                    )
                     if downloaded_path:
                         attached_files.append(downloaded_path)
     return attached_files
+
 
 def chunk_text(text, size, overlap):
     """Splits text into overlapping chunks."""
     chunks = []
     for i in range(0, len(text), size - overlap):
-        chunks.append(text[i:i + size])
+        chunks.append(text[i : i + size])
     return chunks
+
 
 def prepare_data():
     """Main function to prepare the RAG data."""
@@ -91,7 +95,7 @@ def prepare_data():
     all_chunks, chunk_metadata = [], []
     for file_path in files_to_index:
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
             chunks = chunk_text(content, CHUNK_SIZE, CHUNK_OVERLAP)
             for i, chunk in enumerate(chunks):
@@ -102,16 +106,18 @@ def prepare_data():
 
     model = SentenceTransformer(MODEL_NAME)
     embeddings = model.encode(all_chunks, show_progress_bar=True)
-    embeddings = np.array(embeddings, dtype='float32')
+    embeddings = np.array(embeddings, dtype="float32")
 
     index = faiss.IndexFlatL2(embeddings.shape[1])
     index.add(embeddings)
     faiss.write_index(index, INDEX_PATH)
-    with open(CHUNKS_PATH, 'w', encoding='utf-8') as f:
+    with open(CHUNKS_PATH, "w", encoding="utf-8") as f:
         json.dump({"chunks": all_chunks, "metadata": chunk_metadata}, f, indent=4)
     print("\nData preparation complete!")
 
+
 # --- Query Functions ---
+
 
 def load_rag_data():
     """Loads the FAISS index and the text chunks."""
@@ -121,6 +127,7 @@ def load_rag_data():
     with open(CHUNKS_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
     return index, data["chunks"]
+
 
 def query_rag(query_string):
     """Main entry point for querying the RAG system."""
@@ -137,10 +144,12 @@ def query_rag(query_string):
     # For now, just return the retrieved chunks without LLM call
     response = f"--- Top {TOP_K} relevant chunks for '{query_string}' ---\n\n"
     for i, chunk in enumerate(retrieved_chunks):
-        response += f"--- Chunk {i+1} ---\n{chunk}\n\n"
+        response += f"--- Chunk {i + 1} ---\n{chunk}\n\n"
     return response
 
+
 # --- Main CLI Handler ---
+
 
 def main():
     parser = argparse.ArgumentParser(description="RAG System for our-crm-ai.")
@@ -157,6 +166,7 @@ def main():
     elif args.command == "query":
         result = query_rag(args.query_string)
         print(result)
+
 
 if __name__ == "__main__":
     main()

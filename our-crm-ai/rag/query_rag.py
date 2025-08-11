@@ -66,6 +66,7 @@ def generate_answer(query, retrieved_chunks):
     except Exception as e:
         return f"Error calling Anthropic API: {e}"
 
+
 def query_rag(query_string):
     """
     Main entry point for the RAG system as a library.
