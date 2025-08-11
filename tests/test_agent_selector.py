@@ -64,8 +64,6 @@ class TestAgentSelector(unittest.TestCase):
             "security-auditor should be suggested for security tasks",
         )
 
-    
-
     def test_empty_task_handling(self):
         """Test handling of empty or invalid task descriptions."""
         suggestions = suggest_agents("", max_suggestions=3)
@@ -124,6 +122,7 @@ class TestAgentSelector(unittest.TestCase):
     def test_enhanced_agent_selector(self):
         """Test the EnhancedAgentSelector class."""
         import asyncio
+
         selector = EnhancedAgentSelector(enable_semantic=False)
         asyncio.run(selector.initialize())
         task = "python web development"

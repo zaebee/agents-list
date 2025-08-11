@@ -14,14 +14,27 @@ anthropic>=0.25.0  # For Anthropic API integration
 rich>=13.0.0  # For beautiful CLI output
 click>=8.1.0  # Alternative CLI framework
 
-# Legacy dependencies (for backward compatibility)
-Flask==2.1.0
-requests==2.26.0
-flask-cors==3.0.10
+# Web framework dependencies (production-ready versions)
+Flask==2.3.3
+Jinja2==3.1.2
+requests==2.31.0
+flask-cors==4.0.0
+Werkzeug==2.3.7
 pandas>=2.0.1
 seaborn==0.12.2
 plotly==5.14.1
 prometheus-client==0.16.0
-gunicorn==20.1.0
+gunicorn==21.2.0
 scipy>=1.9.0
 python-json-logger==2.0.4
+
+# Production dependencies for enhanced system
+psycopg2-binary==2.9.7  # PostgreSQL adapter
+asyncpg==0.28.0  # Async PostgreSQL adapter
+PyJWT==2.8.0  # JWT tokens for authentication
+bcrypt==4.0.1  # Password hashing
+redis==4.6.0  # Session storage and caching
+celery==5.3.1  # Background task processing
+python-multipart==0.0.6  # File upload support
+email-validator==2.0.0  # Email validation
+python-dotenv==1.0.0  # Environment variable management

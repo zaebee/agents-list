@@ -210,7 +210,7 @@ async def list_tasks(
                     archived=task.get("archived", False),
                 )
             )
-        
+
         # Filter tasks by archived status
         if archived:
             return [task for task in all_tasks if task.archived]
