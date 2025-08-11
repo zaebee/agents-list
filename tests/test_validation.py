@@ -9,8 +9,10 @@ import os
 import sys
 from pathlib import Path
 
-# Add the parent directory to the path to import our modules
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# Add the parent and scripts directory to the path to import our modules
+project_root = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, project_root)
+sys.path.insert(0, os.path.join(project_root, "scripts"))
 
 from validate_agents import (
     parse_agent_file,
