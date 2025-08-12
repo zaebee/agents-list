@@ -1,0 +1,489 @@
+{
+  "workflow_id": "d182c59f-a029-4580-8718-dbced7397cce",
+  "project_id": "9d3f39f4-9a01-4b63-b632-177b57d4c5bf",
+  "project_name": "AI-Powered Task Manager",
+  "status": "WorkflowStatus.RUNNING",
+  "tasks": [
+    {
+      "task_id": "48e23826-e4cc-41a5-a786-6c6e9cf5c14b",
+      "agent_name": "business-analyst",
+      "title": "AI-Powered Task Manager - Market Research & Strategy",
+      "description": "Phase 1: Market Research & Strategy",
+      "estimated_hours": 40,
+      "actual_hours": 36.0,
+      "status": "WorkflowStatus.COMPLETED",
+      "started_at": "2025-08-11 00:38:23.734600",
+      "completed_at": "2025-08-11 00:38:33.739926",
+      "output": {
+        "status": "completed",
+        "deliverables": [
+          "AI-Powered Task Manager - Market Research & Strategy completed successfully"
+        ],
+        "notes": "Task completed by business-analyst",
+        "metrics": {
+          "quality_score": 0.7,
+          "efficiency": 1.1111111111111112
+        }
+      },
+      "context": {
+        "phase_number": 1,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.7,
+      "business_value": 6000
+    },
+    {
+      "task_id": "32898f67-ce31-4ca8-b8a7-f8b6f516ddc7",
+      "agent_name": "backend-architect",
+      "title": "AI-Powered Task Manager - Technical Architecture",
+      "description": "Phase 2: Technical Architecture",
+      "estimated_hours": 32,
+      "actual_hours": 32.0,
+      "status": "WorkflowStatus.COMPLETED",
+      "started_at": "2025-08-11 00:38:33.744151",
+      "completed_at": "2025-08-11 00:38:43.746907",
+      "output": {
+        "status": "completed",
+        "deliverables": [
+          "AI-Powered Task Manager - Technical Architecture completed successfully"
+        ],
+        "notes": "Task completed by backend-architect",
+        "metrics": {
+          "quality_score": 0.8999999999999999,
+          "efficiency": 1.0
+        }
+      },
+      "context": {
+        "phase_number": 2,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.8999999999999999,
+      "business_value": 4800
+    },
+    {
+      "task_id": "a58b3f9b-0b75-45e1-a719-85f900f3f7e3",
+      "agent_name": "ui-ux-designer",
+      "title": "AI-Powered Task Manager - User Experience Design",
+      "description": "Phase 3: User Experience Design",
+      "estimated_hours": 48,
+      "actual_hours": 51.84,
+      "status": "WorkflowStatus.COMPLETED",
+      "started_at": "2025-08-11 00:38:43.755045",
+      "completed_at": "2025-08-11 00:38:53.758887",
+      "output": {
+        "status": "completed",
+        "deliverables": [
+          "AI-Powered Task Manager - User Experience Design completed successfully"
+        ],
+        "notes": "Task completed by ui-ux-designer",
+        "metrics": {
+          "quality_score": 0.8799999999999999,
+          "efficiency": 0.9259259259259258
+        }
+      },
+      "context": {
+        "phase_number": 3,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.8799999999999999,
+      "business_value": 7200
+    },
+    {
+      "task_id": "873969de-c6b9-4b2b-8518-77cf71da6130",
+      "agent_name": "backend-architect",
+      "title": "AI-Powered Task Manager - Core Platform Development",
+      "description": "Phase 4: Core Platform Development",
+      "estimated_hours": 160,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 4,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "12eb5654-6fee-449c-a737-31480d3f4056",
+      "agent_name": "frontend-developer",
+      "title": "AI-Powered Task Manager - Frontend Development",
+      "description": "Phase 5: Frontend Development",
+      "estimated_hours": 120,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 5,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "4a3443a0-e96f-411e-9589-c8c208daec6c",
+      "agent_name": "payment-integration",
+      "title": "AI-Powered Task Manager - Payment Integration",
+      "description": "Phase 6: Payment Integration",
+      "estimated_hours": 40,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 6,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "74b391cb-b4b2-4695-8fe4-d6e03c1a4f75",
+      "agent_name": "security-auditor",
+      "title": "AI-Powered Task Manager - Security Implementation",
+      "description": "Phase 7: Security Implementation",
+      "estimated_hours": 32,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 7,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "f2f14dec-f5f2-47bf-81e4-77f594a217a9",
+      "agent_name": "test-automator",
+      "title": "AI-Powered Task Manager - Testing & QA",
+      "description": "Phase 8: Testing & QA",
+      "estimated_hours": 48,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 8,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "0c85e40a-8709-4bd3-90dc-d87a1a958639",
+      "agent_name": "deployment-engineer",
+      "title": "AI-Powered Task Manager - Deployment & Launch",
+      "description": "Phase 9: Deployment & Launch",
+      "estimated_hours": 24,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 9,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "2ce10c12-b2f3-43de-80e6-349d8f6ceea5",
+      "agent_name": "business-analyst",
+      "title": "AI-Powered Task Manager - Analytics & Monitoring",
+      "description": "Phase 10: Analytics & Monitoring",
+      "estimated_hours": 16,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 10,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [
+            "$500k",
+            "4"
+          ],
+          "target_market": null,
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [
+            {
+              "metric": "BusinessMetric.REVENUE",
+              "target_value": 500000.0,
+              "current_value": null,
+              "timeline_months": 12,
+              "confidence_level": 0.8
+            }
+          ],
+          "stakeholders": null,
+          "compliance_requirements": []
+        },
+        "dependencies": [],
+        "business_impact": [
+          "revenue"
+        ]
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    }
+  ],
+  "current_task_index": 2,
+  "started_at": "2025-08-11 00:38:23.734540",
+  "completed_at": null,
+  "total_estimated_hours": 560,
+  "total_actual_hours": 119.84,
+  "business_context": {
+    "roi_projection": {
+      "revenue_roi": {
+        "investment": 84000,
+        "projected_annual_revenue": 500000.0,
+        "roi_percentage": 495.23809523809524,
+        "payback_months": 2.016,
+        "confidence": 0.8
+      }
+    },
+    "risk_assessment": {
+      "market_risks": [],
+      "technical_risks": [
+        "Two-sided market dynamics",
+        "Scalability challenges",
+        "Payment processing complexity"
+      ],
+      "financial_risks": [],
+      "operational_risks": [],
+      "risk_score": 0.30000000000000004
+    },
+    "success_criteria": [
+      "All technical phases completed successfully",
+      "Business metrics targets achieved",
+      "Quality standards met",
+      "Project delivered on time and budget"
+    ],
+    "estimated_cost": 84000
+  },
+  "progress_percentage": 30.0,
+  "next_milestone": 50,
+  "created_at": "2025-08-11T00:38:23.732837",
+  "updated_at": "2025-08-11T00:38:53.763492",
+  "version": 5
+}

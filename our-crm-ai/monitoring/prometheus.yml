@@ -22,7 +22,7 @@ scrape_configs:
   # AI-CRM application metrics
   - job_name: 'ai-crm'
     static_configs:
-      - targets: ['ai-crm:8000']
+      - targets: ['aipm_app:5001']
     metrics_path: '/metrics'
     scrape_interval: 30s
     scrape_timeout: 10s
@@ -51,8 +51,4 @@ scrape_configs:
       - targets: ['node-exporter:9100']
     scrape_interval: 15s
 
-# Storage configuration
-storage:
-  tsdb:
-    retention.time: 15d
-    retention.size: 10GB
+# Storage retention (configured via command line flags in docker-compose)

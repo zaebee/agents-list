@@ -3,6 +3,7 @@
 Project Scaffolder Agent
 """
 
+
 class ProjectScaffolder:
     """
     An agent that scaffolds new projects and features.
@@ -17,6 +18,7 @@ class ProjectScaffolder:
         """
         pass
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     scaffolder = ProjectScaffolder()
     scaffolder.scaffold_project()

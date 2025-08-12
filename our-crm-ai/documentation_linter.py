@@ -3,6 +3,7 @@
 Documentation Linter Agent
 """
 
+
 class DocumentationLinter:
     """
     An agent that ensures documentation is consistent with the codebase.
@@ -17,6 +18,7 @@ class DocumentationLinter:
         """
         pass
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     linter = DocumentationLinter()
     linter.lint_documentation()

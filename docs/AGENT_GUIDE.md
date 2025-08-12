@@ -307,6 +307,23 @@ Each agent is essentially a specialized AI expert with:
 "Create automated release pipeline with rollback capabilities"
 ```
 
+#### `project-scaffolder` (Sonnet)
+**Specialization:** Scaffolds new projects and features.
+**Best For:**
+- Asking a series of questions about the new project or feature.
+- Generating the necessary files and directories.
+- Providing a "getting started" guide.
+
+**Keywords:** scaffold, generator, boilerplate, starter, bootstrap
+**Tools:** Write, Edit, MultiEdit, Glob, Task
+
+**Example Tasks:**
+```bash
+"Scaffold a new React component library"
+"Generate a new FastAPI project with authentication"
+"Create a new feature module for the frontend"
+```
+
 #### `cloud-architect` (Opus)
 **Specialization:** AWS/Azure/GCP infrastructure design and cloud optimization
 **Best For:**
@@ -495,6 +512,23 @@ Each agent is essentially a specialized AI expert with:
 "Implement API integration tests with proper mocking"
 "Setup end-to-end testing with Playwright or Cypress"
 "Design test strategy for microservices architecture"
+```
+
+#### `test-generator` (Opus)
+**Specialization:** Generates new tests for the codebase.
+**Best For:**
+- Analyzing changes to the code to identify code that is not covered by existing tests.
+- Generating new unit, integration, and end-to--end tests.
+- Improving test coverage and stability.
+
+**Keywords:** test, generator, coverage, unit, integration, e2e
+**Tools:** Read, Write, Edit, MultiEdit, Glob, Task
+
+**Example Tasks:**
+```bash
+"Generate unit tests for the new authentication service"
+"Create integration tests for the new API endpoints"
+"Generate end-to-end tests for the new user onboarding flow"
 ```
 
 #### `performance-engineer` (Opus)
@@ -747,6 +781,23 @@ Each agent is essentially a specialized AI expert with:
 "Build configuration guide with examples and defaults"
 "Write troubleshooting guide for common issues"
 "Document all configuration options with explanations"
+```
+
+#### `documentation-linter` (Sonnet)
+**Specialization:** Ensures documentation is consistent with the codebase.
+**Best For:**
+- Scanning for changes to file names, function signatures, and API endpoints.
+- Creating tasks to update the documentation.
+- Maintaining consistency between code and documentation.
+
+**Keywords:** linter, documentation, consistency, sync, codegen
+**Tools:** Read, Grep, Glob, Task
+
+**Example Tasks:**
+```bash
+"Lint the documentation for the new authentication service"
+"Check for inconsistencies between the API documentation and the code"
+"Create tasks to update the documentation for the new frontend components"
 ```
 
 ### Visual Communication

@@ -1,0 +1,52 @@
+# Minimal requirements for AI Project Manager production deployment
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+requests==2.31.0
+python-multipart==0.0.6
+
+# Authentication and Security
+python-jose[cryptography]==3.3.0
+passlib[argon2]==1.7.4
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.13.1
+
+# Email
+pydantic[email]==2.5.0
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+pandas>=2.0.1
+prometheus-client==0.16.0
+python-json-logger==2.0.4
+
+# Production dependencies for enhanced system
+psycopg2-binary==2.9.7  # PostgreSQL adapter
+asyncpg==0.28.0  # Async PostgreSQL adapter
+PyJWT==2.8.0  # JWT tokens for authentication
+bcrypt==4.0.1  # Password hashing
+redis==4.6.0  # Session storage and caching
+python-multipart==0.0.6  # File upload support
+email-validator==2.0.0  # Email validation
+python-dotenv==1.0.0  # Environment variable management
+
+# Core dependencies
+pydantic>=2.0.0,<3.0.0
+httpx>=0.24.0
+aiofiles>=23.0.0
+aiosqlite>=0.19.0
+
+# CLI and UI enhancements
+rich>=13.0.0
+click>=8.1.0
+
+# AI dependencies (lightweight versions)
+anthropic>=0.25.0
+openai>=1.0.0
+
+# Billing and payment processing
+stripe>=6.0.0  # Stripe payment processing

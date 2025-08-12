@@ -1,0 +1,371 @@
+{
+  "workflow_id": "5ea40d86-8d6c-47a8-bbe6-d54ea052235d",
+  "project_id": "e268cff1-11d5-4f59-971d-105788aa8589",
+  "project_name": "Launch SaaS Analytics Platform",
+  "status": "WorkflowStatus.PENDING",
+  "tasks": [
+    {
+      "task_id": "e6b98604-b0ab-4cb6-89f1-7aaad82bf0c4",
+      "agent_name": "business-analyst",
+      "title": "Launch SaaS Analytics Platform - Market Research & Strategy",
+      "description": "Phase 1: Market Research & Strategy",
+      "estimated_hours": 40,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 1,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "c1ad9389-d74f-42fb-9afc-7b57dd008d91",
+      "agent_name": "backend-architect",
+      "title": "Launch SaaS Analytics Platform - Technical Architecture",
+      "description": "Phase 2: Technical Architecture",
+      "estimated_hours": 32,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 2,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "eea03d11-9094-4cc5-86e0-e744202593c6",
+      "agent_name": "ui-ux-designer",
+      "title": "Launch SaaS Analytics Platform - User Experience Design",
+      "description": "Phase 3: User Experience Design",
+      "estimated_hours": 48,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 3,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "37cb8ae6-d5f1-495d-8a8a-927d27180ee6",
+      "agent_name": "backend-architect",
+      "title": "Launch SaaS Analytics Platform - Core Platform Development",
+      "description": "Phase 4: Core Platform Development",
+      "estimated_hours": 160,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 4,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "8a36a2f8-4b86-417b-82ee-748d427880d0",
+      "agent_name": "frontend-developer",
+      "title": "Launch SaaS Analytics Platform - Frontend Development",
+      "description": "Phase 5: Frontend Development",
+      "estimated_hours": 120,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 5,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "e3ae54b4-8733-42a0-9895-d2ce7cdac6b1",
+      "agent_name": "payment-integration",
+      "title": "Launch SaaS Analytics Platform - Payment Integration",
+      "description": "Phase 6: Payment Integration",
+      "estimated_hours": 40,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 6,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "1e89a106-64dd-4fc4-a323-c1cbcfa57fe5",
+      "agent_name": "security-auditor",
+      "title": "Launch SaaS Analytics Platform - Security Implementation",
+      "description": "Phase 7: Security Implementation",
+      "estimated_hours": 48.0,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 7,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "317a7cbe-fffe-4a6f-a99e-a2292db9b4ee",
+      "agent_name": "test-automator",
+      "title": "Launch SaaS Analytics Platform - Testing & QA",
+      "description": "Phase 8: Testing & QA",
+      "estimated_hours": 48,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 8,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "163c8a2f-af7a-425e-977d-cccaa90040e1",
+      "agent_name": "deployment-engineer",
+      "title": "Launch SaaS Analytics Platform - Deployment & Launch",
+      "description": "Phase 9: Deployment & Launch",
+      "estimated_hours": 24,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 9,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    },
+    {
+      "task_id": "b9d3fa63-d06e-4ea6-814a-b6869beba56c",
+      "agent_name": "business-analyst",
+      "title": "Launch SaaS Analytics Platform - Analytics & Monitoring",
+      "description": "Phase 10: Analytics & Monitoring",
+      "estimated_hours": 16,
+      "actual_hours": 0.0,
+      "status": "WorkflowStatus.PENDING",
+      "started_at": null,
+      "completed_at": null,
+      "output": null,
+      "context": {
+        "phase_number": 10,
+        "total_phases": 10,
+        "business_context": {
+          "business_goals": [],
+          "target_market": "b2b",
+          "competitive_landscape": [],
+          "budget_range": null,
+          "timeline_constraints": null,
+          "success_metrics": [],
+          "stakeholders": null,
+          "compliance_requirements": [
+            "SOC2",
+            "COMPLIANCE"
+          ]
+        },
+        "dependencies": [],
+        "business_impact": []
+      },
+      "quality_score": 0.0,
+      "business_value": 0.0
+    }
+  ],
+  "current_task_index": 0,
+  "started_at": null,
+  "completed_at": null,
+  "total_estimated_hours": 576.0,
+  "total_actual_hours": 0.0,
+  "business_context": {
+    "roi_projection": {
+      "message": "No business metrics provided for ROI calculation"
+    },
+    "risk_assessment": {
+      "market_risks": [],
+      "technical_risks": [
+        "Two-sided market dynamics",
+        "Scalability challenges",
+        "Payment processing complexity"
+      ],
+      "financial_risks": [],
+      "operational_risks": [],
+      "risk_score": 0.30000000000000004
+    },
+    "success_criteria": [
+      "All technical phases completed successfully",
+      "Business metrics targets achieved",
+      "Quality standards met",
+      "Project delivered on time and budget"
+    ],
+    "estimated_cost": 86400.0
+  },
+  "progress_percentage": 0.0,
+  "next_milestone": null,
+  "created_at": "2025-08-11T00:41:09.377357",
+  "updated_at": "2025-08-11T00:41:09.377382",
+  "version": 1
+}
