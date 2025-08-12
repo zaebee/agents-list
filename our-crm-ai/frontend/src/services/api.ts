@@ -120,6 +120,43 @@ export const apiService = {
     return response.data;
   },
 
+  // Analytics
+  async getAnalytics(timeRange: string): Promise<any> {
+    const response = await api.get(`/api/analytics?timeRange=${timeRange}`);
+    return response.data;
+  },
+
+  // Billing operations
+  async getBillingInfo(): Promise<any> {
+    const response = await api.get('/api/billing/subscription');
+    return response.data;
+  },
+
+  async getUsageInfo(): Promise<any> {
+    const response = await api.get('/api/billing/usage');
+    return response.data;
+  },
+
+  async getPricing(): Promise<any> {
+    const response = await api.get('/api/billing/pricing');
+    return response.data;
+  },
+
+  async createSubscription(subscriptionData: any): Promise<any> {
+    const response = await api.post('/api/billing/subscription', subscriptionData);
+    return response.data;
+  },
+
+  async cancelSubscription(): Promise<any> {
+    const response = await api.post('/api/billing/cancel');
+    return response.data;
+  },
+
+  async getInvoices(): Promise<any> {
+    const response = await api.get('/api/billing/invoices');
+    return response.data;
+  },
+
   // File upload
   async uploadFile(file: File, onProgress?: (progress: number) => void): Promise<any> {
     const formData = new FormData();

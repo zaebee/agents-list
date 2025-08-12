@@ -20,8 +20,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY = 'ai_pm_token';
 const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://zae.life:5001' 
-  : 'http://zae.life:5001';
+  ? 'http://zae.life:8080' 
+  : 'http://zae.life:8080';
 
 interface AuthProviderProps {
   children: ReactNode;
