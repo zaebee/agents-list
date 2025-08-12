@@ -47,3 +47,6 @@ click>=8.1.0
 # AI dependencies (lightweight versions)
 anthropic>=0.25.0
 openai>=1.0.0
+
+# Billing and payment processing
+stripe>=6.0.0  # Stripe payment processing

@@ -40,3 +40,14 @@ celery==5.3.1  # Background task processing
 python-multipart==0.0.6  # File upload support
 email-validator==2.0.0  # Email validation
 python-dotenv==1.0.0  # Environment variable management
+
+# Authentication and security
+sqlalchemy>=2.0.0  # Database ORM
+python-jose[cryptography]>=3.3.0  # JWT token handling
+passlib[argon2]>=1.7.4  # Password hashing with Argon2
+python-multipart>=0.0.6  # Form data parsing
+
+# Billing and payment processing
+stripe>=6.0.0  # Stripe payment processing
+fastapi>=0.100.0  # Modern API framework
+uvicorn>=0.23.0  # ASGI server
