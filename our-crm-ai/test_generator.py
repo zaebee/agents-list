@@ -3,6 +3,7 @@
 Test Generator Agent
 """
 
+
 class TestGenerator:
     """
     An agent that generates new tests for the codebase.
@@ -17,6 +18,7 @@ class TestGenerator:
         """
         pass
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     generator = TestGenerator()
     generator.generate_tests()

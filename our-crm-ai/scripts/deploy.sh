@@ -1,11 +1,27 @@
 #!/bin/bash
+# AI-CRM Phase 2A Production Deployment Script
+
 set -e
 
-# AI-CRM Production Deployment Script
-# This script deploys the AI-CRM system with 100% YouGile integration
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-echo "🚀 Starting AI-CRM Production Deployment"
-echo "========================================"
+# Configuration
+DEPLOYMENT_ENV=${1:-production}
+COMPOSE_FILE="docker-compose.phase2a.yml"
+PROJECT_NAME="aicrm"
+BACKUP_DIR="./backups"
+LOG_DIR="./logs"
+
+echo -e "${BLUE}🚀 AI-CRM Phase 2A Deployment Script${NC}"
+echo "====================================="
+echo "Environment: $DEPLOYMENT_ENV"
+echo "Compose File: $COMPOSE_FILE"
+echo ""
 
 # Colors for output
 RED='\033[0;31m'

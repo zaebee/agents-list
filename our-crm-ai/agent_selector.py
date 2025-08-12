@@ -298,7 +298,13 @@ AGENT_KEYWORDS = {
     "minecraft-bukkit-pro": ["minecraft", "bukkit", "spigot", "plugin", "server"],
     "dx-optimizer": ["developer experience", "tooling", "workflow", "setup"],
     "context-manager": ["multi-agent", "coordination", "context", "workflow"],
-    "documentation-linter": ["documentation", "linter", "consistency", "sync", "update"],
+    "documentation-linter": [
+        "documentation",
+        "linter",
+        "consistency",
+        "sync",
+        "update",
+    ],
     "test-generator": ["test", "generator", "coverage", "unit", "integration", "e2e"],
     "project-scaffolder": ["scaffold", "generator", "project", "feature", "new"],
 }

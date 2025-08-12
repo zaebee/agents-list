@@ -6,10 +6,12 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+
 def get_db_connection(db_path: str = "business_analytics.db"):
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
+
 
 def init_database(db_path: str = "business_analytics.db"):
     """Initialize database with enhanced security and users table."""
@@ -102,6 +104,7 @@ def init_database(db_path: str = "business_analytics.db"):
 
         conn.commit()
 
+
 def init_default_users(db_path: str = "business_analytics.db"):
     """Create default admin user if none exists."""
     with get_db_connection(db_path) as conn:
@@ -112,9 +115,7 @@ def init_default_users(db_path: str = "business_analytics.db"):
 
         if admin_count == 0:
             admin_id = str(uuid.uuid4())
-            password_hash = bcrypt.hashpw(
-                "admin123".encode("utf-8"), bcrypt.gensalt()
-            )
+            password_hash = bcrypt.hashpw("admin123".encode("utf-8"), bcrypt.gensalt())
 
             cursor.execute(
                 """
@@ -133,9 +134,11 @@ def init_default_users(db_path: str = "business_analytics.db"):
             conn.commit()
             logger.info("Created default admin user: admin / admin123")
 
+
 def hash_password(password: str) -> str:
     """Hash password using bcrypt."""
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
 
 def verify_password(password: str, password_hash: str) -> bool:
     """Verify password against hash."""

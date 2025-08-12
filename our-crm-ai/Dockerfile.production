@@ -1,0 +1,249 @@
+# AI-CRM Production Dockerfile - Phase 2A
+# Optimized multi-stage build with billing infrastructure
+
+# Frontend Build Stage
+FROM oven/bun AS frontend-builder
+
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN bun update  # --only=production
+
+COPY frontend/ ./
+RUN bun run build
+
+# Backend Build Stage  
+FROM python:3.11-slim AS backend-builder
+
+# Set environment variables for build
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    g++ \
+    postgresql-client \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements and install dependencies
+COPY requirements-minimal.txt .
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install -r requirements-minimal.txt
+
+# Production Stage
+FROM python:3.11-slim AS production
+
+# Set production environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    ENVIRONMENT=production \
+    PORT=8000 \
+    HOST=0.0.0.0 \
+    WORKERS=4 \
+    TIMEOUT=60
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    curl \
+    nginx \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r aicrm \
+    && useradd -r -g aicrm aicrm
+
+# Copy virtual environment from builder
+COPY --from=backend-builder /opt/venv /opt/venv
+
+# Create application directories
+RUN mkdir -p /app/logs /app/data /app/static /var/log/supervisor && \
+    chown -R aicrm:aicrm /app /var/log/supervisor
+
+# Set working directory
+WORKDIR /app
+
+# Copy application code
+COPY --chown=aicrm:aicrm . .
+
+# Copy frontend build from frontend-builder stage
+COPY --from=frontend-builder --chown=aicrm:aicrm /app/frontend/build ./static/
+
+
+# Enable the site
+RUN ln -sf /etc/nginx/sites-available/aicrm /etc/nginx/sites-enabled/ && \
+    rm -f /etc/nginx/sites-enabled/default
+
+# Create supervisor configuration
+RUN cat > /etc/supervisor/conf.d/aicrm.conf <<EOF
+[supervisord]
+nodaemon=true
+user=root
+logfile=/var/log/supervisor/supervisord.log
+pidfile=/var/run/supervisord.pid
+
+[program:nginx]
+command=nginx -g "daemon off;"
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/supervisor/nginx_stderr.log
+stdout_logfile=/var/log/supervisor/nginx_stdout.log
+user=root
+
+[program:aicrm-api]
+command=uvicorn api:app --host 127.0.0.1 --port 8000
+directory=/app
+user=aicrm
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/supervisor/aicrm_stderr.log
+stdout_logfile=/var/log/supervisor/aicrm_stdout.log
+environment=PATH="/opt/venv/bin"
+
+EOF
+
+# Create startup script
+RUN cat > /app/entrypoint.sh <<EOF
+#!/bin/bash
+set -e
+
+echo "🚀 AI-CRM Production Server - Phase 2A"
+echo "======================================"
+
+# Environment validation
+if [ -z "${DATABASE_URL}" ]; then
+    echo "⚠️  WARNING: DATABASE_URL not set, using SQLite"
+fi
+
+if [ -z "${STRIPE_SECRET_KEY}" ] && [ "${ENABLE_BILLING:-true}" = "true" ]; then
+    echo "⚠️  WARNING: STRIPE_SECRET_KEY not set, billing disabled"
+fi
+
+# Wait for database if PostgreSQL
+if [[ "${DATABASE_URL}" == *"postgresql"* ]]; then
+    echo "⏳ Waiting for PostgreSQL..."
+    until pg_isready -d "${DATABASE_URL}"; do
+        sleep 2
+    done
+    echo "✅ Database is ready"
+fi
+
+# Run database migrations
+echo "📊 Running database migrations..."
+python -c "
+import os
+import sys
+sys.path.append('/app')
+try:
+    if os.path.exists('database_migrations.py'):
+        import database_migrations
+        print('✅ Migrations completed')
+    else:
+        print('⚠️  No migration file found')
+except Exception as e:
+    print(f'⚠️  Migration warning: {e}')
+"
+
+# Set up log directory permissions
+mkdir -p /app/logs /var/log/supervisor
+chown -R aicrm:aicrm /app/logs
+
+# Start supervisor (manages nginx + gunicorn + celery)
+echo "🎯 Starting production services..."
+exec supervisord -c /etc/supervisor/conf.d/aicrm.conf
+EOF
+
+RUN chmod +x /app/entrypoint.sh
+
+# Create health check script
+RUN cat > /app/healthcheck.sh <<EOF
+#!/bin/bash
+# Health check for the complete application stack
+
+# Check nginx
+if ! curl -f http://localhost/health >/dev/null 2>&1; then
+    echo "❌ Nginx health check failed"
+    exit 1
+fi
+
+# Check API
+if ! curl -f http://localhost/api/health >/dev/null 2>&1; then
+    echo "❌ API health check failed"  
+    exit 1
+fi
+
+# Check frontend serving
+if ! curl -f http://localhost/ >/dev/null 2>&1; then
+    echo "❌ Frontend health check failed"
+    exit 1
+fi
+
+echo "✅ All health checks passed"
+exit 0
+EOF
+
+RUN chmod +x /app/healthcheck.sh
+
+# Create .env.example for deployment
+RUN cat > /app/.env.example <<EOF
+# AI-CRM Production Environment Configuration
+
+# Database Configuration
+DATABASE_URL=postgresql://aicrm_user:password@db:5432/aicrm_db
+# DATABASE_URL=sqlite:///aicrm.db  # Alternative for SQLite
+
+# AI Provider API Keys
+ANTHROPIC_API_KEY=your_anthropic_key_here
+OPENAI_API_KEY=your_openai_key_here
+MISTRAL_API_KEY=your_mistral_key_here
+
+# Billing Configuration (Stripe)
+STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+ENABLE_BILLING=true
+
+# Security
+JWT_SECRET_KEY=your_jwt_secret_key_here
+ENCRYPTION_KEY=your_32_character_encryption_key
+
+# Application Configuration
+ENVIRONMENT=production
+DEBUG=false
+LOG_LEVEL=INFO
+DOMAIN=your-domain.com
+ALLOWED_ORIGINS=https://your-domain.com,https://app.your-domain.com
+
+# Performance
+WORKERS=4
+TIMEOUT=60
+CACHE_TTL=3600
+
+# Features
+ENABLE_ANALYTICS=true
+ENABLE_MONITORING=true
+MAX_TASKS_PER_USER=1000
+
+# Email Configuration (optional)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@domain.com
+SMTP_PASSWORD=your_app_password
+EOF
+
+# Expose ports
+EXPOSE 80 443
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD /app/healthcheck.sh
+
+# Set entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
