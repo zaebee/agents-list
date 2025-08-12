@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from models import CommandRequest, CommandResponse
 import crm_service
-
+from dashboard_api import app as dashboard_app
 
 class CommandExecutionError(Exception):
     pass
@@ -14,6 +14,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
+app.mount("/dashboard", dashboard_app)
 
 @app.exception_handler(CommandExecutionError)
 async def command_execution_exception_handler(
@@ -52,4 +53,4 @@ async def execute_command(request: CommandRequest):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=5000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=5001, reload=True)

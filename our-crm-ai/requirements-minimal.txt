@@ -1,12 +1,27 @@
 # Minimal requirements for AI Project Manager production deployment
-Flask==2.3.3
-Jinja2==3.1.2
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
 requests==2.31.0
-flask-cors==4.0.0
-Werkzeug==2.3.7
+python-multipart==0.0.6
+
+# Authentication and Security
+python-jose[cryptography]==3.3.0
+passlib[argon2]==1.7.4
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.13.1
+
+# Email
+pydantic[email]==2.5.0
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
 pandas>=2.0.1
 prometheus-client==0.16.0
-gunicorn==21.2.0
 python-json-logger==2.0.4
 
 # Production dependencies for enhanced system

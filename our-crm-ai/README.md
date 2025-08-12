@@ -93,17 +93,21 @@ python3 crm_setup_enhanced.py --project-id "your_project_id"
 ```
 This will create a `config.json` file in the `our-crm-ai` directory, which is required for the application to run.
 
-## 🏃 Running the Application
+## 🏃 Development
 
-You can run the application in development mode using the provided shell script, which will start both the backend and frontend servers.
+To run the application in development mode, use the provided shell script. This will start the backend server with hot-reloading enabled.
 
 ```bash
 ./start-dev.sh
 ```
 
--   **Web UI**: Access the application at `http://localhost:3000`.
--   **Backend API**: The API will be available at `http://localhost:8000`.
--   **API Docs**: Interactive API documentation (Swagger UI) can be found at `http://localhost:8000/docs`.
+-   **Web UI**: You will need to start the frontend separately.
+    ```bash
+    cd frontend
+    npm start
+    ```
+-   **Backend API**: The API will be available at `http://localhost:5001`.
+-   **API Docs**: Interactive API documentation (Swagger UI) can be found at `http://localhost:5001/docs`.
 
 ##  CLI Usage
 

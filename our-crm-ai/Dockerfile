@@ -92,7 +92,7 @@ exec gunicorn \
     --error-logfile /app/logs/error.log \
     --log-level info \
     --preload \
-    production_dashboard:create_production_app()
+    api:app
 EOF
 
 RUN chmod +x /app/entrypoint.sh
