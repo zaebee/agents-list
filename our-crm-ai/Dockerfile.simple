@@ -15,10 +15,11 @@ RUN apt-get update && apt-get install -y \
 # Create application directory
 WORKDIR /app
 
-# Copy requirements and install dependencies
-COPY requirements-minimal.txt .
+# Copy dependency files and install dependencies using uv
+COPY pyproject.toml uv.lock ./
 RUN pip install --upgrade pip
-RUN pip install -r requirements-minimal.txt
+RUN pip install uv
+RUN uv sync --frozen
 
 # Copy application code
 COPY . .

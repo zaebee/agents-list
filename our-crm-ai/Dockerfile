@@ -33,10 +33,10 @@ FROM python:3.11-slim as production
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
-    FLASK_ENV=production \
-    GUNICORN_WORKERS=4 \
-    GUNICORN_THREADS=2 \
-    GUNICORN_TIMEOUT=60
+    FASTAPI_ENV=production \
+    UVICORN_WORKERS=4 \
+    UVICORN_PORT=8000 \
+    UVICORN_HOST=0.0.0.0
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \

@@ -32,8 +32,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 RUN pip install --no-cache-dir \
     ipython \
     ipdb \
-    watchdog \
-    flask-debugtoolbar
+    watchdog
 
 # Create directories for development
 RUN mkdir -p /app/logs /app/data /app/workflow_storage

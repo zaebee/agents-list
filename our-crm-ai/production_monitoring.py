@@ -25,7 +25,8 @@ from typing import Any
 
 import aioredis
 from dotenv import load_dotenv
-from flask import Flask, Response, jsonify
+from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     Counter,
@@ -460,36 +461,34 @@ class ProductionMonitoring:
                 logger.error(f"Metrics collection error: {e}")
                 await asyncio.sleep(60)  # Wait longer on error
 
-    def create_monitoring_app(self) -> Flask:
-        """Create Flask app for monitoring endpoints."""
-        app = Flask(__name__)
+    def create_monitoring_app(self) -> FastAPI:
+        """Create FastAPI app for monitoring endpoints."""
+        app = FastAPI(
+            title="Production Monitoring API",
+            description="Monitoring and health check endpoints",
+            version="2.0.0",
+        )
 
-        @app.route("/metrics")
-        def metrics_endpoint():
+        @app.get("/metrics", response_class=PlainTextResponse)
+        async def metrics_endpoint():
             """Prometheus metrics endpoint."""
-            return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+            return PlainTextResponse(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
-        @app.route("/health")
-        def health_endpoint():
+        @app.get("/health")
+        async def health_endpoint():
             """Simple health check endpoint."""
             overall_health = self.health_checker.get_overall_health()
-            status_code = 200 if overall_health == "healthy" else 503
 
-            return jsonify(
-                {
-                    "status": overall_health,
-                    "timestamp": datetime.now().isoformat(),
-                    "uptime_seconds": (
-                        datetime.now() - self.start_time
-                    ).total_seconds(),
-                }
-            ), status_code
+            return {
+                "status": overall_health,
+                "timestamp": datetime.now().isoformat(),
+                "uptime_seconds": (datetime.now() - self.start_time).total_seconds(),
+            }
 
-        @app.route("/health/detailed")
-        def detailed_health_endpoint():
+        @app.get("/health/detailed")
+        async def detailed_health_endpoint():
             """Detailed health check endpoint."""
             overall_health = self.health_checker.get_overall_health()
-            status_code = 200 if overall_health == "healthy" else 503
 
             health_details = {}
             for name, status in self.health_checker.health_status.items():
@@ -500,39 +499,33 @@ class ProductionMonitoring:
                     "details": status.details,
                 }
 
-            return jsonify(
-                {
-                    "overall_status": overall_health,
-                    "components": health_details,
-                    "timestamp": datetime.now().isoformat(),
-                    "uptime_seconds": (
-                        datetime.now() - self.start_time
-                    ).total_seconds(),
-                }
-            ), status_code
+            return {
+                "overall_status": overall_health,
+                "components": health_details,
+                "timestamp": datetime.now().isoformat(),
+                "uptime_seconds": (datetime.now() - self.start_time).total_seconds(),
+            }
 
-        @app.route("/metrics/business")
-        def business_metrics_endpoint():
+        @app.get("/metrics/business")
+        async def business_metrics_endpoint():
             """Business-specific metrics endpoint."""
             try:
                 # This would integrate with your actual business analytics
-                return jsonify(
-                    {
-                        "projects": {
-                            "total": 0,  # Would be populated from database
-                            "active": 0,
-                            "completed": 0,
-                        },
-                        "agents": {
-                            "total_tasks": 0,
-                            "success_rate": 0.0,
-                            "average_cost": 0.0,
-                        },
-                        "timestamp": datetime.now().isoformat(),
-                    }
-                )
+                return {
+                    "projects": {
+                        "total": 0,  # Would be populated from database
+                        "active": 0,
+                        "completed": 0,
+                    },
+                    "agents": {
+                        "total_tasks": 0,
+                        "success_rate": 0.0,
+                        "average_cost": 0.0,
+                    },
+                    "timestamp": datetime.now().isoformat(),
+                }
             except Exception as e:
-                return jsonify({"error": str(e)}), 500
+                return {"error": str(e)}
 
         return app
 
@@ -552,7 +545,7 @@ async def initialize_monitoring():
 
 
 def create_monitoring_app():
-    """Create the monitoring Flask app."""
+    """Create the monitoring FastAPI app."""
     return monitoring_system.create_monitoring_app()
 
 

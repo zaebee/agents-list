@@ -13,10 +13,10 @@ from dotenv import load_dotenv
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 def wait_for_database():
     """Wait for PostgreSQL database to be ready."""
@@ -41,17 +41,20 @@ def wait_for_database():
                 port=parsed_url.port or 5432,
                 user=parsed_url.username,
                 password=parsed_url.password,
-                database=parsed_url.path[1:]  # Remove leading slash
+                database=parsed_url.path[1:],  # Remove leading slash
             )
             conn.close()
             logger.info("✅ Database connection successful!")
             return
         except psycopg2.OperationalError:
             retry_count += 1
-            logger.info(f"⏳ Waiting for database... attempt {retry_count}/{max_retries}")
+            logger.info(
+                f"⏳ Waiting for database... attempt {retry_count}/{max_retries}"
+            )
             time.sleep(2)
 
     raise Exception("❌ Failed to connect to database after maximum retries")
+
 
 def initialize_database():
     """Initialize database tables and create admin user."""
@@ -76,13 +79,14 @@ def initialize_database():
 
     return True
 
+
 def main():
     """Main initialization function."""
     logger.info("🚀 Starting AI-CRM Docker initialization...")
 
     # Load environment variables
-    if os.path.exists('.env.docker'):
-        load_dotenv('.env.docker')
+    if os.path.exists(".env.docker"):
+        load_dotenv(".env.docker")
         logger.info("📄 Loaded .env.docker configuration")
     else:
         load_dotenv()
@@ -98,6 +102,7 @@ def main():
     else:
         logger.warning("⚠️ AI-CRM initialization completed with warnings")
         return 0  # Don't fail startup for database warnings
+
 
 if __name__ == "__main__":
     sys.exit(main())
