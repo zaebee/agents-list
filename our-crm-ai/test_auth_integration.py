@@ -29,7 +29,7 @@ def create_test_user():
             is_verified=True,
             account_status=AccountStatus.ACTIVE,
             role=UserRole.USER,
-            subscription_tier=SubscriptionTier.FREE
+            subscription_tier=SubscriptionTier.FREE,
         )
 
         db.add(test_user)
@@ -42,6 +42,7 @@ def create_test_user():
     finally:
         db.close()
 
+
 def test_login_api():
     """Test the login API endpoint."""
     try:
@@ -49,10 +50,7 @@ def test_login_api():
         user_id = create_test_user()
 
         # Test login
-        login_data = {
-            "username": "testuser",
-            "password": "testpassword123"
-        }
+        login_data = {"username": "testuser", "password": "testpassword123"}
 
         print("Testing login endpoint...")
         print(f"Login data: {login_data}")
@@ -79,7 +77,9 @@ def test_login_api():
     except Exception as e:
         print(f"❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 def main():
     """Run authentication tests."""
@@ -89,6 +89,7 @@ def main():
     test_login_api()
 
     print("\n✅ Authentication integration test complete!")
+
 
 if __name__ == "__main__":
     main()

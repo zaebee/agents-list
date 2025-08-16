@@ -32,7 +32,7 @@ def setup_test_user():
             is_verified=True,
             account_status=AccountStatus.ACTIVE,
             role=UserRole.USER,
-            subscription_tier=SubscriptionTier.FREE
+            subscription_tier=SubscriptionTier.FREE,
         )
 
         db.add(test_user)
@@ -45,6 +45,7 @@ def setup_test_user():
     finally:
         db.close()
 
+
 def test_login_endpoint():
     """Test the /api/auth/login endpoint."""
     client = TestClient(app)
@@ -55,10 +56,7 @@ def test_login_endpoint():
     print("🧪 Testing /api/auth/login endpoint...")
 
     # Test login
-    login_data = {
-        "username": "apitest",
-        "password": "apitest123"
-    }
+    login_data = {"username": "apitest", "password": "apitest123"}
 
     response = client.post("/api/auth/login", json=login_data)
 
@@ -89,6 +87,7 @@ def test_login_endpoint():
         print(f"Response: {response.text}")
         return None
 
+
 def test_protected_endpoint(access_token):
     """Test a protected endpoint with authentication."""
     if not access_token:
@@ -112,6 +111,7 @@ def test_protected_endpoint(access_token):
         print(f"❌ Protected endpoint failed with status {response.status_code}")
         print(f"Response: {response.text}")
 
+
 def main():
     """Run complete API tests."""
     print("🧪 Complete AI-CRM API Authentication Test")
@@ -132,7 +132,9 @@ def main():
     except Exception as e:
         print(f"❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     main()

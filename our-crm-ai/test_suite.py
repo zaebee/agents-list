@@ -660,7 +660,8 @@ class TestRunner:
                     "-v",
                     "--tb=short",
                 ],
-                check=False, capture_output=True,
+                check=False,
+                capture_output=True,
                 text=True,
             )
 
