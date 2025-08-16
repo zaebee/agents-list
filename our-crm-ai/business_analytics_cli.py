@@ -13,10 +13,10 @@ Key Features:
 - Predictive insights for project success
 """
 
-import sqlite3
-from datetime import datetime
-import uuid
 import argparse
+from datetime import datetime
+import sqlite3
+import uuid
 
 from analytics_engine import AnalyticsEngine
 from business_pm_gateway import BusinessPMGateway, ProjectPlan

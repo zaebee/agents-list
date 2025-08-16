@@ -1,6 +1,5 @@
-import json
 from datetime import datetime
-from typing import Dict, List
+import json
 
 
 class AnalyticsEngine:
@@ -10,7 +9,7 @@ class AnalyticsEngine:
     """
 
     def __init__(self, config_path: str = "config.json"):
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             self.config = json.load(f)
 
         self.metrics = {
@@ -23,7 +22,7 @@ class AnalyticsEngine:
 
         self.historical_data = {}
 
-    def collect_task_completion_metrics(self, tasks: List[Dict]) -> Dict:
+    def collect_task_completion_metrics(self, tasks: list[dict]) -> dict:
         """
         Analyze task completion rates and performance
 
@@ -56,7 +55,7 @@ class AnalyticsEngine:
 
         return self.metrics["task_completion"]
 
-    def analyze_agent_performance(self, agent_logs: List[Dict]) -> Dict:
+    def analyze_agent_performance(self, agent_logs: list[dict]) -> dict:
         """
         Calculate agent performance metrics
 
@@ -92,7 +91,7 @@ class AnalyticsEngine:
         self.metrics["agent_performance"] = agent_metrics
         return self.metrics["agent_performance"]
 
-    def generate_executive_dashboard(self) -> Dict:
+    def generate_executive_dashboard(self) -> dict:
         """
         Generate high-level executive dashboard
 
@@ -126,7 +125,7 @@ class AnalyticsEngine:
         # Placeholder implementation
         return 85.5  # percentage
 
-    def _get_top_performing_agents(self, top_n: int = 5) -> List[Dict]:
+    def _get_top_performing_agents(self, top_n: int = 5) -> list[dict]:
         """Get top N performing agents"""
         performance_data = self.metrics["agent_performance"]
         return sorted(
@@ -140,7 +139,7 @@ class AnalyticsEngine:
         # Placeholder implementation
         return 78.5  # percentage
 
-    def _identify_trending_tasks(self) -> List[Dict]:
+    def _identify_trending_tasks(self) -> list[dict]:
         """Identify most frequent or critical tasks"""
         # Placeholder implementation
         return [
@@ -148,7 +147,7 @@ class AnalyticsEngine:
             {"task_type": "Support Ticket Resolution", "frequency": 35},
         ]
 
-    def _recommend_optimizations(self) -> List[str]:
+    def _recommend_optimizations(self) -> list[str]:
         """Generate optimization recommendations"""
         # Placeholder implementation
         return [
@@ -159,7 +158,7 @@ class AnalyticsEngine:
 
     def track_business_metric(
         self, project_id: str, metric_name: str, value: float, target: float
-    ) -> Dict:
+    ) -> dict:
         """Track business metrics for projects."""
         metric_data = {
             "project_id": project_id,
@@ -176,7 +175,7 @@ class AnalyticsEngine:
 
         return metric_data
 
-    def calculate_project_health_score(self, project_data: Dict) -> Dict:
+    def calculate_project_health_score(self, project_data: dict) -> dict:
         """Calculate comprehensive project health score."""
         health_factors = {
             "timeline": 0.3,
@@ -232,7 +231,7 @@ class AnalyticsEngine:
             "recommendations": self._generate_health_recommendations(scores),
         }
 
-    def _generate_health_recommendations(self, scores: Dict) -> List[str]:
+    def _generate_health_recommendations(self, scores: dict) -> list[str]:
         """Generate health improvement recommendations."""
         recommendations = []
 
@@ -255,7 +254,7 @@ class AnalyticsEngine:
 
         return recommendations
 
-    def generate_predictive_insights(self, project_data: Dict) -> Dict:
+    def generate_predictive_insights(self, project_data: dict) -> dict:
         """Generate predictive insights for project success."""
         # Simplified predictive model
         risk_factors = []

@@ -14,19 +14,19 @@ Features:
 - Real-time progress tracking and logging
 """
 
-import os
-import asyncio
-import logging
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass
-from enum import Enum
-from datetime import datetime
-import json
-import uuid
 from abc import ABC, abstractmethod
+import asyncio
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+import json
+import logging
+import os
+from typing import Any
+import uuid
 
-import httpx
 from dotenv import load_dotenv
+import httpx
 
 # Load environment variables
 load_dotenv()
@@ -72,7 +72,7 @@ class AgentConfig:
     max_tokens: int = 4096
     timeout: int = 60
     max_retries: int = 3
-    specializations: List[str] = None
+    specializations: list[str] = None
     cost_per_token: float = 0.0001
     quality_threshold: float = 0.7
 
@@ -85,12 +85,12 @@ class TaskExecution:
     agent_id: str
     task_type: str
     prompt: str
-    context: Dict[str, Any]
+    context: dict[str, Any]
     status: TaskStatus = TaskStatus.PENDING
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    result: dict[str, Any] | None = None
+    error: str | None = None
     attempts: int = 0
     cost: float = 0.0
     quality_score: float = 0.0
@@ -103,7 +103,7 @@ class AgentProviderInterface(ABC):
     @abstractmethod
     async def execute_task(
         self, config: AgentConfig, task: TaskExecution
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute task with the agent provider."""
         pass
 
@@ -123,7 +123,7 @@ class AnthropicProvider(AgentProviderInterface):
 
     async def execute_task(
         self, config: AgentConfig, task: TaskExecution
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute task using Anthropic Claude API."""
         try:
             import anthropic
@@ -203,7 +203,7 @@ class OpenAIProvider(AgentProviderInterface):
 
     async def execute_task(
         self, config: AgentConfig, task: TaskExecution
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute task using OpenAI API."""
         try:
             async with httpx.AsyncClient() as client:
@@ -307,7 +307,7 @@ class MistralProvider(AgentProviderInterface):
 
     async def execute_task(
         self, config: AgentConfig, task: TaskExecution
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute task using Mistral AI API."""
         try:
             async with httpx.AsyncClient() as client:
@@ -418,7 +418,7 @@ class LocalAgentProvider(AgentProviderInterface):
 
     async def execute_task(
         self, config: AgentConfig, task: TaskExecution
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute task using local API."""
         try:
             async with httpx.AsyncClient() as client:
@@ -478,20 +478,20 @@ class AgentIntegrationFramework:
     """Main framework for managing real AI agent integrations."""
 
     def __init__(self):
-        self.agents: Dict[str, AgentConfig] = {}
-        self.providers: Dict[str, AgentProviderInterface] = {
+        self.agents: dict[str, AgentConfig] = {}
+        self.providers: dict[str, AgentProviderInterface] = {
             "anthropic": AnthropicProvider(),
             "openai": OpenAIProvider(),
             "mistral": MistralProvider(),
             "local": LocalAgentProvider(),
         }
-        self.agent_status: Dict[str, AgentStatus] = {}
-        self.task_queue: List[TaskExecution] = []
-        self.active_tasks: Dict[str, TaskExecution] = {}
-        self.completed_tasks: Dict[str, TaskExecution] = {}
+        self.agent_status: dict[str, AgentStatus] = {}
+        self.task_queue: list[TaskExecution] = []
+        self.active_tasks: dict[str, TaskExecution] = {}
+        self.completed_tasks: dict[str, TaskExecution] = {}
 
         # Performance tracking
-        self.agent_performance: Dict[str, Dict] = {}
+        self.agent_performance: dict[str, dict] = {}
 
         # Load agent configurations
         self._load_agent_configs()
@@ -620,7 +620,7 @@ class AgentIntegrationFramework:
                 }
 
     async def execute_task(
-        self, agent_id: str, task_type: str, prompt: str, context: Dict[str, Any] = None
+        self, agent_id: str, task_type: str, prompt: str, context: dict[str, Any] = None
     ) -> TaskExecution:
         """Execute task with specified agent."""
         if agent_id not in self.agents:
@@ -696,16 +696,15 @@ class AgentIntegrationFramework:
 
                     logger.info(f"Task {task.task_id} completed successfully")
                     return
-                else:
-                    if attempt == config.max_retries - 1:
-                        task.status = TaskStatus.FAILED
-                        task.error = result["error"]
-                        logger.error(
-                            f"Task {task.task_id} failed after {config.max_retries} attempts: {result['error']}"
-                        )
-                        return
+                elif attempt == config.max_retries - 1:
+                    task.status = TaskStatus.FAILED
+                    task.error = result["error"]
+                    logger.error(
+                        f"Task {task.task_id} failed after {config.max_retries} attempts: {result['error']}"
+                    )
+                    return
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 if attempt == config.max_retries - 1:
                     task.status = TaskStatus.TIMEOUT
                     task.error = "Task execution timeout"
@@ -773,7 +772,7 @@ class AgentIntegrationFramework:
         # Update total cost
         metrics["total_cost"] += task.cost
 
-    async def health_check_all_agents(self) -> Dict[str, bool]:
+    async def health_check_all_agents(self) -> dict[str, bool]:
         """Perform health check on all agents."""
         health_results = {}
 
@@ -798,7 +797,7 @@ class AgentIntegrationFramework:
 
         return health_results
 
-    def get_agent_status(self) -> Dict[str, Dict]:
+    def get_agent_status(self) -> dict[str, dict]:
         """Get status of all agents."""
         status_report = {}
 
@@ -814,8 +813,8 @@ class AgentIntegrationFramework:
         return status_report
 
     def get_best_agent_for_task(
-        self, task_type: str, specializations: List[str] = None
-    ) -> Optional[str]:
+        self, task_type: str, specializations: list[str] = None
+    ) -> str | None:
         """Find the best available agent for a task."""
         available_agents = [
             agent_id

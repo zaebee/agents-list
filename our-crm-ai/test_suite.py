@@ -5,46 +5,47 @@ Tests all major components: models, repositories, services, gateways, selectors,
 """
 
 import asyncio
+from datetime import datetime
 import json
 import os
+from pathlib import Path
 import tempfile
+from typing import Any
 import unittest
 from unittest.mock import Mock
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any
 
 import pytest
 
-# Import components to test
-from models import (
-    Task,
-    Agent,
-    TaskStatus,
-    TaskPriority,
-    TaskComplexity,
-    TaskCreateRequest,
-    AgentSuggestion,
-    RoutingContext,
-)
-from exceptions import (
-    CRMError,
-    TaskNotFoundError,
-    ConfigurationError,
-)
-from pm_gateway_refactored import TaskAnalyzer, WorkflowEngine
-from agent_selector import EnhancedAgentSelector, LearningSystem
 from agent_routing import (
-    SmartAgentRouter,
     RoutingStrategy,
+    SmartAgentRouter,
 )
-from workflow_persistence import (
-    FileWorkflowStorage,
-    create_file_persistence_manager,
-)
+from agent_selector import EnhancedAgentSelector, LearningSystem
 from config_manager import (
     ConfigurationManager,
     MainConfig,
+)
+from exceptions import (
+    ConfigurationError,
+    CRMError,
+    TaskNotFoundError,
+)
+
+# Import components to test
+from models import (
+    Agent,
+    AgentSuggestion,
+    RoutingContext,
+    Task,
+    TaskComplexity,
+    TaskCreateRequest,
+    TaskPriority,
+    TaskStatus,
+)
+from pm_gateway_refactored import TaskAnalyzer, WorkflowEngine
+from workflow_persistence import (
+    FileWorkflowStorage,
+    create_file_persistence_manager,
 )
 
 
@@ -659,7 +660,7 @@ class TestRunner:
                     "-v",
                     "--tb=short",
                 ],
-                capture_output=True,
+                check=False, capture_output=True,
                 text=True,
             )
 
@@ -674,7 +675,7 @@ class TestRunner:
             return {"return_code": -1, "error": str(e), "success": False}
 
     @staticmethod
-    def generate_test_report() -> Dict[str, Any]:
+    def generate_test_report() -> dict[str, Any]:
         """Generate comprehensive test report."""
         print("🧪 Running AI-CRM Test Suite...")
         print("=" * 50)

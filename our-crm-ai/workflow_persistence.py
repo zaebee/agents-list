@@ -4,12 +4,13 @@ Workflow Persistence Layer
 Advanced state management for PM Agent Gateway workflows with multiple storage backends.
 """
 
-import json
-import logging
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+import json
+import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 import aiosqlite
 
 from exceptions import ConfigurationError
@@ -20,18 +21,18 @@ class WorkflowStorageBackend(ABC):
 
     @abstractmethod
     async def save_workflow(
-        self, workflow_id: str, workflow_data: Dict[str, Any]
+        self, workflow_id: str, workflow_data: dict[str, Any]
     ) -> bool:
         """Save workflow state."""
         pass
 
     @abstractmethod
-    async def load_workflow(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+    async def load_workflow(self, workflow_id: str) -> dict[str, Any] | None:
         """Load workflow state."""
         pass
 
     @abstractmethod
-    async def update_workflow(self, workflow_id: str, updates: Dict[str, Any]) -> bool:
+    async def update_workflow(self, workflow_id: str, updates: dict[str, Any]) -> bool:
         """Update workflow state."""
         pass
 
@@ -42,8 +43,8 @@ class WorkflowStorageBackend(ABC):
 
     @abstractmethod
     async def list_workflows(
-        self, status: Optional[str] = None, limit: int = 100, offset: int = 0
-    ) -> List[Dict[str, Any]]:
+        self, status: str | None = None, limit: int = 100, offset: int = 0
+    ) -> list[dict[str, Any]]:
         """List workflows with optional filtering."""
         pass
 
@@ -71,7 +72,7 @@ class FileWorkflowStorage(WorkflowStorageBackend):
         return self.storage_dir / f"{workflow_id}.json"
 
     async def save_workflow(
-        self, workflow_id: str, workflow_data: Dict[str, Any]
+        self, workflow_id: str, workflow_data: dict[str, Any]
     ) -> bool:
         """Save workflow to JSON file."""
         try:
@@ -102,7 +103,7 @@ class FileWorkflowStorage(WorkflowStorageBackend):
             self.logger.error(f"Failed to save workflow {workflow_id}: {e}")
             return False
 
-    async def load_workflow(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+    async def load_workflow(self, workflow_id: str) -> dict[str, Any] | None:
         """Load workflow from JSON file."""
         try:
             workflow_path = self._get_workflow_path(workflow_id)
@@ -110,7 +111,7 @@ class FileWorkflowStorage(WorkflowStorageBackend):
             if not workflow_path.exists():
                 return None
 
-            with open(workflow_path, "r") as f:
+            with open(workflow_path) as f:
                 workflow_data = json.load(f)
 
             return workflow_data
@@ -119,7 +120,7 @@ class FileWorkflowStorage(WorkflowStorageBackend):
             self.logger.error(f"Failed to load workflow {workflow_id}: {e}")
             return None
 
-    async def update_workflow(self, workflow_id: str, updates: Dict[str, Any]) -> bool:
+    async def update_workflow(self, workflow_id: str, updates: dict[str, Any]) -> bool:
         """Update workflow in file."""
         try:
             # Load existing workflow
@@ -156,8 +157,8 @@ class FileWorkflowStorage(WorkflowStorageBackend):
             return False
 
     async def list_workflows(
-        self, status: Optional[str] = None, limit: int = 100, offset: int = 0
-    ) -> List[Dict[str, Any]]:
+        self, status: str | None = None, limit: int = 100, offset: int = 0
+    ) -> list[dict[str, Any]]:
         """List workflows from files."""
         workflows = []
 
@@ -279,10 +280,10 @@ class SQLiteWorkflowStorage(WorkflowStorageBackend):
 
         except Exception as e:
             self.logger.error(f"Failed to initialize database: {e}")
-            raise ConfigurationError(f"Database initialization failed: {str(e)}")
+            raise ConfigurationError(f"Database initialization failed: {e!s}")
 
     async def save_workflow(
-        self, workflow_id: str, workflow_data: Dict[str, Any]
+        self, workflow_id: str, workflow_data: dict[str, Any]
     ) -> bool:
         """Save workflow to SQLite database."""
         try:
@@ -328,7 +329,7 @@ class SQLiteWorkflowStorage(WorkflowStorageBackend):
             self.logger.error(f"Failed to save workflow {workflow_id}: {e}")
             return False
 
-    async def load_workflow(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+    async def load_workflow(self, workflow_id: str) -> dict[str, Any] | None:
         """Load workflow from SQLite database."""
         try:
             await self._ensure_initialized()
@@ -349,7 +350,7 @@ class SQLiteWorkflowStorage(WorkflowStorageBackend):
             self.logger.error(f"Failed to load workflow {workflow_id}: {e}")
             return None
 
-    async def update_workflow(self, workflow_id: str, updates: Dict[str, Any]) -> bool:
+    async def update_workflow(self, workflow_id: str, updates: dict[str, Any]) -> bool:
         """Update workflow in database."""
         try:
             await self._ensure_initialized()
@@ -390,8 +391,8 @@ class SQLiteWorkflowStorage(WorkflowStorageBackend):
             return False
 
     async def list_workflows(
-        self, status: Optional[str] = None, limit: int = 100, offset: int = 0
-    ) -> List[Dict[str, Any]]:
+        self, status: str | None = None, limit: int = 100, offset: int = 0
+    ) -> list[dict[str, Any]]:
         """List workflows from database with advanced filtering."""
         try:
             await self._ensure_initialized()
@@ -460,7 +461,7 @@ class SQLiteWorkflowStorage(WorkflowStorageBackend):
         except Exception:
             return False
 
-    async def get_workflow_statistics(self) -> Dict[str, Any]:
+    async def get_workflow_statistics(self) -> dict[str, Any]:
         """Get workflow statistics from database."""
         try:
             await self._ensure_initialized()
@@ -515,7 +516,7 @@ class WorkflowPersistenceManager:
         self.logger = logging.getLogger("workflow_persistence")
 
         # Simple in-memory cache
-        self._cache: Dict[str, tuple] = {}  # workflow_id -> (data, timestamp)
+        self._cache: dict[str, tuple] = {}  # workflow_id -> (data, timestamp)
 
     def _is_cache_valid(self, workflow_id: str) -> bool:
         """Check if cached data is still valid."""
@@ -525,7 +526,7 @@ class WorkflowPersistenceManager:
         _, timestamp = self._cache[workflow_id]
         return (datetime.utcnow() - timestamp).total_seconds() < self.cache_ttl
 
-    def _cache_workflow(self, workflow_id: str, data: Dict[str, Any]):
+    def _cache_workflow(self, workflow_id: str, data: dict[str, Any]):
         """Cache workflow data."""
         if self.enable_caching:
             self._cache[workflow_id] = (data, datetime.utcnow())
@@ -536,7 +537,7 @@ class WorkflowPersistenceManager:
             del self._cache[workflow_id]
 
     async def save_workflow_state(
-        self, task_id: str, title: str, description: str, workflow_data: Dict[str, Any]
+        self, task_id: str, title: str, description: str, workflow_data: dict[str, Any]
     ) -> bool:
         """Save comprehensive workflow state."""
         try:
@@ -562,7 +563,7 @@ class WorkflowPersistenceManager:
             self.logger.error(f"Failed to save workflow state for {task_id}: {e}")
             return False
 
-    async def load_workflow_state(self, task_id: str) -> Optional[Dict[str, Any]]:
+    async def load_workflow_state(self, task_id: str) -> dict[str, Any] | None:
         """Load workflow state with caching."""
         try:
             # Check cache first
@@ -588,7 +589,7 @@ class WorkflowPersistenceManager:
         self,
         task_id: str,
         status: str,
-        additional_updates: Optional[Dict[str, Any]] = None,
+        additional_updates: dict[str, Any] | None = None,
     ) -> bool:
         """Update workflow status and additional fields."""
         try:
@@ -609,7 +610,7 @@ class WorkflowPersistenceManager:
             return False
 
     async def complete_workflow(
-        self, task_id: str, completion_data: Dict[str, Any]
+        self, task_id: str, completion_data: dict[str, Any]
     ) -> bool:
         """Mark workflow as completed with results."""
         completion_updates = {
@@ -634,7 +635,7 @@ class WorkflowPersistenceManager:
             task_id, "cancelled", cancellation_updates
         )
 
-    async def list_active_workflows(self, limit: int = 50) -> List[Dict[str, Any]]:
+    async def list_active_workflows(self, limit: int = 50) -> list[dict[str, Any]]:
         """List active workflows."""
         return await self.backend.list_workflows(status="active", limit=limit)
 
@@ -649,7 +650,7 @@ class WorkflowPersistenceManager:
 
         return cleaned_count
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Comprehensive health check."""
         backend_healthy = await self.backend.health_check()
 

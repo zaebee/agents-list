@@ -10,30 +10,32 @@ This module orchestrates:
 5. Automated training scheduling and management
 """
 
-import json
 import asyncio
-import logging
-import schedule
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
 from enum import Enum
+import json
+import logging
 import statistics
+from typing import Any
 import uuid
+
+import schedule
+
+from agent_selector import AGENT_KEYWORDS
 
 # Import all training framework components
 from agent_training_framework import (
     AgentTrainingPipeline,
     TrainingPhase,
 )
-from training_data_manager import TrainingDataCurator
 from performance_optimizer import (
     AgentOptimizer,
     OptimizationStrategy,
     PerformanceMonitor,
 )
-from agent_selector import AGENT_KEYWORDS
 from pm_agent_gateway import PMAgentGateway
+from training_data_manager import TrainingDataCurator
 
 
 class SystemStatus(Enum):
@@ -60,14 +62,14 @@ class TrainingPriority(Enum):
 class SystemTrainingConfig:
     """System-wide training configuration."""
 
-    training_schedule: Dict[str, str]  # agent -> cron expression
+    training_schedule: dict[str, str]  # agent -> cron expression
     batch_size: int
     max_concurrent_training: int
     auto_optimization: bool
     performance_monitoring: bool
     continuous_learning: bool
-    resource_limits: Dict[str, Any]
-    notification_settings: Dict[str, bool]
+    resource_limits: dict[str, Any]
+    notification_settings: dict[str, bool]
 
 
 @dataclass
@@ -75,14 +77,14 @@ class AgentTrainingStatus:
     """Individual agent training status."""
 
     agent_name: str
-    current_phase: Optional[TrainingPhase]
-    last_trained: Optional[datetime]
+    current_phase: TrainingPhase | None
+    last_trained: datetime | None
     training_score: float
     performance_trend: str
-    next_training: Optional[datetime]
+    next_training: datetime | None
     priority: TrainingPriority
-    issues: List[str]
-    recommendations: List[str]
+    issues: list[str]
+    recommendations: list[str]
 
 
 class IntegratedTrainingSystem:
@@ -155,7 +157,7 @@ class IntegratedTrainingSystem:
         }
 
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 user_config = json.load(f)
                 default_config.update(user_config)
         except FileNotFoundError:
@@ -216,19 +218,18 @@ class IntegratedTrainingSystem:
                         schedule.every().sunday.at("00:00").do(
                             self._schedule_agent_training, agent
                         )
-            else:
-                # Parse cron expression and create schedule
-                # Simplified scheduling (full cron parsing would be more complex)
-                if "* * *" in cron_expr:  # Daily
-                    hour = int(cron_expr.split()[1])
-                    schedule.every().day.at(f"{hour:02d}:00").do(
-                        self._schedule_agent_training, agent_name
-                    )
-                elif "*/2 * *" in cron_expr:  # Every other day
-                    hour = int(cron_expr.split()[1])
-                    schedule.every(2).days.at(f"{hour:02d}:00").do(
-                        self._schedule_agent_training, agent_name
-                    )
+            # Parse cron expression and create schedule
+            # Simplified scheduling (full cron parsing would be more complex)
+            elif "* * *" in cron_expr:  # Daily
+                hour = int(cron_expr.split()[1])
+                schedule.every().day.at(f"{hour:02d}:00").do(
+                    self._schedule_agent_training, agent_name
+                )
+            elif "*/2 * *" in cron_expr:  # Every other day
+                hour = int(cron_expr.split()[1])
+                schedule.every(2).days.at(f"{hour:02d}:00").do(
+                    self._schedule_agent_training, agent_name
+                )
 
         logging.info(
             f"Scheduled training for {len(self.config.training_schedule)} agent patterns"
@@ -274,7 +275,7 @@ class IntegratedTrainingSystem:
 
         logging.info(f"Scheduled training for {agent_name} (priority: {priority})")
 
-    def _handle_performance_alert(self, alert_data: Dict):
+    def _handle_performance_alert(self, alert_data: dict):
         """Handle performance alerts from monitoring system."""
         if alert_data["severity"] in ["critical", "high"]:
             # Find affected agent and schedule emergency training
@@ -289,7 +290,7 @@ class IntegratedTrainingSystem:
             f"Performance alert: {alert_data['metric']} = {alert_data['current_value']}"
         )
 
-    def _identify_agents_for_alert(self, alert_data: Dict) -> List[str]:
+    def _identify_agents_for_alert(self, alert_data: dict) -> list[str]:
         """Identify which agents might be related to a performance alert."""
         metric = alert_data["metric"]
 
@@ -314,7 +315,7 @@ class IntegratedTrainingSystem:
                 if status.priority in [TrainingPriority.CRITICAL, TrainingPriority.HIGH]
             ]
 
-    def _schedule_emergency_training(self, agent_name: str, alert_data: Dict):
+    def _schedule_emergency_training(self, agent_name: str, alert_data: dict):
         """Schedule emergency training for performance issues."""
         # Add to front of training queue with emergency priority
         emergency_item = {
@@ -379,7 +380,7 @@ class IntegratedTrainingSystem:
                 logging.error(f"Error in training orchestrator: {e}")
                 await asyncio.sleep(10)
 
-    async def _start_agent_training(self, agent_name: str, training_item: Dict):
+    async def _start_agent_training(self, agent_name: str, training_item: dict):
         """Start training for a specific agent."""
         try:
             logging.info(f"Starting training for {agent_name}")
@@ -428,11 +429,11 @@ class IntegratedTrainingSystem:
         except Exception as e:
             logging.error(f"Failed to start training for {agent_name}: {e}")
             self.agent_status[agent_name].current_phase = None
-            self.agent_status[agent_name].issues.append(f"Training failed: {str(e)}")
+            self.agent_status[agent_name].issues.append(f"Training failed: {e!s}")
 
     async def _emergency_optimize_agent(
-        self, agent_name: str, alert_context: Dict
-    ) -> Dict[str, Any]:
+        self, agent_name: str, alert_context: dict
+    ) -> dict[str, Any]:
         """Emergency optimization for performance issues."""
         alert_metric = alert_context["metric"]
 
@@ -461,7 +462,7 @@ class IntegratedTrainingSystem:
 
         return optimization_results
 
-    async def _comprehensive_agent_training(self, agent_name: str) -> Dict[str, Any]:
+    async def _comprehensive_agent_training(self, agent_name: str) -> dict[str, Any]:
         """Run comprehensive training for an agent."""
         # This would run the full training pipeline
         training_results = self.training_pipeline.run_comprehensive_training(agent_name)
@@ -478,7 +479,7 @@ class IntegratedTrainingSystem:
 
         return training_results
 
-    def _get_current_agent_metrics(self, agent_name: str) -> Dict[str, float]:
+    def _get_current_agent_metrics(self, agent_name: str) -> dict[str, float]:
         """Get current performance metrics for an agent."""
         # In real implementation, this would fetch actual metrics
         return {
@@ -551,13 +552,13 @@ class IntegratedTrainingSystem:
         except Exception as e:
             logging.error(f"Error handling training completion for {agent_name}: {e}")
             self.agent_status[agent_name].issues.append(
-                f"Post-training error: {str(e)}"
+                f"Post-training error: {e!s}"
             )
         finally:
             # Remove from active sessions
             del self.active_training_sessions[session_id]
 
-    def _calculate_training_score(self, training_results: Dict[str, Any]) -> float:
+    def _calculate_training_score(self, training_results: dict[str, Any]) -> float:
         """Calculate overall training score for an agent."""
         score = 0.5  # Base score
 
@@ -575,7 +576,7 @@ class IntegratedTrainingSystem:
         return min(max(score, 0.0), 1.0)  # Clamp between 0 and 1
 
     def _calculate_performance_trend(
-        self, agent_name: str, training_results: Dict[str, Any]
+        self, agent_name: str, training_results: dict[str, Any]
     ) -> str:
         """Calculate performance trend for an agent."""
         if "overall_improvement" in training_results:
@@ -592,8 +593,8 @@ class IntegratedTrainingSystem:
         return "unknown"
 
     def _generate_agent_recommendations(
-        self, agent_name: str, training_results: Dict[str, Any]
-    ) -> List[str]:
+        self, agent_name: str, training_results: dict[str, Any]
+    ) -> list[str]:
         """Generate recommendations for an agent based on training results."""
         recommendations = []
 
@@ -763,7 +764,7 @@ class IntegratedTrainingSystem:
                 logging.error(f"Error in schedule processor: {e}")
                 await asyncio.sleep(60)
 
-    def get_system_dashboard(self) -> Dict[str, Any]:
+    def get_system_dashboard(self) -> dict[str, Any]:
         """Get comprehensive system dashboard data."""
         return {
             "system_status": self.status.value,
@@ -849,7 +850,7 @@ class IntegratedTrainingSystem:
             "generated_at": datetime.now().isoformat(),
         }
 
-    def get_agent_details(self, agent_name: str) -> Dict[str, Any]:
+    def get_agent_details(self, agent_name: str) -> dict[str, Any]:
         """Get detailed information about a specific agent."""
         if agent_name not in self.agent_status:
             return {"error": f"Agent {agent_name} not found"}

@@ -4,14 +4,14 @@ Enhanced AI Agent Selector with Semantic Matching
 Advanced agent selection with semantic analysis, context awareness, and learning capabilities.
 """
 
+from dataclasses import dataclass
+from datetime import datetime
+import hashlib
 import json
 import logging
-import re
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime
-from dataclasses import dataclass
-import hashlib
+import re
+from typing import Any
 
 # Optional dependencies for semantic matching
 try:
@@ -33,8 +33,9 @@ except ImportError:
     faiss = None
 
 import difflib
-from models import AgentSuggestion
+
 from exceptions import ConfigurationError
+from models import AgentSuggestion
 
 # Agent categories and keywords for intelligent task routing
 AGENT_KEYWORDS = {
@@ -349,7 +350,7 @@ class TaskOutcome:
     assigned_agent: str
     success: bool
     completion_time_hours: float
-    user_rating: Optional[float] = None
+    user_rating: float | None = None
     timestamp: datetime = None
 
     def __post_init__(self):
@@ -363,7 +364,7 @@ class SemanticMatch:
 
     agent_name: str
     similarity_score: float
-    matched_embeddings: List[str]
+    matched_embeddings: list[str]
     confidence: float
 
 
@@ -394,11 +395,11 @@ class SemanticMatcher:
                 self.logger.info(f"Loaded semantic model: {self.model_name}")
             except Exception as e:
                 self.logger.error(f"Failed to load semantic model: {e}")
-                raise ConfigurationError(f"Failed to load semantic model: {str(e)}")
+                raise ConfigurationError(f"Failed to load semantic model: {e!s}")
 
     def _create_agent_descriptions(
-        self, agent_keywords: Dict[str, List[str]]
-    ) -> Dict[str, str]:
+        self, agent_keywords: dict[str, list[str]]
+    ) -> dict[str, str]:
         """Create rich descriptions for agents based on keywords."""
         descriptions = {}
 
@@ -432,7 +433,7 @@ class SemanticMatcher:
 
         return contexts.get(agent_name, "Specialized technical expert")
 
-    async def initialize_embeddings(self, agent_keywords: Dict[str, List[str]]):
+    async def initialize_embeddings(self, agent_keywords: dict[str, list[str]]):
         """Initialize agent embeddings for semantic matching."""
         try:
             self._load_model()
@@ -447,7 +448,7 @@ class SemanticMatcher:
             embeddings = self.model.encode(descriptions)
 
             # Store embeddings
-            for agent_name, embedding in zip(agent_names, embeddings):
+            for agent_name, embedding in zip(agent_names, embeddings, strict=False):
                 self.agent_embeddings[agent_name] = embedding
 
             # Create FAISS index if available
@@ -476,7 +477,7 @@ class SemanticMatcher:
 
     async def find_semantic_matches(
         self, task_description: str, top_k: int = 5
-    ) -> List[SemanticMatch]:
+    ) -> list[SemanticMatch]:
         """Find semantically similar agents."""
         if not self.model or not self.agent_embeddings:
             return []
@@ -497,7 +498,7 @@ class SemanticMatcher:
                     task_embedding_normalized.astype(np.float32), top_k
                 )
 
-                for similarity, idx in zip(similarities[0], indices[0]):
+                for similarity, idx in zip(similarities[0], indices[0], strict=False):
                     if idx < len(self.agent_names_index):
                         agent_name = self.agent_names_index[idx]
                         confidence = min(float(similarity) * 100, 100.0)
@@ -554,8 +555,8 @@ class LearningSystem:
 
     def __init__(self, storage_path: str = "agent_learning.json"):
         self.storage_path = Path(storage_path)
-        self.outcomes: List[TaskOutcome] = []
-        self.agent_performance: Dict[str, Dict[str, Any]] = {}
+        self.outcomes: list[TaskOutcome] = []
+        self.agent_performance: dict[str, dict[str, Any]] = {}
         self.logger = logging.getLogger("learning_system")
 
         self._load_data()
@@ -564,7 +565,7 @@ class LearningSystem:
         """Load learning data from storage."""
         if self.storage_path.exists():
             try:
-                with open(self.storage_path, "r") as f:
+                with open(self.storage_path) as f:
                     data = json.load(f)
 
                 # Load outcomes
@@ -682,7 +683,7 @@ class LearningSystem:
         keyword_str = " ".join(sorted(keywords[:5]))  # Use top 5 keywords
         return hashlib.md5(keyword_str.encode()).hexdigest()[:8]
 
-    def _extract_keywords(self, text: str) -> List[str]:
+    def _extract_keywords(self, text: str) -> list[str]:
         """Extract relevant keywords from text."""
         # Simple keyword extraction
         words = re.findall(r"\b\w+\b", text.lower())
@@ -736,7 +737,7 @@ class LearningSystem:
 
         return max(0.1, adjusted_score)  # Minimum score to avoid complete exclusion
 
-    def get_performance_insights(self) -> Dict[str, Any]:
+    def get_performance_insights(self) -> dict[str, Any]:
         """Get insights from learning data."""
         if not self.outcomes:
             return {"message": "No learning data available"}
@@ -818,8 +819,8 @@ class EnhancedAgentSelector:
             self.enable_semantic = False
 
     def _keyword_match_score(
-        self, task_description: str, agent_keywords: List[str]
-    ) -> Tuple[float, List[str]]:
+        self, task_description: str, agent_keywords: list[str]
+    ) -> tuple[float, list[str]]:
         """Calculate keyword matching score."""
         task_lower = task_description.lower()
         matched_keywords = []
@@ -858,8 +859,8 @@ class EnhancedAgentSelector:
         self,
         task_description: str,
         max_suggestions: int = 5,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> List[AgentSuggestion]:
+        context: dict[str, Any] | None = None,
+    ) -> list[AgentSuggestion]:
         """
         Suggest agents using multiple matching methods and learning.
         """
@@ -962,7 +963,7 @@ class EnhancedAgentSelector:
         assigned_agent: str,
         success: bool,
         completion_time_hours: float,
-        user_rating: Optional[float] = None,
+        user_rating: float | None = None,
     ):
         """Record task outcome for learning."""
         outcome = TaskOutcome(
@@ -977,7 +978,7 @@ class EnhancedAgentSelector:
         self.learning_system.record_outcome(outcome)
         self.logger.info(f"Recorded outcome for task {task_id}")
 
-    def get_learning_insights(self) -> Dict[str, Any]:
+    def get_learning_insights(self) -> dict[str, Any]:
         """Get insights from the learning system."""
         return self.learning_system.get_performance_insights()
 
@@ -1000,7 +1001,7 @@ async def get_enhanced_selector() -> EnhancedAgentSelector:
 # Backward compatibility functions
 def suggest_agents(
     task_description: str, max_suggestions: int = 5
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Backward compatibility function for original agent selector interface."""
     try:
         # Use async wrapper

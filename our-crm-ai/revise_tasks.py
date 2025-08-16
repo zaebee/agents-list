@@ -4,14 +4,14 @@ Revises the statuses of tasks in the AI-CRM.
 """
 
 import asyncio
-import os
 from datetime import datetime, timedelta
+import os
 
-from repositories import (
-    create_task_repository,
-    create_configuration_repository,
-)
 from models import TaskStatus
+from repositories import (
+    create_configuration_repository,
+    create_task_repository,
+)
 
 
 async def main():

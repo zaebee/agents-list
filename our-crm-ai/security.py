@@ -1,10 +1,9 @@
-import os
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
+import os
 
-import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
+import jwt
 from pydantic import BaseModel
 
 from database import get_db_connection, verify_password
@@ -22,10 +21,10 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    username: Optional[str] = None
+    username: str | None = None
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -64,7 +63,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         user_row = cursor.fetchone()
         if user_row is None:
             raise credentials_exception
-        
+
         # Convert SQLite Row to dict for proper serialization
         user = {
             "id": user_row["id"],
@@ -86,7 +85,7 @@ def authenticate_user(username, password, db_path="business_analytics.db"):
             return False
         if not verify_password(password, user_row["password_hash"]):
             return False
-        
+
         # Convert SQLite Row to dict for proper serialization
         user = {
             "id": user_row["id"],

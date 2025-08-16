@@ -4,21 +4,21 @@ Modern AI-CRM CLI Interface
 Clean, modern CLI using the refactored CRM service architecture.
 """
 
+import argparse
 import asyncio
 import logging
 import os
 import sys
-from typing import Optional, Any
-import argparse
+from typing import Any
 
 # Rich for better CLI output
 try:
     from rich.console import Console
-    from rich.table import Table
+    from rich.panel import Panel
     from rich.progress import Progress, SpinnerColumn, TextColumn
     from rich.prompt import Confirm, Prompt
-    from rich.panel import Panel
     from rich.syntax import Syntax
+    from rich.table import Table
     from rich.text import Text
 
     HAS_RICH = True
@@ -27,14 +27,14 @@ except ImportError:
     Console = None
 
 # Project imports
-from models import (
-    TaskCreateRequest,
-    TaskStatus,
-    TaskPriority,
-    PMAnalysisRequest,
-)
-from exceptions import CRMError, TaskNotFoundError
 from crm_service import create_crm_service
+from exceptions import CRMError, TaskNotFoundError
+from models import (
+    PMAnalysisRequest,
+    TaskCreateRequest,
+    TaskPriority,
+    TaskStatus,
+)
 
 
 class ModernCLI:
@@ -42,7 +42,7 @@ class ModernCLI:
 
     def __init__(self):
         self.console = Console() if HAS_RICH else None
-        self.service: Optional[Any] = None
+        self.service: Any | None = None
         self.logger = self._setup_logging()
 
     def _setup_logging(self) -> logging.Logger:
@@ -107,7 +107,7 @@ class ModernCLI:
             self.print_success("AI-CRM service initialized successfully")
 
         except Exception as e:
-            self.print_error(f"Failed to initialize service: {str(e)}")
+            self.print_error(f"Failed to initialize service: {e!s}")
             raise
 
     async def create_task_interactive(self, args):
@@ -201,7 +201,7 @@ class ModernCLI:
                 self.print_error(f"Task creation failed: {response.message}")
 
         except Exception as e:
-            self.print_error(f"Failed to create task: {str(e)}")
+            self.print_error(f"Failed to create task: {e!s}")
 
     def _display_pm_analysis(self, analysis):
         """Display PM analysis results."""
@@ -319,7 +319,7 @@ class ModernCLI:
                 self._display_tasks_simple(tasks)
 
         except Exception as e:
-            self.print_error(f"Failed to list tasks: {str(e)}")
+            self.print_error(f"Failed to list tasks: {e!s}")
 
     def _display_tasks_table(self, tasks):
         """Display tasks in rich table format."""
@@ -402,7 +402,7 @@ class ModernCLI:
         except TaskNotFoundError:
             self.print_error(f"Task '{args.task_id}' not found")
         except Exception as e:
-            self.print_error(f"Failed to view task: {str(e)}")
+            self.print_error(f"Failed to view task: {e!s}")
 
     def _display_task_detail(self, task):
         """Display detailed task information with rich formatting."""
@@ -573,7 +573,7 @@ class ModernCLI:
                 print(f"💡 {response.recommendation}")
 
         except Exception as e:
-            self.print_error(f"Failed to get agent suggestions: {str(e)}")
+            self.print_error(f"Failed to get agent suggestions: {e!s}")
 
     async def show_system_stats(self, args):
         """Show system statistics."""
@@ -659,7 +659,7 @@ class ModernCLI:
                         print(f"  • {agent}")
 
         except Exception as e:
-            self.print_error(f"Failed to get system statistics: {str(e)}")
+            self.print_error(f"Failed to get system statistics: {e!s}")
 
     async def cleanup(self):
         """Clean up resources."""
@@ -782,10 +782,10 @@ Examples:
     except KeyboardInterrupt:
         cli.print_info("Operation cancelled by user")
     except CRMError as e:
-        cli.print_error(f"CRM Error: {str(e)}")
+        cli.print_error(f"CRM Error: {e!s}")
         sys.exit(1)
     except Exception as e:
-        cli.print_error(f"Unexpected error: {str(e)}")
+        cli.print_error(f"Unexpected error: {e!s}")
         if not args.quiet:
             import traceback
 

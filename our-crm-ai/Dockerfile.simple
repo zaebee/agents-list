@@ -9,6 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     curl \
+    python3-psycopg2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create application directory
@@ -36,5 +37,33 @@ EXPOSE 5001
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:5001/health || exit 1
 
+# Create startup script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "🚀 Starting AI-CRM Docker Container..."\n\
+\n\
+# Load environment variables safely\n\
+if [ -f ".env.docker" ]; then\n\
+    echo "📄 Loading Docker environment configuration"\n\
+    set -a\n\
+    source .env.docker\n\
+    set +a\n\
+    echo "✅ Environment variables loaded"\n\
+else\n\
+    echo "⚠️ No .env.docker file found, using container environment"\n\
+fi\n\
+\n\
+# Initialize database\n\
+echo "🔧 Initializing database..."\n\
+python3 scripts/docker-init.py\n\
+\n\
+# Start application\n\
+echo "🌐 Starting FastAPI server on port ${PORT:-5001}..."\n\
+exec uvicorn api:app --host 0.0.0.0 --port ${PORT:-5001}\n\
+' > /app/start.sh && chmod +x /app/start.sh
+
+# Create healthcheck script
+RUN echo '#!/bin/bash\ncurl -f http://localhost:5001/health || exit 1' > /app/healthcheck.sh && chmod +x /app/healthcheck.sh
+
 # Run the application
-CMD ["uvicorn", "dashboard_api:app", "--host", "0.0.0.0", "--port", "5001"]
+CMD ["/app/start.sh"]

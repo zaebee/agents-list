@@ -6,13 +6,13 @@ This script handles initial setup, database creation, and configuration
 for the AI-CRM Agent Training Framework.
 """
 
-import os
-import sys
-import json
-import sqlite3
-import logging
-from pathlib import Path
 from datetime import datetime
+import json
+import logging
+import os
+from pathlib import Path
+import sqlite3
+import sys
 
 
 def setup_logging():
@@ -184,7 +184,7 @@ def create_default_config():
 def setup_sample_data():
     """Setup sample training data for testing."""
     try:
-        from training_data_manager import TrainingDataCurator, DataSource
+        from training_data_manager import DataSource, TrainingDataCurator
 
         curator = TrainingDataCurator("data/training_data.db")
 
@@ -469,9 +469,9 @@ def check_imports():
     """Check if core modules can be imported."""
     try:
         from agent_training_framework import AgentTrainingPipeline
-        from training_data_manager import TrainingDataCurator
-        from performance_optimizer import AgentOptimizer
         from integrated_training_system import IntegratedTrainingSystem
+        from performance_optimizer import AgentOptimizer
+        from training_data_manager import TrainingDataCurator
 
         return True
     except ImportError:

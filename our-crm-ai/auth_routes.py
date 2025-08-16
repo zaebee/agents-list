@@ -3,24 +3,30 @@
 Authentication routes for AI-CRM system.
 """
 
-from datetime import datetime, timedelta, timezone
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr, Field
+from datetime import UTC, datetime, timedelta
 import secrets
 
-from auth_database import get_db, User, AuthSession, AuditLog
-from auth_database import UserRole, SubscriptionTier, AccountStatus
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy.orm import Session
+
 from auth import (
+    PasswordValidator,
     authenticate_user,
     create_access_token,
     create_refresh_token,
-    get_password_hash,
     get_current_user,
+    get_password_hash,
     verify_token,
-    PasswordValidator,
+)
+from auth_database import (
+    AccountStatus,
+    AuditLog,
+    AuthSession,
+    SubscriptionTier,
+    User,
+    UserRole,
+    get_db,
 )
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
@@ -31,7 +37,7 @@ class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=8)
-    full_name: Optional[str] = None
+    full_name: str | None = None
 
 
 class UserLogin(BaseModel):
@@ -43,7 +49,7 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
-    full_name: Optional[str] = None
+    full_name: str | None = None
     role: str
     subscription_tier: str
     is_active: bool
@@ -74,21 +80,21 @@ class PasswordReset(BaseModel):
 @router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     """Register a new user."""
-    
+
     # Check if username already exists
     if db.query(User).filter(User.username == user_data.username).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already registered"
         )
-    
+
     # Check if email already exists
     if db.query(User).filter(User.email == user_data.email).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
-    
+
     # Validate password strength
     password_validation = PasswordValidator.validate(user_data.password)
     if not password_validation["is_valid"]:
@@ -96,11 +102,11 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Password validation failed: {', '.join(password_validation['feedback'])}"
         )
-    
+
     # Create new user
     hashed_password = get_password_hash(user_data.password)
     verification_token = secrets.token_urlsafe(32)
-    
+
     new_user = User(
         username=user_data.username,
         email=user_data.email,
@@ -111,13 +117,13 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         role=UserRole.USER,
         subscription_tier=SubscriptionTier.FREE
     )
-    
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    
+
     # TODO: Send verification email
-    
+
     return {
         "message": "User registered successfully",
         "user_id": new_user.id,
@@ -132,7 +138,7 @@ async def login(
     db: Session = Depends(get_db)
 ):
     """Authenticate user and return tokens."""
-    
+
     user = authenticate_user(user_credentials.username, user_credentials.password, db)
     if not user:
         raise HTTPException(
@@ -140,18 +146,18 @@ async def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Create tokens
     access_token_expires = timedelta(minutes=30)
     access_token = create_access_token(
         data={"sub": str(user["id"])}, expires_delta=access_token_expires
     )
     refresh_token = create_refresh_token(user["id"])
-    
+
     # Create session record
     jti = verify_token(access_token).get("jti")
-    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
-    
+    expires_at = datetime.now(UTC) + timedelta(days=7)
+
     session = AuthSession(
         user_id=user["id"],
         refresh_token=refresh_token,
@@ -160,13 +166,13 @@ async def login(
         user_agent=request.headers.get("user-agent"),
         expires_at=expires_at,
     )
-    
+
     db.add(session)
-    
+
     # Update last login
     db_user = db.query(User).filter(User.id == user["id"]).first()
-    db_user.last_login = datetime.now(timezone.utc)
-    
+    db_user.last_login = datetime.now(UTC)
+
     # Log successful login
     audit_log = AuditLog(
         user_id=user["id"],
@@ -176,9 +182,9 @@ async def login(
         user_agent=request.headers.get("user-agent"),
     )
     db.add(audit_log)
-    
+
     db.commit()
-    
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
@@ -194,7 +200,7 @@ async def refresh_token(
     db: Session = Depends(get_db)
 ):
     """Refresh access token using refresh token."""
-    
+
     # Verify refresh token
     payload = verify_token(token_data.refresh_token)
     if not payload or payload.get("type") != "refresh":
@@ -202,26 +208,26 @@ async def refresh_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token"
         )
-    
+
     user_id = payload.get("user_id")
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token"
         )
-    
+
     # Check if session exists and is active
     session = db.query(AuthSession).filter(
         AuthSession.refresh_token == token_data.refresh_token,
         AuthSession.is_active == True
     ).first()
-    
+
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Session not found or expired"
         )
-    
+
     # Get user
     user = db.query(User).filter(User.id == user_id).first()
     if not user or not user.is_active:
@@ -229,20 +235,20 @@ async def refresh_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive"
         )
-    
+
     # Create new access token
     access_token_expires = timedelta(minutes=30)
     new_access_token = create_access_token(
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
-    
+
     # Update session with new access token JTI
     new_jti = verify_token(new_access_token).get("jti")
     session.access_token_jti = new_jti
-    session.last_used = datetime.now(timezone.utc)
-    
+    session.last_used = datetime.now(UTC)
+
     db.commit()
-    
+
     return {
         "access_token": new_access_token,
         "token_type": "bearer"
@@ -256,7 +262,7 @@ async def logout(
     db: Session = Depends(get_db)
 ):
     """Logout user and invalidate session."""
-    
+
     # Get authorization header
     auth_header = request.headers.get("authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
@@ -264,21 +270,21 @@ async def logout(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authorization header"
         )
-    
+
     token = auth_header.split(" ")[1]
     payload = verify_token(token)
     jti = payload.get("jti") if payload else None
-    
+
     if jti:
         # Deactivate session
         session = db.query(AuthSession).filter(
             AuthSession.access_token_jti == jti,
             AuthSession.user_id == current_user["id"]
         ).first()
-        
+
         if session:
             session.is_active = False
-            
+
             # Log logout
             audit_log = AuditLog(
                 user_id=current_user["id"],
@@ -288,9 +294,9 @@ async def logout(
                 user_agent=request.headers.get("user-agent"),
             )
             db.add(audit_log)
-            
+
             db.commit()
-    
+
     return {"message": "Successfully logged out"}
 
 
@@ -312,23 +318,23 @@ async def request_password_reset(
     db: Session = Depends(get_db)
 ):
     """Request password reset."""
-    
+
     user = db.query(User).filter(User.email == request_data.email).first()
     if not user:
         # Don't reveal if email exists or not for security
         return {"message": "If the email exists, a reset link will be sent"}
-    
+
     # Generate reset token
     reset_token = secrets.token_urlsafe(32)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
-    
+    expires_at = datetime.now(UTC) + timedelta(hours=1)
+
     user.password_reset_token = reset_token
     user.password_reset_expires = expires_at
-    
+
     db.commit()
-    
+
     # TODO: Send password reset email
-    
+
     return {"message": "If the email exists, a reset link will be sent"}
 
 
@@ -338,18 +344,18 @@ async def reset_password(
     db: Session = Depends(get_db)
 ):
     """Reset password using reset token."""
-    
+
     user = db.query(User).filter(
         User.password_reset_token == reset_data.token,
-        User.password_reset_expires > datetime.now(timezone.utc)
+        User.password_reset_expires > datetime.now(UTC)
     ).first()
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired reset token"
         )
-    
+
     # Validate new password
     password_validation = PasswordValidator.validate(reset_data.new_password)
     if not password_validation["is_valid"]:
@@ -357,17 +363,17 @@ async def reset_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Password validation failed: {', '.join(password_validation['feedback'])}"
         )
-    
+
     # Update password
     user.hashed_password = get_password_hash(reset_data.new_password)
     user.password_reset_token = None
     user.password_reset_expires = None
-    
+
     # Invalidate all user sessions
     db.query(AuthSession).filter(AuthSession.user_id == user.id).update(
         {"is_active": False}
     )
-    
+
     db.commit()
-    
+
     return {"message": "Password reset successfully"}
