@@ -9,11 +9,11 @@ services:
       - .env.docker
     environment:
       # Override specific settings for Docker deployment
-      - DATABASE_URL=postgresql://aicrm_user:${DATABASE_PASSWORD:-aicrm123}@postgres:5432/aicrm_db
       - REDIS_URL=redis://redis:6379/0
       - HOST=0.0.0.0
       - PORT=5001
       - DATABASE_URL=postgresql://aicrm_user:${DATABASE_PASSWORD:-your_secure_password}@postgres:5432/aicrm_db
+      - ENVIRONMENT=production
       - DEBUG=false
       - LOG_LEVEL=INFO
       - WORKERS=4

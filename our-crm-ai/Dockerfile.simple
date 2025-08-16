@@ -9,10 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     curl \
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    python3-psycopg2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create application directory
