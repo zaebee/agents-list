@@ -219,7 +219,7 @@ ENVIRONMENT=production
 DEBUG=false
 LOG_LEVEL=INFO
 DOMAIN=crm.zae.life
-ALLOWED_ORIGINS=https://crm.zae.life,https://crm.zae.life:8080
+ALLOWED_ORIGINS=https://crm.zae.life
 
 # Performance
 WORKERS=4
