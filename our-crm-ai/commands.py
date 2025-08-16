@@ -1,7 +1,8 @@
 # our-crm-ai/commands.py
 import uuid
-from api_client import make_api_request, handle_api_error, BASE_URL
+
 from agent_selector import suggest_agents
+from api_client import BASE_URL, handle_api_error, make_api_request
 from pm_agent_gateway import PMAgentGateway
 
 

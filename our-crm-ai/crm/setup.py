@@ -1,6 +1,7 @@
-import requests
 import json
 import os
+
+import requests
 
 # --- Configuration ---
 API_KEY = os.environ.get("YOUGILE_API_KEY")

@@ -10,16 +10,16 @@ This module provides:
 5. Privacy and compliance features
 """
 
-import json
-import sqlite3
-import hashlib
-import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass
-from enum import Enum
-import re
 from collections import Counter
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+import hashlib
+import json
+import logging
+import re
+import sqlite3
+from typing import Any
 import uuid
 
 # Privacy and security imports
@@ -66,12 +66,12 @@ class TrainingDataset:
     version: str
     agent_name: str
     creation_date: datetime
-    data_sources: List[DataSource]
-    quality_metrics: Dict[str, float]
+    data_sources: list[DataSource]
+    quality_metrics: dict[str, float]
     size: int
     privacy_level: PrivacyLevel
     validation_status: str
-    tags: List[str]
+    tags: list[str]
     description: str
 
 
@@ -82,7 +82,7 @@ class DataValidationRule:
     rule_id: str
     name: str
     description: str
-    agent_names: List[str]
+    agent_names: list[str]
     validation_function: str
     severity: str  # 'error', 'warning', 'info'
     enabled: bool
@@ -324,7 +324,7 @@ class TrainingDataCurator:
             ],
         }
 
-    def validate_training_data(self, data_point: Dict) -> Tuple[bool, List[Dict]]:
+    def validate_training_data(self, data_point: dict) -> tuple[bool, list[dict]]:
         """Validate a training data point against all applicable rules."""
         agent_name = data_point.get("agent_name", "")
         input_text = data_point.get("input_text", "")
@@ -365,7 +365,7 @@ class TrainingDataCurator:
         return is_valid, validation_errors
 
     def _execute_validation_function(
-        self, function_code: str, data_point: Dict
+        self, function_code: str, data_point: dict
     ) -> bool:
         """Execute validation function safely."""
         # Extract variables for validation
@@ -446,7 +446,7 @@ class TrainingDataCurator:
         except Exception:
             return False
 
-    def calculate_data_quality_score(self, data_point: Dict) -> float:
+    def calculate_data_quality_score(self, data_point: dict) -> float:
         """Calculate comprehensive quality score for a data point."""
         score = 0.0
         max_score = 100.0
@@ -512,9 +512,9 @@ class TrainingDataCurator:
         self,
         name: str,
         agent_name: str,
-        data_sources: List[DataSource],
+        data_sources: list[DataSource],
         description: str = "",
-        tags: List[str] = None,
+        tags: list[str] = None,
     ) -> str:
         """Create a new training dataset."""
         dataset_id = str(uuid.uuid4())
@@ -562,8 +562,8 @@ class TrainingDataCurator:
         return dataset_id
 
     def add_data_to_dataset(
-        self, dataset_id: str, data_points: List[Dict]
-    ) -> Dict[str, int]:
+        self, dataset_id: str, data_points: list[dict]
+    ) -> dict[str, int]:
         """Add training data points to a dataset."""
         results = {"added": 0, "rejected": 0, "validation_errors": 0}
 
@@ -645,18 +645,18 @@ class TrainingDataCurator:
 
         return results
 
-    def _generate_content_hash(self, data_point: Dict) -> str:
+    def _generate_content_hash(self, data_point: dict) -> str:
         """Generate hash for content deduplication."""
         content = f"{data_point.get('agent_name', '')}{data_point.get('input_text', '')}{data_point.get('expected_output', '')}"
         return hashlib.sha256(content.encode()).hexdigest()
 
-    def _encrypt_sensitive_fields(self, data_point: Dict) -> Dict:
+    def _encrypt_sensitive_fields(self, data_point: dict) -> dict:
         """Encrypt sensitive fields in data point."""
         sensitive_fields = ["actual_output", "context_data"]
         encrypted = {}
 
         for field in sensitive_fields:
-            if field in data_point and data_point[field]:
+            if data_point.get(field):
                 try:
                     value = (
                         json.dumps(data_point[field])
@@ -722,8 +722,8 @@ class TrainingDataCurator:
         return 0
 
     def _apply_augmentation_template(
-        self, template: Dict, original_data: Tuple, agent_name: str
-    ) -> Optional[Dict]:
+        self, template: dict, original_data: tuple, agent_name: str
+    ) -> dict | None:
         """Apply augmentation template to generate new training data."""
         input_text, expected_output, context_data = original_data
 
@@ -779,7 +779,7 @@ class TrainingDataCurator:
 
         return None
 
-    def get_dataset_quality_report(self, dataset_id: str) -> Dict[str, Any]:
+    def get_dataset_quality_report(self, dataset_id: str) -> dict[str, Any]:
         """Generate comprehensive quality report for a dataset."""
         with sqlite3.connect(self.db_path) as conn:
             # Basic statistics
@@ -875,8 +875,8 @@ class TrainingDataCurator:
         return report
 
     def _generate_quality_recommendations(
-        self, stats: Tuple, quality_scores: List[float], validation_errors: List[Dict]
-    ) -> List[str]:
+        self, stats: tuple, quality_scores: list[float], validation_errors: list[dict]
+    ) -> list[str]:
         """Generate recommendations for improving data quality."""
         recommendations = []
 
@@ -951,7 +951,7 @@ class TrainingDataCurator:
         # Convert to dictionaries
         data_points = []
         for row in rows:
-            point = dict(zip(columns, row))
+            point = dict(zip(columns, row, strict=False))
 
             # Apply privacy filter if requested
             if (

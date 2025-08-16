@@ -1,8 +1,8 @@
-import sqlite3
-import bcrypt
-import uuid
 import logging
-from datetime import datetime
+import sqlite3
+import uuid
+
+import bcrypt
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +115,7 @@ def init_default_users(db_path: str = "business_analytics.db"):
 
         if admin_count == 0:
             admin_id = str(uuid.uuid4())
-            password_hash = bcrypt.hashpw("admin123".encode("utf-8"), bcrypt.gensalt())
+            password_hash = bcrypt.hashpw(b"admin123", bcrypt.gensalt())
 
             cursor.execute(
                 """

@@ -4,36 +4,36 @@ AI-CRM Repository Layer
 Data access abstraction for YouGile API and local storage.
 """
 
-import asyncio
-import json
-import time
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any
+import asyncio
 from datetime import datetime, timedelta
+import json
 from pathlib import Path
+import time
+from typing import Any
 
 import httpx  # Modern async HTTP client
-import requests  # For backward compatibility
 from pydantic import ValidationError
+import requests  # For backward compatibility
 
-from models import (
-    Task,
-    TaskStatus,
-    TaskCreateRequest,
-    TaskUpdateRequest,
-    Agent,
-    CRMConfiguration,
-    TaskMetadata,
-)
 from exceptions import (
     APIError,
-    TaskNotFoundError,
-    TaskValidationError,
     ConfigurationError,
     NetworkError,
+    TaskNotFoundError,
+    TaskValidationError,
     create_api_exception,
-    is_retryable_error,
     get_retry_delay,
+    is_retryable_error,
+)
+from models import (
+    Agent,
+    CRMConfiguration,
+    Task,
+    TaskCreateRequest,
+    TaskMetadata,
+    TaskStatus,
+    TaskUpdateRequest,
 )
 
 
@@ -55,7 +55,7 @@ class TaskRepository(BaseRepository):
         pass
 
     @abstractmethod
-    async def get_task(self, task_id: str) -> Optional[Task]:
+    async def get_task(self, task_id: str) -> Task | None:
         """Get task by ID."""
         pass
 
@@ -67,11 +67,11 @@ class TaskRepository(BaseRepository):
     @abstractmethod
     async def list_tasks(
         self,
-        status: Optional[TaskStatus] = None,
-        assigned_agent: Optional[str] = None,
+        status: TaskStatus | None = None,
+        assigned_agent: str | None = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> List[Task]:
+    ) -> list[Task]:
         """List tasks with optional filters."""
         pass
 
@@ -91,7 +91,7 @@ class TaskRepository(BaseRepository):
         pass
 
     @abstractmethod
-    async def get_comments(self, task_id: str) -> List[Dict[str, Any]]:
+    async def get_comments(self, task_id: str) -> list[dict[str, Any]]:
         """Get task comments."""
         pass
 
@@ -100,12 +100,12 @@ class AgentRepository(BaseRepository):
     """Repository for agent data access."""
 
     @abstractmethod
-    async def get_agent(self, agent_name: str) -> Optional[Agent]:
+    async def get_agent(self, agent_name: str) -> Agent | None:
         """Get agent by name."""
         pass
 
     @abstractmethod
-    async def list_agents(self) -> List[Agent]:
+    async def list_agents(self) -> list[Agent]:
         """List all available agents."""
         pass
 
@@ -164,7 +164,7 @@ class YouGileTaskRepository(TaskRepository):
         }
 
         # Async client will be created when needed
-        self._async_client: Optional[httpx.AsyncClient] = None
+        self._async_client: httpx.AsyncClient | None = None
 
     async def _get_async_client(self) -> httpx.AsyncClient:
         """Get or create async HTTP client."""
@@ -183,9 +183,9 @@ class YouGileTaskRepository(TaskRepository):
         self,
         method: str,
         endpoint: str,
-        json_data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Make HTTP request with retry logic."""
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         client = await self._get_async_client()
@@ -216,7 +216,7 @@ class YouGileTaskRepository(TaskRepository):
                         await asyncio.sleep(delay)
 
                 except httpx.RequestError as e:
-                    error = NetworkError(f"Network error: {str(e)}", endpoint=endpoint)
+                    error = NetworkError(f"Network error: {e!s}", endpoint=endpoint)
                     if attempt == self.max_retries:
                         raise error
 
@@ -229,9 +229,9 @@ class YouGileTaskRepository(TaskRepository):
         self,
         method: str,
         endpoint: str,
-        json_data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Make synchronous HTTP request with retry logic."""
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
 
@@ -268,7 +268,7 @@ class YouGileTaskRepository(TaskRepository):
                     time.sleep(delay)
 
             except requests.exceptions.RequestException as e:
-                error = NetworkError(f"Network error: {str(e)}", endpoint=endpoint)
+                error = NetworkError(f"Network error: {e!s}", endpoint=endpoint)
                 if attempt == self.max_retries:
                     raise error
 
@@ -343,9 +343,9 @@ class YouGileTaskRepository(TaskRepository):
             )
 
         except ValidationError as e:
-            raise TaskValidationError(f"Task validation failed: {str(e)}")
+            raise TaskValidationError(f"Task validation failed: {e!s}")
 
-    async def get_task(self, task_id: str) -> Optional[Task]:
+    async def get_task(self, task_id: str) -> Task | None:
         """Get task by ID from YouGile."""
         try:
             response_data = await self._make_request("GET", f"/tasks/{task_id}")
@@ -355,7 +355,7 @@ class YouGileTaskRepository(TaskRepository):
                 return None
             raise
 
-    def _convert_api_task_to_model(self, api_data: Dict[str, Any]) -> Task:
+    def _convert_api_task_to_model(self, api_data: dict[str, Any]) -> Task:
         """Convert YouGile API task data to Task model."""
         # Map column ID to status
         column_id = api_data.get("columnId")
@@ -446,11 +446,11 @@ class YouGileTaskRepository(TaskRepository):
 
     async def list_tasks(
         self,
-        status: Optional[TaskStatus] = None,
-        assigned_agent: Optional[str] = None,
+        status: TaskStatus | None = None,
+        assigned_agent: str | None = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> List[Task]:
+    ) -> list[Task]:
         """List tasks with optional filters."""
         all_tasks = []
 
@@ -494,7 +494,7 @@ class YouGileTaskRepository(TaskRepository):
         await self._make_request("POST", f"/chats/{task_id}/messages", comment_data)
         return True
 
-    async def get_comments(self, task_id: str) -> List[Dict[str, Any]]:
+    async def get_comments(self, task_id: str) -> list[dict[str, Any]]:
         """Get task comments."""
         try:
             response_data = await self._make_request(
@@ -521,7 +521,7 @@ class InMemoryAgentRepository(AgentRepository):
 
     def __init__(self, config: CRMConfiguration):
         self.config = config
-        self.agents: Dict[str, Agent] = {}
+        self.agents: dict[str, Agent] = {}
         self._load_agents_from_config()
 
     def _load_agents_from_config(self):
@@ -574,11 +574,11 @@ class InMemoryAgentRepository(AgentRepository):
         """Check repository health."""
         return len(self.agents) > 0
 
-    async def get_agent(self, agent_name: str) -> Optional[Agent]:
+    async def get_agent(self, agent_name: str) -> Agent | None:
         """Get agent by name."""
         return self.agents.get(agent_name)
 
-    async def list_agents(self) -> List[Agent]:
+    async def list_agents(self) -> list[Agent]:
         """List all available agents."""
         return list(self.agents.values())
 
@@ -636,8 +636,8 @@ class FileConfigurationRepository(ConfigurationRepository):
 
     def __init__(self, config_path: str = "config.json"):
         self.config_path = Path(config_path)
-        self._config_cache: Optional[CRMConfiguration] = None
-        self._cache_time: Optional[datetime] = None
+        self._config_cache: CRMConfiguration | None = None
+        self._cache_time: datetime | None = None
         self._cache_ttl = timedelta(minutes=5)
 
     async def health_check(self) -> bool:
@@ -663,7 +663,7 @@ class FileConfigurationRepository(ConfigurationRepository):
             )
 
         try:
-            with open(self.config_path, "r") as f:
+            with open(self.config_path) as f:
                 config_data = json.load(f)
 
             # Extract YouGile config from enhanced config format
@@ -696,11 +696,11 @@ class FileConfigurationRepository(ConfigurationRepository):
             return config
 
         except json.JSONDecodeError as e:
-            raise ConfigurationError(f"Invalid JSON in configuration file: {str(e)}")
+            raise ConfigurationError(f"Invalid JSON in configuration file: {e!s}")
         except ValidationError as e:
-            raise ConfigurationError(f"Configuration validation failed: {str(e)}")
-        except IOError as e:
-            raise ConfigurationError(f"Failed to read configuration file: {str(e)}")
+            raise ConfigurationError(f"Configuration validation failed: {e!s}")
+        except OSError as e:
+            raise ConfigurationError(f"Failed to read configuration file: {e!s}")
 
     async def update_configuration(self, config: CRMConfiguration) -> bool:
         """Update configuration file."""
@@ -728,7 +728,7 @@ class FileConfigurationRepository(ConfigurationRepository):
             backup_path = self.config_path.with_suffix(".json.backup")
             if backup_path.exists():
                 backup_path.replace(self.config_path)
-            raise ConfigurationError(f"Failed to update configuration: {str(e)}")
+            raise ConfigurationError(f"Failed to update configuration: {e!s}")
 
 
 # Repository factory functions

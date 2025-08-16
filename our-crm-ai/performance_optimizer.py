@@ -10,20 +10,22 @@ This module provides:
 5. Performance benchmarking and comparison
 """
 
-import json
-import time
-import logging
-import threading
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Callable
-from dataclasses import dataclass
-from enum import Enum
-import statistics
 from collections import defaultdict, deque
-import uuid
-import sqlite3
-import psutil
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+import json
+import logging
 import resource
+import sqlite3
+import statistics
+import threading
+import time
+from typing import Any
+import uuid
+
+import psutil
 
 # Import system components
 
@@ -69,13 +71,13 @@ class PerformanceBenchmark:
     benchmark_id: str
     agent_name: str
     test_scenario: str
-    baseline_metrics: Dict[str, float]
-    optimized_metrics: Dict[str, float]
-    improvement_percentage: Dict[str, float]
-    optimization_techniques: List[OptimizationTechnique]
+    baseline_metrics: dict[str, float]
+    optimized_metrics: dict[str, float]
+    improvement_percentage: dict[str, float]
+    optimization_techniques: list[OptimizationTechnique]
     test_date: datetime
     test_duration: float
-    resource_usage: Dict[str, float]
+    resource_usage: dict[str, float]
     notes: str
 
 
@@ -88,21 +90,21 @@ class ABTestExperiment:
     test_name: str
     control_version: str
     treatment_version: str
-    control_metrics: Dict[str, List[float]]
-    treatment_metrics: Dict[str, List[float]]
+    control_metrics: dict[str, list[float]]
+    treatment_metrics: dict[str, list[float]]
     sample_size: int
     confidence_level: float
     statistical_significance: bool
     start_date: datetime
-    end_date: Optional[datetime]
+    end_date: datetime | None
     status: str
-    results: Dict[str, Any]
+    results: dict[str, Any]
 
 
 class PerformanceMonitor:
     """Real-time performance monitoring and alerting."""
 
-    def __init__(self, alert_thresholds: Dict[str, float] = None):
+    def __init__(self, alert_thresholds: dict[str, float] = None):
         """Initialize performance monitor."""
         self.alert_thresholds = alert_thresholds or {
             "response_time": 5.0,  # seconds
@@ -153,7 +155,7 @@ class PerformanceMonitor:
                 logging.error(f"Error in monitoring loop: {e}")
                 time.sleep(interval)
 
-    def _process_system_metrics(self, metrics: Dict[str, float]):
+    def _process_system_metrics(self, metrics: dict[str, float]):
         """Process and store system metrics."""
         timestamp = datetime.now()
 
@@ -162,7 +164,7 @@ class PerformanceMonitor:
                 {"timestamp": timestamp, "value": value}
             )
 
-    def _check_alerts(self, metrics: Dict[str, float]):
+    def _check_alerts(self, metrics: dict[str, float]):
         """Check metrics against alert thresholds."""
         for metric_name, value in metrics.items():
             threshold = self.alert_thresholds.get(metric_name)
@@ -208,7 +210,7 @@ class PerformanceMonitor:
         else:
             return "low"
 
-    def _trigger_alert(self, alert_data: Dict):
+    def _trigger_alert(self, alert_data: dict):
         """Trigger alert callbacks."""
         for callback in self.alert_callbacks:
             try:
@@ -216,11 +218,11 @@ class PerformanceMonitor:
             except Exception as e:
                 logging.error(f"Alert callback failed: {e}")
 
-    def register_alert_callback(self, callback: Callable[[Dict], None]):
+    def register_alert_callback(self, callback: Callable[[dict], None]):
         """Register callback for performance alerts."""
         self.alert_callbacks.append(callback)
 
-    def get_performance_summary(self, time_window: timedelta = None) -> Dict[str, Any]:
+    def get_performance_summary(self, time_window: timedelta = None) -> dict[str, Any]:
         """Get performance summary for specified time window."""
         if time_window is None:
             time_window = timedelta(hours=1)
@@ -254,7 +256,7 @@ class ResourceMonitor:
         """Initialize resource monitor."""
         self.baseline_memory = psutil.virtual_memory().used
 
-    def get_system_metrics(self) -> Dict[str, float]:
+    def get_system_metrics(self) -> dict[str, float]:
         """Get current system metrics."""
         # Memory metrics
         memory = psutil.virtual_memory()
@@ -278,7 +280,7 @@ class ResourceMonitor:
             else 0.0,
         }
 
-    def get_resource_limits(self) -> Dict[str, int]:
+    def get_resource_limits(self) -> dict[str, int]:
         """Get current resource limits."""
         return {
             "memory_limit": resource.getrlimit(resource.RLIMIT_AS)[0],
@@ -399,8 +401,8 @@ class AgentOptimizer:
         self,
         agent_name: str,
         strategy: OptimizationStrategy,
-        current_metrics: Dict[str, float],
-    ) -> Dict[str, Any]:
+        current_metrics: dict[str, float],
+    ) -> dict[str, Any]:
         """Optimize an agent using specified strategy."""
 
         logging.info(
@@ -470,7 +472,7 @@ class AgentOptimizer:
 
     def _get_optimization_techniques(
         self, agent_name: str, strategy: OptimizationStrategy
-    ) -> List[OptimizationTechnique]:
+    ) -> list[OptimizationTechnique]:
         """Get applicable optimization techniques for agent and strategy."""
 
         # Try agent-specific strategies first
@@ -487,8 +489,8 @@ class AgentOptimizer:
         self,
         agent_name: str,
         technique: OptimizationTechnique,
-        current_metrics: Dict[str, float],
-    ) -> Dict[str, float]:
+        current_metrics: dict[str, float],
+    ) -> dict[str, float]:
         """Apply specific optimization technique to agent."""
 
         # Simulate optimization effects (in real implementation, this would apply actual optimizations)
@@ -551,8 +553,8 @@ class AgentOptimizer:
 
     def _calculate_improvement(
         self,
-        before_metrics: Dict[str, float],
-        after_metrics: Dict[str, float],
+        before_metrics: dict[str, float],
+        after_metrics: dict[str, float],
         strategy: OptimizationStrategy,
     ) -> float:
         """Calculate improvement for specific optimization strategy."""
@@ -589,8 +591,8 @@ class AgentOptimizer:
         return statistics.mean(improvements) if improvements else 0.0
 
     def _calculate_all_improvements(
-        self, before_metrics: Dict[str, float], after_metrics: Dict[str, float]
-    ) -> Dict[str, float]:
+        self, before_metrics: dict[str, float], after_metrics: dict[str, float]
+    ) -> dict[str, float]:
         """Calculate improvements for all metrics."""
         improvements = {}
 
@@ -604,7 +606,7 @@ class AgentOptimizer:
 
         return improvements
 
-    def _store_optimization_history(self, optimization_results: Dict[str, Any]):
+    def _store_optimization_history(self, optimization_results: dict[str, Any]):
         """Store optimization results in database."""
         optimization_id = str(uuid.uuid4())
 
@@ -635,7 +637,7 @@ class AgentOptimizer:
             )
 
     def run_performance_benchmark(
-        self, agent_name: str, test_scenarios: List[Dict]
+        self, agent_name: str, test_scenarios: list[dict]
     ) -> PerformanceBenchmark:
         """Run comprehensive performance benchmark for an agent."""
 
@@ -710,8 +712,8 @@ class AgentOptimizer:
         return benchmark
 
     def _collect_baseline_metrics(
-        self, agent_name: str, test_scenarios: List[Dict]
-    ) -> Dict[str, float]:
+        self, agent_name: str, test_scenarios: list[dict]
+    ) -> dict[str, float]:
         """Collect baseline performance metrics for an agent."""
 
         # Simulate baseline metrics collection (in real implementation, this would run actual tests)
@@ -804,7 +806,7 @@ class AgentOptimizer:
         return experiment_id
 
     def add_ab_test_data(
-        self, experiment_id: str, version: str, metrics: Dict[str, float]
+        self, experiment_id: str, version: str, metrics: dict[str, float]
     ):
         """Add data point to A/B test experiment."""
         if experiment_id not in self.ab_tests:
@@ -953,8 +955,8 @@ class AgentOptimizer:
             )
 
     def get_optimization_recommendations(
-        self, agent_name: str, current_metrics: Dict[str, float]
-    ) -> List[Dict[str, Any]]:
+        self, agent_name: str, current_metrics: dict[str, float]
+    ) -> list[dict[str, Any]]:
         """Get optimization recommendations for an agent."""
         recommendations = []
 

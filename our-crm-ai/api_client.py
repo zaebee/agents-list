@@ -1,9 +1,10 @@
 # our-crm-ai/api_client.py
+from functools import wraps
+import json
 import os
 import time
-from functools import wraps
+
 import requests
-import json
 
 API_KEY = os.environ.get("YOUGILE_API_KEY")
 BASE_URL = "https://yougile.com/api-v2"

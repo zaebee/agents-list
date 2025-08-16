@@ -6,9 +6,9 @@ This module analyzes the current AI-CRM backlog and provides strategic recommend
 for task prioritization, resource allocation, and implementation roadmap.
 """
 
-from typing import List, Dict
 from dataclasses import dataclass
 from enum import Enum
+
 from pm_agent_gateway import PMAgentGateway
 
 
@@ -41,7 +41,7 @@ class BacklogTask:
     business_value: BusinessValue
     effort: ImplementationEffort
     priority_score: float
-    dependencies: List[str]
+    dependencies: list[str]
     strategic_impact: str
 
 
@@ -111,7 +111,7 @@ class BacklogAnalyzer:
             },
         }
 
-    def analyze_task(self, task: Dict) -> BacklogTask:
+    def analyze_task(self, task: dict) -> BacklogTask:
         """Analyze a single backlog task comprehensively."""
 
         # Use PM Gateway for technical analysis
@@ -146,7 +146,7 @@ class BacklogAnalyzer:
             strategic_impact=strategic_impact,
         )
 
-    def _assess_business_value(self, task: Dict) -> BusinessValue:
+    def _assess_business_value(self, task: dict) -> BusinessValue:
         """Assess business value based on impact categories."""
         title_lower = task["title"].lower()
         description_lower = task["description"].lower()
@@ -183,7 +183,7 @@ class BacklogAnalyzer:
         else:
             return BusinessValue.LOW
 
-    def _estimate_effort(self, pm_analysis: Dict, task: Dict) -> ImplementationEffort:
+    def _estimate_effort(self, pm_analysis: dict, task: dict) -> ImplementationEffort:
         """Estimate implementation effort."""
         if pm_analysis["type"] == "complex_task":
             estimated_hours = pm_analysis["analysis"]["estimated_hours"]
@@ -200,7 +200,7 @@ class BacklogAnalyzer:
         else:
             return ImplementationEffort.TRIVIAL
 
-    def _identify_dependencies(self, task: Dict) -> List[str]:
+    def _identify_dependencies(self, task: dict) -> list[str]:
         """Identify task dependencies."""
         title_lower = task["title"].lower()
         dependencies = []
@@ -214,7 +214,7 @@ class BacklogAnalyzer:
 
         return dependencies
 
-    def _assess_strategic_impact(self, task: Dict) -> str:
+    def _assess_strategic_impact(self, task: dict) -> str:
         """Assess strategic impact and positioning."""
         title_lower = task["title"].lower()
 
@@ -231,7 +231,7 @@ class BacklogAnalyzer:
         else:
             return "Feature enhancement - improves existing capabilities"
 
-    def analyze_full_backlog(self) -> List[BacklogTask]:
+    def analyze_full_backlog(self) -> list[BacklogTask]:
         """Analyze entire backlog and return prioritized list."""
         analyzed_tasks = []
 
@@ -249,8 +249,8 @@ class BacklogAnalyzer:
         return analyzed_tasks
 
     def generate_implementation_roadmap(
-        self, analyzed_tasks: List[BacklogTask]
-    ) -> Dict:
+        self, analyzed_tasks: list[BacklogTask]
+    ) -> dict:
         """Generate strategic implementation roadmap."""
 
         # Phase 1: Foundation (High value, low effort)

@@ -1,7 +1,8 @@
-import requests
+import argparse
 import json
 import os
-import argparse
+
+import requests
 
 BASE_URL = "https://yougile.com/api-v2"
 
@@ -28,7 +29,7 @@ class CRMClient:
         script_dir = os.path.dirname(os.path.abspath(__file__))
         config_path = os.path.join(script_dir, "../config.json")
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 return json.load(f)
         except FileNotFoundError:
             print(f"Error: {config_path} not found.")

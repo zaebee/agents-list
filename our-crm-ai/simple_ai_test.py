@@ -4,22 +4,23 @@ Simple AI Integration Test - AI Project Manager
 Tests the AI agent integration framework with current setup.
 """
 
-import os
 import asyncio
-import json
-import sys
 from datetime import datetime
+import json
+import os
+import sys
 from typing import Any
 
 # Add the current directory to Python path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from dotenv import load_dotenv
+
 from agent_integration_framework import (
-    AgentIntegrationFramework,
     AgentConfig,
+    AgentIntegrationFramework,
     TaskExecution,
 )
-from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -58,7 +59,7 @@ class SimpleAITester:
             return True
         except Exception as e:
             self.log_result(
-                "Framework Init", False, f"Framework initialization failed: {str(e)}"
+                "Framework Init", False, f"Framework initialization failed: {e!s}"
             )
             return False
 
@@ -135,7 +136,7 @@ class SimpleAITester:
             self.log_result(
                 "Agent Config Creation",
                 False,
-                f"Failed to create agent configs: {str(e)}",
+                f"Failed to create agent configs: {e!s}",
             )
             return None
 
@@ -168,7 +169,7 @@ class SimpleAITester:
             return test_task
 
         except Exception as e:
-            self.log_result("Task Creation", False, f"Failed to create task: {str(e)}")
+            self.log_result("Task Creation", False, f"Failed to create task: {e!s}")
             return None
 
     async def test_database_connection(self):
@@ -211,7 +212,7 @@ class SimpleAITester:
 
         except Exception as e:
             self.log_result(
-                "Database Connection", False, f"Database connection failed: {str(e)}"
+                "Database Connection", False, f"Database connection failed: {e!s}"
             )
             return False
 
@@ -253,7 +254,7 @@ class SimpleAITester:
             self.log_result(
                 "Production System Integration",
                 False,
-                f"Integration test failed: {str(e)}",
+                f"Integration test failed: {e!s}",
             )
             return False
 

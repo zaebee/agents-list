@@ -1,7 +1,9 @@
+import logging
+
 from flask import Flask, jsonify
 from flask_cors import CORS
+
 from analytics_engine import initialize_analytics
-import logging
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes

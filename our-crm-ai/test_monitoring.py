@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Test monitoring system functionality."""
 
-import sys
 import asyncio
+import sys
 
 sys.path.append(".")
 

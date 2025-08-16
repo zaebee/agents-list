@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 
 @dataclass
@@ -19,8 +19,8 @@ class TaskContext:
     description: str
     owner: str
     status: str
-    comments: List[Comment] = field(default_factory=list)
-    relatedFiles: List[str] = field(default_factory=list)
+    comments: list[Comment] = field(default_factory=list)
+    relatedFiles: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -36,8 +36,8 @@ class AgentAction:
 
     actionName: str
     targetAgentRole: str
-    parameters: Dict[str, Any]
-    context: Optional[AgentActionContext] = None
+    parameters: dict[str, Any]
+    context: AgentActionContext | None = None
 
 
 @dataclass
@@ -46,8 +46,8 @@ class AgentResponse:
 
     status: str  # "success" or "failure"
     message: str
-    artifacts: List[str] = field(default_factory=list)
-    error: Optional[str] = None
+    artifacts: list[str] = field(default_factory=list)
+    error: str | None = None
 
     def __post_init__(self):
         if self.status not in ["success", "failure"]:

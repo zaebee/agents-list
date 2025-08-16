@@ -1,11 +1,12 @@
-import os
-import json
-import numpy as np
-import faiss
-import re
 import argparse
-from sentence_transformers import SentenceTransformer
+import json
+import os
+import re
 import sys
+
+import faiss
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
 # Add project root to path to allow sibling imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -95,7 +96,7 @@ def prepare_data():
     all_chunks, chunk_metadata = [], []
     for file_path in files_to_index:
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
             chunks = chunk_text(content, CHUNK_SIZE, CHUNK_OVERLAP)
             for i, chunk in enumerate(chunks):
@@ -124,7 +125,7 @@ def load_rag_data():
     if not os.path.exists(INDEX_PATH) or not os.path.exists(CHUNKS_PATH):
         return None, None
     index = faiss.read_index(INDEX_PATH)
-    with open(CHUNKS_PATH, "r", encoding="utf-8") as f:
+    with open(CHUNKS_PATH, encoding="utf-8") as f:
         data = json.load(f)
     return index, data["chunks"]
 

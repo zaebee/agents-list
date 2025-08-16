@@ -1,9 +1,10 @@
-import os
+import argparse
 import json
+import os
+
+import anthropic
 import faiss
 import numpy as np
-import argparse
-import anthropic
 from sentence_transformers import SentenceTransformer
 
 # --- Configuration ---
@@ -20,7 +21,7 @@ def load_rag_data():
     if not os.path.exists(INDEX_PATH) or not os.path.exists(CHUNKS_PATH):
         return None, None
     index = faiss.read_index(INDEX_PATH)
-    with open(CHUNKS_PATH, "r", encoding="utf-8") as f:
+    with open(CHUNKS_PATH, encoding="utf-8") as f:
         data = json.load(f)
     return index, data["chunks"]
 

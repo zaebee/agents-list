@@ -1,29 +1,21 @@
 services:
-  # Main AI-CRM Application
+  # Main AI-CRM Application  
   aicrm-app:
     build:
       context: .
-      dockerfile: Dockerfile.production
+      dockerfile: Dockerfile.simple
     container_name: aicrm_app
+    env_file:
+      - .env.docker
     environment:
-      # Database Configuration
-      - DATABASE_URL=postgresql://aicrm_user:${DB_PASSWORD:-aicrm123}@postgres:5432/aicrm_db
-      
-      # AI Provider Keys
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
-      
-      # Billing Configuration
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-      - ENABLE_BILLING=true
-      
-      # Application Settings
+      # Override specific settings for Docker deployment
+      - DATABASE_URL=postgresql://aicrm_user:${DATABASE_PASSWORD:-aicrm123}@postgres:5432/aicrm_db
+      - REDIS_URL=redis://redis:6379/0
+      - HOST=0.0.0.0
+      - PORT=5001
       - ENVIRONMENT=production
       - DEBUG=false
       - LOG_LEVEL=INFO
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-jwt-secret-key-change-in-production}
       - WORKERS=4
       - TIMEOUT=60
       
@@ -31,9 +23,6 @@ services:
       - ENABLE_ANALYTICS=true
       - ENABLE_MONITORING=true
       - MAX_TASKS_PER_USER=1000
-      
-      # Redis Cache
-      - REDIS_URL=redis://redis:6379/0
       
     ports:
       - "8080:80"

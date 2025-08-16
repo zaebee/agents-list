@@ -4,28 +4,29 @@ Enhanced authentication utilities for AI-CRM system.
 Integrates auth_database.py with existing security patterns.
 """
 
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any, List
-from fastapi import Depends, HTTPException, status, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from datetime import UTC, datetime, timedelta
+import logging
+import os
+import re
+import secrets
+from typing import Any
+import uuid
+
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-import secrets
-import os
-import uuid
-import re
-import logging
 
 from auth_database import (
-    get_db,
-    User,
+    AccountStatus,
     AuthSession,
-    AuditLog,
     SubscriptionFeature,
-    RateLimitRule,
+    SubscriptionTier,
+    User,
+    UserRole,
+    get_db,
 )
-from auth_database import UserRole, SubscriptionTier, AccountStatus
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class PasswordValidator:
     """Password strength validation."""
 
     @staticmethod
-    def validate(password: str) -> Dict[str, Any]:
+    def validate(password: str) -> dict[str, Any]:
         """Validate password strength."""
         result = {"is_valid": False, "score": 0, "feedback": []}
 
@@ -110,21 +111,21 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Create a JWT access token."""
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
     to_encode.update(
         {
             "exp": expire,
-            "iat": datetime.now(timezone.utc),
+            "iat": datetime.now(UTC),
             "jti": str(uuid.uuid4()),  # JWT ID for token tracking
             "type": "access",
         }
@@ -136,11 +137,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 def create_refresh_token(user_id: int) -> str:
     """Create a refresh token."""
-    expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    expire = datetime.now(UTC) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode = {
         "user_id": user_id,
         "exp": expire,
-        "iat": datetime.now(timezone.utc),
+        "iat": datetime.now(UTC),
         "jti": str(uuid.uuid4()),
         "type": "refresh",
     }
@@ -149,7 +150,7 @@ def create_refresh_token(user_id: int) -> str:
     return encoded_jwt
 
 
-def verify_token(token: str) -> Optional[dict]:
+def verify_token(token: str) -> dict | None:
     """Verify and decode a JWT token."""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -159,23 +160,23 @@ def verify_token(token: str) -> Optional[dict]:
         return None
 
 
-def authenticate_user(username: str, password: str, db: Session) -> Optional[Dict[str, Any]]:
+def authenticate_user(username: str, password: str, db: Session) -> dict[str, Any] | None:
     """Authenticate user with username/email and password."""
     try:
         # Try to find user by username or email
         user = db.query(User).filter(
             (User.username == username) | (User.email == username)
         ).first()
-        
+
         if not user:
             return None
-            
+
         if not user.is_active or user.account_status != AccountStatus.ACTIVE:
             return None
-            
+
         if not verify_password(password, user.hashed_password):
             return None
-        
+
         # Convert to dict for compatibility with existing code
         user_dict = {
             "id": user.id,
@@ -186,9 +187,9 @@ def authenticate_user(username: str, password: str, db: Session) -> Optional[Dic
             "subscription_tier": user.subscription_tier.value if user.subscription_tier else "free",
             "disabled": not user.is_active
         }
-        
+
         return user_dict
-        
+
     except Exception as e:
         logger.error(f"Authentication error: {e}")
         return None
@@ -197,7 +198,7 @@ def authenticate_user(username: str, password: str, db: Session) -> Optional[Dic
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get the current authenticated user."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -266,10 +267,10 @@ async def get_current_user(
     return user_dict
 
 
-def require_roles(allowed_roles: List[UserRole]):
+def require_roles(allowed_roles: list[UserRole]):
     """Decorator to require specific roles."""
 
-    def role_checker(current_user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
+    def role_checker(current_user: dict[str, Any] = Depends(get_current_user)) -> dict[str, Any]:
         user_role = UserRole(current_user.get("role", "user"))
         if user_role not in allowed_roles:
             raise HTTPException(
@@ -288,7 +289,7 @@ def require_subscription_tier(required_tier: SubscriptionTier):
         SubscriptionTier.ENTERPRISE: 2,
     }
 
-    def tier_checker(current_user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
+    def tier_checker(current_user: dict[str, Any] = Depends(get_current_user)) -> dict[str, Any]:
         user_tier = SubscriptionTier(current_user.get("subscription_tier", "free"))
         user_tier_level = tier_hierarchy.get(user_tier, -1)
         required_tier_level = tier_hierarchy.get(required_tier, 999)
@@ -305,9 +306,9 @@ def require_subscription_tier(required_tier: SubscriptionTier):
 
 async def check_feature_access(
     feature_name: str,
-    current_user: Dict[str, Any],
+    current_user: dict[str, Any],
     db: Session,
-    usage_count: Optional[int] = None,
+    usage_count: int | None = None,
 ) -> bool:
     """Check if user has access to a specific feature."""
     feature = (
@@ -352,9 +353,9 @@ def require_feature_access(feature_name: str):
     """Decorator to require access to a specific feature."""
 
     def feature_checker(
-        current_user: Dict[str, Any] = Depends(get_current_user),
+        current_user: dict[str, Any] = Depends(get_current_user),
         db: Session = Depends(get_db),
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         if not check_feature_access(feature_name, current_user, db):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

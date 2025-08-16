@@ -4,22 +4,23 @@ AI Integration Testing Script - AI Project Manager
 Tests real AI agent integration with production database and validates functionality.
 """
 
-import os
 import asyncio
-import json
-import sys
 from datetime import datetime
-from typing import Dict, Any
+import json
+import os
+import sys
+from typing import Any
 
 # Add the current directory to Python path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from dotenv import load_dotenv
+
 from agent_integration_framework import (
-    AgentIntegrationFramework,
     AgentConfig,
+    AgentIntegrationFramework,
     TaskExecution,
 )
-from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -32,7 +33,7 @@ class AIIntegrationTester:
         self.framework = AgentIntegrationFramework()
         self.test_results = []
 
-    async def setup_test_agents(self) -> Dict[str, AgentConfig]:
+    async def setup_test_agents(self) -> dict[str, AgentConfig]:
         """Setup test agent configurations."""
 
         # Get API keys from environment
@@ -105,7 +106,7 @@ class AIIntegrationTester:
         status = "✅ PASS" if success else "❌ FAIL"
         print(f"{status} {test_name}: {details}")
 
-    async def test_api_key_validation(self, agents: Dict[str, AgentConfig]):
+    async def test_api_key_validation(self, agents: dict[str, AgentConfig]):
         """Test 1: Validate API key configuration."""
         print("\n🔑 Testing API Key Configuration...")
 
@@ -130,7 +131,7 @@ class AIIntegrationTester:
                     },
                 )
 
-    async def test_agent_health_checks(self, agents: Dict[str, AgentConfig]):
+    async def test_agent_health_checks(self, agents: dict[str, AgentConfig]):
         """Test 2: Agent health checks."""
         print("\n🏥 Testing Agent Health Checks...")
 
@@ -155,10 +156,10 @@ class AIIntegrationTester:
                 self.log_test_result(
                     f"Health Check - {agent_name}",
                     False,
-                    f"Health check failed: {str(e)}",
+                    f"Health check failed: {e!s}",
                 )
 
-    async def test_simple_task_execution(self, agents: Dict[str, AgentConfig]):
+    async def test_simple_task_execution(self, agents: dict[str, AgentConfig]):
         """Test 3: Simple task execution."""
         print("\n🚀 Testing Simple Task Execution...")
 
@@ -200,10 +201,10 @@ class AIIntegrationTester:
                 )
         except Exception as e:
             self.log_test_result(
-                "Simple Task Execution", False, f"Task execution error: {str(e)}"
+                "Simple Task Execution", False, f"Task execution error: {e!s}"
             )
 
-    async def test_agent_routing_logic(self, agents: Dict[str, AgentConfig]):
+    async def test_agent_routing_logic(self, agents: dict[str, AgentConfig]):
         """Test 4: Agent routing and selection logic."""
         print("\n🎯 Testing Agent Routing Logic...")
 
@@ -243,7 +244,7 @@ class AIIntegrationTester:
                 self.log_test_result(
                     f"Agent Routing - {scenario['expected_agent']}",
                     False,
-                    f"Routing error: {str(e)}",
+                    f"Routing error: {e!s}",
                 )
 
     async def test_database_integration(self):
@@ -287,7 +288,7 @@ class AIIntegrationTester:
 
         except Exception as e:
             self.log_test_result(
-                "Database Integration", False, f"Database connection failed: {str(e)}"
+                "Database Integration", False, f"Database connection failed: {e!s}"
             )
 
     async def run_all_tests(self):

@@ -1,0 +1,31 @@
+# Minimal development dependencies for AI-CRM
+# Fast installation for development without heavy ML dependencies
+
+# Core FastAPI and database
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+sqlalchemy>=2.0.0
+python-dotenv>=1.0.0
+
+# Authentication and security
+python-jose[cryptography]>=3.3.0
+passlib[argon2]>=1.7.4
+python-multipart>=0.0.6
+
+# PostgreSQL support (optional)
+psycopg2-binary>=2.9.7
+
+# Basic utilities
+httpx>=0.24.0
+pydantic>=2.0.0
+click>=8.1.0
+rich>=13.0.0
+
+# Optional for basic AI functionality (lightweight)
+anthropic>=0.25.0
+openai>=1.0.0
+
+# Development tools
+pytest>=7.0.0
+black>=23.1.0
+ruff>=0.1.8

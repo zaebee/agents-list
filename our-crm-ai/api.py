@@ -1,13 +1,14 @@
-from fastapi import FastAPI, Request, Depends
-from fastapi.responses import JSONResponse
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from models import CommandRequest, CommandResponse
+from fastapi.responses import JSONResponse
+
+from auth import require_feature_access
+from auth_database import SessionLocal, create_tables, seed_default_data
+from auth_routes import router as auth_router
+from billing_api import router as billing_router
 import crm_service
 from dashboard_api import app as dashboard_app
-from billing_api import router as billing_router
-from auth_routes import router as auth_router
-from auth import get_current_user, require_feature_access
-from auth_database import create_tables, seed_default_data, SessionLocal
+from models import CommandRequest, CommandResponse
 
 
 class CommandExecutionError(Exception):
@@ -23,8 +24,8 @@ app = FastAPI(
 # CORS configuration
 origins = [
     "http://localhost:3000",
-    "http://zae.life:3000",
-    "http://zae.life",
+    "http://crm.zae.life:3000",
+    "https://crm.zae.life",
 ]
 
 app.add_middleware(

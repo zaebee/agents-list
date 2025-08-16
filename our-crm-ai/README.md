@@ -1,27 +1,44 @@
-# AI-Powered CRM & Project Management System
+# 🤖 AI-CRM: AI-Powered Project Management System
 
-This project is a sophisticated, AI-powered system for managing tasks and projects. It combines a powerful command-line interface (CLI) with a modern web-based user interface (UI) to provide a comprehensive solution for individuals and teams. The system is built on a multi-agent architecture, leveraging a suite of specialized AI agents to automate and streamline project management workflows.
+Enterprise-grade AI-powered CRM and project management system with multi-agent architecture, complete authentication, and production-ready deployment.
 
-## 🚀 Key Features
+## ⚡ Quick Start
 
-- **Modern Web UI**: A responsive and intuitive web interface built with React and TypeScript, providing a visual way to manage tasks, interact with agents, and monitor project progress.
-- **Enterprise Authentication**: Comprehensive JWT-based authentication system with user registration, secure login, session management, and role-based access control.
-- **Subscription Management**: Tiered pricing model (Free, Pro, Enterprise) with feature gating, usage tracking, and Stripe integration for billing.
-- **Intelligent Task Management**: The system analyzes task descriptions to automatically suggest the most suitable AI agent for the job, streamlining task assignment and ensuring expertise is matched to the task.
-- **Advanced PM Agent Gateway**: For complex projects, a dedicated Project Manager agent can analyze high-level goals, decompose them into actionable subtasks, and create a comprehensive execution plan with dependencies.
-- **Multi-Agent Collaboration**: The architecture supports seamless collaboration between specialized agents, allowing for complex workflows that mimic a real-world development team.
-- **Analytics Dashboard**: Real-time analytics with system health monitoring, task completion tracking, and performance metrics visualization.
-- **Full CRUD Operations**: Comprehensive task management capabilities, including creating, reading, updating, and deleting tasks, as well as commenting and moving tasks between columns.
-- **Direct YouGile Integration**: Uses the YouGile API as a robust backend for project management, ensuring that all tasks and project data are stored in a centralized and reliable system.
-- **Production-Ready Security**: Features secure Argon2 password hashing, input validation, audit logging, rate limiting, and OWASP-compliant security measures.
+```bash
+# Development Setup
+git clone <repository>
+cd our-crm-ai
+./start-dev.sh
 
-## 🏛️ Architecture Overview
+# Production Deployment  
+docker-compose -f docker-compose.phase2a.yml up -d
+```
 
-The system is composed of three main layers:
+## 🎯 Key Features
 
-1.  **Frontend (Web UI)**: A React application (in the `frontend` directory) that provides the user interface for interacting with the system. It communicates with the backend via a RESTful API.
-2.  **Backend (FastAPI)**: A Python-based backend powered by FastAPI that serves the API, handles business logic, and orchestrates the AI agents.
-3.  **AI Agent Core**: A collection of specialized AI agents (defined in the `agents` directory) that perform various tasks, from code generation to documentation and security analysis.
+- **🔐 Enterprise Authentication** - JWT-based auth with role-based access control
+- **🤖 Multi-Agent AI System** - 59+ specialized AI agents for task automation  
+- **📊 Analytics Dashboard** - Real-time metrics and performance monitoring
+- **🐳 Production Ready** - Complete Docker stack with PostgreSQL, Redis, monitoring
+- **🔒 Security Hardened** - OWASP compliance, Argon2 hashing, audit logging
+- **💰 Subscription Tiers** - Free/Pro/Enterprise with feature gating and Stripe billing
+
+## 📚 Documentation
+
+Complete documentation is available in the [`docs/`](./docs/) directory:
+
+- **🚀 [Quick Start](./docs/guides/QUICKSTART.md)** - Get up and running in minutes
+- **🐳 [Docker Setup](./docs/deployment/DOCKER_SETUP_GUIDE.md)** - Production deployment guide  
+- **🔐 [Authentication](./docs/api/authentication.md)** - Complete auth system documentation
+- **🏗️ [Architecture](./docs/architecture/)** - Technical design and AI integration guides
+- **📊 [Reports](./docs/reports/)** - Production readiness and test reports
+
+## 🏛️ Architecture
+
+**3-Layer Architecture:**
+- **Frontend**: React/TypeScript web UI with modern design
+- **Backend**: FastAPI with PostgreSQL, Redis, and JWT authentication  
+- **AI Layer**: 59+ specialized agents with intelligent task routing
 
 ```mermaid
 graph TD
@@ -45,8 +62,8 @@ graph TD
     end
 
     subgraph "Data & Integration"
-        K[YouGile API]
-        L[Database (SQLite/PostgreSQL)]
+        K[PostgreSQL Database]
+        L[Authentication System]
         M[Stripe API]
     end
 
@@ -69,59 +86,77 @@ graph TD
 
 ### Prerequisites
 
-- Python 3.9+
-- Node.js 16+ and npm
+- Python 3.11+
+- Node.js 18+ and npm/bun
 - Docker and Docker Compose
-- A YouGile account and API key
+- PostgreSQL 15+ (or SQLite for development)
+- AI API keys (Anthropic Claude recommended)
 
 ### Environment Setup
 
-1.  **YouGile API Key**: Set your YouGile API key as an environment variable.
+1.  **Environment Configuration**: Copy and configure the environment file.
     ```bash
-    export YOUGILE_API_KEY="your_api_key_here"
+    cp .env.docker .env
+    # Edit .env with your specific configuration
     ```
 
-2.  **Authentication Setup**: Configure the authentication system.
+2.  **Database Setup**: Configure PostgreSQL or SQLite database.
     ```bash
+    # For PostgreSQL (recommended for production)
+    export DATABASE_URL="postgresql://aicrm_user:password@localhost:5432/aicrm_db"
+    
+    # For SQLite (development only)
+    export DATABASE_URL="sqlite:///./ai_crm.db"
+    
     # Generate a secure secret key for JWT tokens
     export SECRET_KEY="your_secure_secret_key_here"
-    
-    # Optional: Configure database URL (defaults to SQLite)
-    export DATABASE_URL="sqlite:///./ai_crm.db"
-    # For PostgreSQL: export DATABASE_URL="postgresql://user:password@localhost/ai_crm"
     ```
 
-3.  **Billing Setup (Optional)**: For subscription features, configure Stripe.
+3.  **AI API Keys**: Configure AI provider API keys.
+    ```bash
+    export ANTHROPIC_API_KEY="your_anthropic_api_key"
+    export OPENAI_API_KEY="your_openai_api_key"  # Optional
+    export MISTRAL_API_KEY="your_mistral_api_key"  # Optional
+    ```
+
+4.  **Billing Setup (Optional)**: For subscription features, configure Stripe.
     ```bash
     export STRIPE_SECRET_KEY="your_stripe_secret_key"
     export STRIPE_PUBLISHABLE_KEY="your_stripe_publishable_key"
     ```
 
-4.  **Backend Dependencies**: Install the required Python libraries.
+### Development Setup
+
+1.  **Backend Dependencies**: Install the required Python libraries.
     ```bash
     pip install -r requirements.txt
+    pip install -r requirements-dev.txt  # For development tools
     ```
 
-5.  **Frontend Dependencies**: Install the required Node.js packages.
+2.  **Database Initialization**: Set up database tables and admin user.
+    ```bash
+    # Initialize database with admin user (admin/admin123)
+    python -c "
+    from auth_database import create_tables, seed_default_data, SessionLocal
+    create_tables()
+    db = SessionLocal()
+    try:
+        seed_default_data(db)
+    finally:
+        db.close()
+    "
+    ```
+
+3.  **Frontend Dependencies**: Install the required Node.js packages.
     ```bash
     cd frontend
-    npm install
+    npm install  # or bun install
     ```
 
-6.  **Database Initialization**: Initialize the authentication database.
-    ```bash
-    python3 -c "from auth_database import create_tables, seed_default_data, SessionLocal; create_tables(); db = SessionLocal(); seed_default_data(db); db.close()"
-    ```
 
 ### Initial Project Setup
 
-Before using the CRM, you need to run the setup script once to initialize the project structure in YouGile. This will create the necessary project, board, columns, and agent "stickers".
-
-```bash
-# Use --project-id to connect to an existing project
-python3 crm_setup_enhanced.py --project-id "your_project_id"
-```
-This will create a `config.json` file in the `our-crm-ai` directory, which is required for the application to run.
+The system is now fully integrated with PostgreSQL for robust data management. No external project management platform setup is required - everything runs locally with your own database.
 
 ## 🏃 Development
 
@@ -138,6 +173,8 @@ To run the application in development mode, use the provided shell script. This 
     ```
 -   **Backend API**: The API will be available at `http://localhost:5001`.
 -   **API Docs**: Interactive API documentation (Swagger UI) can be found at `http://localhost:5001/docs`.
+
+> **Note**: Development server runs on port **5001**, while Docker deployment uses port **8080**.
 
 ### Authentication Usage
 
@@ -172,11 +209,36 @@ curl -X GET "http://localhost:5001/api/auth/me" \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
+> **Note**: Replace `localhost:5001` with `localhost:8080` when using Docker deployment.
+
 ### Subscription Tiers
 
 - **Free Tier**: 10 command executions/month, 9 Haiku agents
 - **Pro Tier ($49/month)**: Unlimited commands, 46 agents, analytics dashboard
 - **Enterprise Tier ($299/month)**: All 59 agents, custom features, priority support
+
+## 🛠️ Docker Deployment
+
+For production deployment, use Docker Compose:
+
+```bash
+# Build and start all services
+docker-compose -f docker-compose.phase2a.yml up --build
+
+# Run in background
+docker-compose -f docker-compose.phase2a.yml up -d
+
+# Check logs
+docker-compose -f docker-compose.phase2a.yml logs -f
+
+# Stop services
+docker-compose -f docker-compose.phase2a.yml down
+```
+
+The system will be available at:
+- **API**: http://localhost:5001
+- **Frontend**: http://localhost:3000
+- **API Documentation**: http://localhost:5001/docs
 
 ##  CLI Usage
 

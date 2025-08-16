@@ -4,7 +4,7 @@ AI-CRM Exception Hierarchy
 Standardized exception handling for the CRM system.
 """
 
-from typing import Optional, Dict, Any
+from typing import Any
 
 
 class CRMError(Exception):
@@ -14,14 +14,14 @@ class CRMError(Exception):
         self,
         message: str,
         error_code: str = "CRM_ERROR",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         self.message = message
         self.error_code = error_code
         self.details = details or {}
         super().__init__(message)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert exception to dictionary for API responses."""
         return {
             "error_code": self.error_code,
@@ -33,7 +33,7 @@ class CRMError(Exception):
 class ConfigurationError(CRMError):
     """Configuration-related errors."""
 
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
         super().__init__(message, "CONFIGURATION_ERROR", details)
 
 
@@ -43,8 +43,8 @@ class ValidationError(CRMError):
     def __init__(
         self,
         message: str,
-        field: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        field: str | None = None,
+        details: dict[str, Any] | None = None,
     ):
         details = details or {}
         if field:
@@ -58,8 +58,8 @@ class APIError(CRMError):
     def __init__(
         self,
         message: str,
-        status_code: Optional[int] = None,
-        response_data: Optional[Dict[str, Any]] = None,
+        status_code: int | None = None,
+        response_data: dict[str, Any] | None = None,
     ):
         details = {}
         if status_code:
@@ -100,7 +100,7 @@ class ResourceNotFoundError(APIError):
 class RateLimitError(APIError):
     """API rate limit exceeded errors."""
 
-    def __init__(self, retry_after: Optional[int] = None):
+    def __init__(self, retry_after: int | None = None):
         message = "API rate limit exceeded"
         super().__init__(message, 429)
         self.error_code = "RATE_LIMIT_ERROR"
@@ -114,8 +114,8 @@ class TaskError(CRMError):
     def __init__(
         self,
         message: str,
-        task_id: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        task_id: str | None = None,
+        details: dict[str, Any] | None = None,
     ):
         details = details or {}
         if task_id:
@@ -137,8 +137,8 @@ class TaskValidationError(TaskError):
     def __init__(
         self,
         message: str,
-        task_id: Optional[str] = None,
-        validation_errors: Optional[Dict[str, str]] = None,
+        task_id: str | None = None,
+        validation_errors: dict[str, str] | None = None,
     ):
         details = {}
         if validation_errors:
@@ -153,8 +153,8 @@ class AgentError(CRMError):
     def __init__(
         self,
         message: str,
-        agent_name: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        agent_name: str | None = None,
+        details: dict[str, Any] | None = None,
     ):
         details = details or {}
         if agent_name:
@@ -185,8 +185,8 @@ class PMGatewayError(CRMError):
     def __init__(
         self,
         message: str,
-        analysis_type: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        analysis_type: str | None = None,
+        details: dict[str, Any] | None = None,
     ):
         details = details or {}
         if analysis_type:
@@ -197,7 +197,7 @@ class PMGatewayError(CRMError):
 class WorkflowError(PMGatewayError):
     """Workflow processing errors."""
 
-    def __init__(self, message: str, workflow_step: Optional[str] = None):
+    def __init__(self, message: str, workflow_step: str | None = None):
         details = {"workflow_step": workflow_step} if workflow_step else {}
         super().__init__(message, "workflow", details)
         self.error_code = "WORKFLOW_ERROR"
@@ -206,7 +206,7 @@ class WorkflowError(PMGatewayError):
 class AnalysisError(PMGatewayError):
     """Task analysis errors."""
 
-    def __init__(self, message: str, task_title: Optional[str] = None):
+    def __init__(self, message: str, task_title: str | None = None):
         details = {"task_title": task_title} if task_title else {}
         super().__init__(message, "analysis", details)
         self.error_code = "ANALYSIS_ERROR"
@@ -218,8 +218,8 @@ class NetworkError(CRMError):
     def __init__(
         self,
         message: str,
-        endpoint: Optional[str] = None,
-        timeout: Optional[float] = None,
+        endpoint: str | None = None,
+        timeout: float | None = None,
     ):
         details = {}
         if endpoint:
@@ -244,9 +244,9 @@ class RetryableError(CRMError):
     def __init__(
         self,
         message: str,
-        retry_after: Optional[float] = None,
+        retry_after: float | None = None,
         max_retries: int = 3,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         details = details or {}
         details.update(
@@ -258,7 +258,7 @@ class RetryableError(CRMError):
 class NonRetryableError(CRMError):
     """Errors that should not be retried."""
 
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
         details = details or {}
         details["retryable"] = False
         super().__init__(message, "NON_RETRYABLE_ERROR", details)
@@ -279,7 +279,7 @@ HTTP_STATUS_EXCEPTIONS = {
 
 
 def create_api_exception(
-    status_code: int, message: str, response_data: Optional[Dict[str, Any]] = None
+    status_code: int, message: str, response_data: dict[str, Any] | None = None
 ) -> APIError:
     """Create appropriate exception based on HTTP status code."""
     exception_class = HTTP_STATUS_EXCEPTIONS.get(status_code, APIError)
@@ -313,9 +313,7 @@ def is_retryable_error(error: Exception) -> bool:
         return True
     elif isinstance(error, NonRetryableError):
         return False
-    elif isinstance(error, (NetworkError, TimeoutError, RateLimitError)):
-        return True
-    elif isinstance(error, APIError) and error.details.get("status_code", 0) >= 500:
+    elif isinstance(error, (NetworkError, TimeoutError, RateLimitError)) or (isinstance(error, APIError) and error.details.get("status_code", 0) >= 500):
         return True
     else:
         return False
@@ -323,9 +321,7 @@ def is_retryable_error(error: Exception) -> bool:
 
 def get_retry_delay(error: Exception, attempt: int, base_delay: float = 1.0) -> float:
     """Calculate retry delay for retryable errors."""
-    if isinstance(error, RateLimitError) and "retry_after" in error.details:
-        return float(error.details["retry_after"])
-    elif isinstance(error, RetryableError) and error.details.get("retry_after"):
+    if (isinstance(error, RateLimitError) and "retry_after" in error.details) or (isinstance(error, RetryableError) and error.details.get("retry_after")):
         return float(error.details["retry_after"])
     else:
         # Exponential backoff with jitter

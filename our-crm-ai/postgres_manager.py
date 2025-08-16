@@ -13,12 +13,12 @@ Features:
 - Backup and recovery operations
 """
 
-import os
 import asyncio
-import logging
-from typing import Dict, Any, Optional
-from datetime import datetime
 from contextlib import asynccontextmanager
+from datetime import datetime
+import logging
+import os
+from typing import Any
 
 import asyncpg
 from dotenv import load_dotenv
@@ -151,7 +151,7 @@ class PostgreSQLManager:
                 self._prepared_statements[name] = sql
 
     # User Management Methods
-    async def authenticate_user(self, username: str, password: str) -> Optional[Dict]:
+    async def authenticate_user(self, username: str, password: str) -> dict | None:
         """Authenticate user with enhanced security."""
         async with self.get_connection() as conn:
             user = await conn.fetchrow(
@@ -201,7 +201,7 @@ class PostgreSQLManager:
                 raise DatabaseError("Username or email already exists")
 
     # Project Management Methods
-    async def create_project(self, project_data: Dict, created_by: str) -> str:
+    async def create_project(self, project_data: dict, created_by: str) -> str:
         """Create new business project."""
         async with self.get_transaction() as conn:
             result = await conn.fetchrow(
@@ -225,7 +225,7 @@ class PostgreSQLManager:
 
             return str(result["id"])
 
-    async def get_project_by_id(self, project_id: str) -> Optional[Dict]:
+    async def get_project_by_id(self, project_id: str) -> dict | None:
         """Get project by ID with creator information."""
         async with self.get_connection() as conn:
             project = await conn.fetchrow(
@@ -266,7 +266,7 @@ class PostgreSQLManager:
             return result != "UPDATE 0"
 
     # Analytics and Reporting Methods
-    async def get_executive_dashboard_data(self) -> Dict[str, Any]:
+    async def get_executive_dashboard_data(self) -> dict[str, Any]:
         """Get executive dashboard data with optimized queries."""
         async with self.get_connection() as conn:
             # Overall metrics
@@ -307,7 +307,7 @@ class PostgreSQLManager:
                 "generated_at": datetime.now().isoformat(),
             }
 
-    async def get_project_health_analytics(self) -> Dict[str, Any]:
+    async def get_project_health_analytics(self) -> dict[str, Any]:
         """Get project health analytics with performance insights."""
         async with self.get_connection() as conn:
             # High risk projects
@@ -397,7 +397,7 @@ class PostgreSQLManager:
                 },
             }
 
-    async def get_roi_analytics(self) -> Dict[str, Any]:
+    async def get_roi_analytics(self) -> dict[str, Any]:
         """Get ROI analytics with risk-adjusted calculations."""
         async with self.get_connection() as conn:
             # ROI projections
@@ -453,7 +453,7 @@ class PostgreSQLManager:
             }
 
     # Database Health and Monitoring
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Comprehensive database health check."""
         try:
             async with self.get_connection() as conn:
@@ -491,7 +491,7 @@ class PostgreSQLManager:
             }
 
     # Backup and Maintenance
-    async def create_backup_info(self) -> Dict[str, Any]:
+    async def create_backup_info(self) -> dict[str, Any]:
         """Create backup information (actual backup would use pg_dump)."""
         async with self.get_connection() as conn:
             stats = await conn.fetchrow("""
