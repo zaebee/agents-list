@@ -551,9 +551,7 @@ class IntegratedTrainingSystem:
 
         except Exception as e:
             logging.error(f"Error handling training completion for {agent_name}: {e}")
-            self.agent_status[agent_name].issues.append(
-                f"Post-training error: {e!s}"
-            )
+            self.agent_status[agent_name].issues.append(f"Post-training error: {e!s}")
         finally:
             # Remove from active sessions
             del self.active_training_sessions[session_id]

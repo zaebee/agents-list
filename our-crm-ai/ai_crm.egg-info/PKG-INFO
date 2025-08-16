@@ -17,22 +17,39 @@ Requires-Python: >=3.11
 Description-Content-Type: text/markdown
 Requires-Dist: fastapi>=0.104.1
 Requires-Dist: uvicorn>=0.24.0
-Requires-Dist: sqlalchemy>=2.0.23
-Requires-Dist: psycopg2-binary>=2.9.7
 Requires-Dist: pydantic>=2.5.0
-Requires-Dist: python-jose>=3.3.0
-Requires-Dist: passlib>=1.7.4
 Requires-Dist: python-multipart>=0.0.6
 Requires-Dist: python-dotenv>=1.0.0
-Requires-Dist: httpx>=0.28.1
 Requires-Dist: aiofiles>=24.1.0
+Requires-Dist: sqlalchemy>=2.0.23
+Requires-Dist: psycopg2-binary>=2.9.7
+Requires-Dist: asyncpg>=0.28.0
+Requires-Dist: aiosqlite>=0.19.0
+Requires-Dist: python-jose[cryptography]>=3.3.0
+Requires-Dist: passlib[argon2]>=1.7.4
+Requires-Dist: bcrypt>=4.0.1
+Requires-Dist: PyJWT>=2.8.0
+Requires-Dist: email-validator>=2.0.0
+Requires-Dist: httpx>=0.28.1
+Requires-Dist: requests>=2.31.0
+Requires-Dist: urllib3>=2.5.0
 Requires-Dist: redis>=4.6.0
+Requires-Dist: celery>=5.3.1
+Requires-Dist: stripe>=6.0.0
 Requires-Dist: anthropic>=0.64.0
 Requires-Dist: openai>=1.99.9
-Requires-Dist: email-validator>=2.0.0
-Requires-Dist: stripe>=6.0.0
-Requires-Dist: bcrypt>=4.0.0
-Requires-Dist: PyJWT>=2.8.0
+Requires-Dist: mistralai>=0.0.12
+Requires-Dist: pandas>=2.0.1
+Requires-Dist: scipy>=1.9.0
+Requires-Dist: plotly>=5.14.1
+Requires-Dist: seaborn>=0.12.2
+Requires-Dist: rich>=13.0.0
+Requires-Dist: click>=8.1.0
+Requires-Dist: python-json-logger>=2.0.4
+Requires-Dist: prometheus-client>=0.16.0
+Requires-Dist: wheel>=0.45.1
+Requires-Dist: pycryptodomex>=3.23.0
+Requires-Dist: dotenv>=0.9.9
 Provides-Extra: dev
 Requires-Dist: ruff>=0.1.8; extra == "dev"
 Requires-Dist: mypy>=1.1.0; extra == "dev"
@@ -43,31 +60,54 @@ Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
 Requires-Dist: pre-commit>=3.1.0; extra == "dev"
 Requires-Dist: ipython>=8.10.0; extra == "dev"
+Provides-Extra: ai
+Requires-Dist: sentence-transformers>=2.2.0; extra == "ai"
+Requires-Dist: faiss-cpu>=1.7.0; extra == "ai"
+Requires-Dist: numpy>=1.24.0; extra == "ai"
+Provides-Extra: production
+Requires-Dist: gunicorn>=21.2.0; extra == "production"
 
-# AI-Powered CRM & Project Management System
+# 🤖 AI-CRM: AI-Powered Project Management System
 
-This project is a sophisticated, AI-powered system for managing tasks and projects. It combines a powerful command-line interface (CLI) with a modern web-based user interface (UI) to provide a comprehensive solution for individuals and teams. The system is built on a multi-agent architecture, leveraging a suite of specialized AI agents to automate and streamline project management workflows.
+Enterprise-grade AI-powered CRM and project management system with multi-agent architecture, complete authentication, and production-ready deployment.
 
-## 🚀 Key Features
+## ⚡ Quick Start
 
-- **Modern Web UI**: A responsive and intuitive web interface built with React and TypeScript, providing a visual way to manage tasks, interact with agents, and monitor project progress.
-- **Enterprise Authentication**: Comprehensive JWT-based authentication system with user registration, secure login, session management, and role-based access control.
-- **Subscription Management**: Tiered pricing model (Free, Pro, Enterprise) with feature gating, usage tracking, and Stripe integration for billing.
-- **Intelligent Task Management**: The system analyzes task descriptions to automatically suggest the most suitable AI agent for the job, streamlining task assignment and ensuring expertise is matched to the task.
-- **Advanced PM Agent Gateway**: For complex projects, a dedicated Project Manager agent can analyze high-level goals, decompose them into actionable subtasks, and create a comprehensive execution plan with dependencies.
-- **Multi-Agent Collaboration**: The architecture supports seamless collaboration between specialized agents, allowing for complex workflows that mimic a real-world development team.
-- **Analytics Dashboard**: Real-time analytics with system health monitoring, task completion tracking, and performance metrics visualization.
-- **Full CRUD Operations**: Comprehensive task management capabilities, including creating, reading, updating, and deleting tasks, as well as commenting and moving tasks between columns.
-- **PostgreSQL Database Integration**: Uses PostgreSQL as a robust backend for project management and authentication, ensuring that all tasks and project data are stored in a secure, centralized database system.
-- **Production-Ready Security**: Features secure Argon2 password hashing, input validation, audit logging, rate limiting, and OWASP-compliant security measures.
+```bash
+# Development Setup
+git clone <repository>
+cd our-crm-ai
+./start-dev.sh
 
-## 🏛️ Architecture Overview
+# Production Deployment  
+docker-compose -f docker-compose.phase2a.yml up -d
+```
 
-The system is composed of three main layers:
+## 🎯 Key Features
 
-1.  **Frontend (Web UI)**: A React application (in the `frontend` directory) that provides the user interface for interacting with the system. It communicates with the backend via a RESTful API.
-2.  **Backend (FastAPI)**: A Python-based backend powered by FastAPI that serves the API, handles business logic, and orchestrates the AI agents.
-3.  **AI Agent Core**: A collection of specialized AI agents (defined in the `agents` directory) that perform various tasks, from code generation to documentation and security analysis.
+- **🔐 Enterprise Authentication** - JWT-based auth with role-based access control
+- **🤖 Multi-Agent AI System** - 59+ specialized AI agents for task automation  
+- **📊 Analytics Dashboard** - Real-time metrics and performance monitoring
+- **🐳 Production Ready** - Complete Docker stack with PostgreSQL, Redis, monitoring
+- **🔒 Security Hardened** - OWASP compliance, Argon2 hashing, audit logging
+- **💰 Subscription Tiers** - Free/Pro/Enterprise with feature gating and Stripe billing
+
+## 📚 Documentation
+
+Complete documentation is available in the [`docs/`](./docs/) directory:
+
+- **🚀 [Quick Start](./docs/guides/QUICKSTART.md)** - Get up and running in minutes
+- **🐳 [Docker Setup](./docs/deployment/DOCKER_SETUP_GUIDE.md)** - Production deployment guide  
+- **🔐 [Authentication](./docs/api/authentication.md)** - Complete auth system documentation
+- **🏗️ [Architecture](./docs/architecture/)** - Technical design and AI integration guides
+- **📊 [Reports](./docs/reports/)** - Production readiness and test reports
+
+## 🏛️ Architecture
+
+**3-Layer Architecture:**
+- **Frontend**: React/TypeScript web UI with modern design
+- **Backend**: FastAPI with PostgreSQL, Redis, and JWT authentication  
+- **AI Layer**: 59+ specialized agents with intelligent task routing
 
 ```mermaid
 graph TD

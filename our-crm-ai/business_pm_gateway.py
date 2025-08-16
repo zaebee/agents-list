@@ -64,12 +64,12 @@ class BusinessContext:
 
     business_goals: list[str]
     target_market: str | None = None
-    competitive_landscape: list[str] = None
+    competitive_landscape: list[str] | None = None
     budget_range: tuple[int, int] | None = None  # (min, max) in USD
     timeline_constraints: str | None = None
-    success_metrics: list[BusinessObjective] = None
-    stakeholders: list[str] = None
-    compliance_requirements: list[str] = None
+    success_metrics: list[BusinessObjective] | None = None
+    stakeholders: list[str] | None = None
+    compliance_requirements: list[str] | None = None
 
 
 @dataclass
@@ -82,10 +82,10 @@ class ProjectPlan:
     total_estimated_hours: float
     estimated_cost: float | None = None
     roi_projection: dict | None = None
-    risk_assessment: dict = None
-    success_criteria: list[str] = None
-    milestones: list[dict] = None
-    resource_requirements: dict = None
+    risk_assessment: dict | None = None
+    success_criteria: list[str] | None = None
+    milestones: list[dict] | None = None
+    resource_requirements: dict | None = None
 
 
 class BusinessPMGateway(PMAgentGateway):

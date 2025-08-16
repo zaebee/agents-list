@@ -101,7 +101,8 @@ def execute_action(intent, params):
                 print("RAG index not found. Building it now...")
                 prepare_result = subprocess.run(
                     ["python3", rag_script_path, "prepare"],
-                    check=False, capture_output=True,
+                    check=False,
+                    capture_output=True,
                     text=True,
                 )
                 if prepare_result.returncode != 0:

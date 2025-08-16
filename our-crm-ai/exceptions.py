@@ -313,7 +313,9 @@ def is_retryable_error(error: Exception) -> bool:
         return True
     elif isinstance(error, NonRetryableError):
         return False
-    elif isinstance(error, (NetworkError, TimeoutError, RateLimitError)) or (isinstance(error, APIError) and error.details.get("status_code", 0) >= 500):
+    elif isinstance(error, (NetworkError, TimeoutError, RateLimitError)) or (
+        isinstance(error, APIError) and error.details.get("status_code", 0) >= 500
+    ):
         return True
     else:
         return False
@@ -321,7 +323,9 @@ def is_retryable_error(error: Exception) -> bool:
 
 def get_retry_delay(error: Exception, attempt: int, base_delay: float = 1.0) -> float:
     """Calculate retry delay for retryable errors."""
-    if (isinstance(error, RateLimitError) and "retry_after" in error.details) or (isinstance(error, RetryableError) and error.details.get("retry_after")):
+    if (isinstance(error, RateLimitError) and "retry_after" in error.details) or (
+        isinstance(error, RetryableError) and error.details.get("retry_after")
+    ):
         return float(error.details["retry_after"])
     else:
         # Exponential backoff with jitter

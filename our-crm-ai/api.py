@@ -32,9 +32,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
 )
+
 
 # Initialize database on startup
 @app.on_event("startup")
@@ -46,6 +47,7 @@ async def startup_event():
         seed_default_data(db)
     finally:
         db.close()
+
 
 # Include routers
 app.include_router(auth_router)
@@ -78,7 +80,7 @@ async def health_check():
 )
 async def execute_command(
     request: CommandRequest,
-    current_user: dict = Depends(require_feature_access("command_execution"))
+    current_user: dict = Depends(require_feature_access("command_execution")),
 ):
     """
     Receives and executes a natural language command.

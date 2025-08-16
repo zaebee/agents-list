@@ -8,6 +8,7 @@ config
 crm
 crm_service
 dashboard_api
+docs
 models
 rag
 scripts

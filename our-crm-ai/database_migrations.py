@@ -411,9 +411,7 @@ class PostgreSQLMigrator:
         import bcrypt
 
         admin_id = str(uuid.uuid4())
-        password_hash = bcrypt.hashpw(
-            b"admin123", bcrypt.gensalt()
-        ).decode("utf-8")
+        password_hash = bcrypt.hashpw(b"admin123", bcrypt.gensalt()).decode("utf-8")
 
         async with self.pool.acquire() as conn:
             # Check if admin exists

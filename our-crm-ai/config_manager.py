@@ -39,9 +39,7 @@ class AIProviderConfig(BaseModel):
 
     provider: str = Field(..., description="AI provider name")
     model: str = Field(..., description="Model name")
-    api_key: str | None = Field(
-        None, description="API key (can be from environment)"
-    )
+    api_key: str | None = Field(None, description="API key (can be from environment)")
     endpoint: str | None = Field(None, description="Custom endpoint URL")
     max_tokens: int = Field(default=4000, ge=1, le=32000)
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
@@ -58,9 +56,7 @@ class AIProviderConfig(BaseModel):
 class YouGileConfig(BaseModel):
     """YouGile integration configuration."""
 
-    api_key: str | None = Field(
-        None, description="YouGile API key (from environment)"
-    )
+    api_key: str | None = Field(None, description="YouGile API key (from environment)")
     base_url: str = Field(default="https://yougile.com/api/v2")
     project_id: str = Field(..., description="YouGile project ID")
     board_id: str = Field(..., description="YouGile board ID")

@@ -67,13 +67,14 @@ The API uses standard HTTP status codes and returns error responses in JSON form
         contact={
             "name": "AI-CRM Support",
             "url": "https://aicrm.com/support",
-            "email": "support@aicrm.com"
+            "email": "support@aicrm.com",
         },
         license_info={
             "name": "MIT",
             "url": "https://opensource.org/licenses/MIT",
-        }
+        },
     )
+
 
 def create_api_documentation_endpoints(app: FastAPI):
     """Add custom documentation endpoints."""
@@ -92,8 +93,8 @@ def create_api_documentation_endpoints(app: FastAPI):
                 "docExpansion": "list",
                 "operationsSorter": "method",
                 "filter": True,
-                "tryItOutEnabled": True
-            }
+                "tryItOutEnabled": True,
+            },
         )
 
     @app.get("/redoc", include_in_schema=False)
@@ -287,6 +288,7 @@ client = AICRMClient(api_key='YOUR_API_KEY')
         """
         return HTMLResponse(content=guide_html)
 
+
 # Example usage for integrating with existing FastAPI app
 def setup_api_documentation(app: FastAPI):
     """Setup comprehensive API documentation."""
@@ -304,49 +306,82 @@ def setup_api_documentation(app: FastAPI):
                 "Agent": {
                     "type": "object",
                     "properties": {
-                        "id": {"type": "string", "description": "Agent unique identifier"},
+                        "id": {
+                            "type": "string",
+                            "description": "Agent unique identifier",
+                        },
                         "name": {"type": "string", "description": "Agent display name"},
-                        "provider": {"type": "string", "enum": ["anthropic", "openai", "mistral"]},
-                        "model": {"type": "string", "description": "AI model used by agent"},
-                        "specializations": {"type": "array", "items": {"type": "string"}},
-                        "status": {"type": "string", "enum": ["available", "busy", "offline"]},
-                        "cost_per_token": {"type": "number", "format": "float"}
-                    }
+                        "provider": {
+                            "type": "string",
+                            "enum": ["anthropic", "openai", "mistral"],
+                        },
+                        "model": {
+                            "type": "string",
+                            "description": "AI model used by agent",
+                        },
+                        "specializations": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                        "status": {
+                            "type": "string",
+                            "enum": ["available", "busy", "offline"],
+                        },
+                        "cost_per_token": {"type": "number", "format": "float"},
+                    },
                 },
                 "Task": {
                     "type": "object",
                     "properties": {
-                        "id": {"type": "string", "description": "Task unique identifier"},
-                        "description": {"type": "string", "description": "Task description"},
-                        "agent_id": {"type": "string", "description": "Assigned agent ID"},
-                        "status": {"type": "string", "enum": ["pending", "running", "completed", "failed"]},
+                        "id": {
+                            "type": "string",
+                            "description": "Task unique identifier",
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "Task description",
+                        },
+                        "agent_id": {
+                            "type": "string",
+                            "description": "Assigned agent ID",
+                        },
+                        "status": {
+                            "type": "string",
+                            "enum": ["pending", "running", "completed", "failed"],
+                        },
                         "created_at": {"type": "string", "format": "date-time"},
                         "completed_at": {"type": "string", "format": "date-time"},
-                        "result": {"type": "object", "description": "Task execution result"},
+                        "result": {
+                            "type": "object",
+                            "description": "Task execution result",
+                        },
                         "tokens_used": {"type": "integer"},
-                        "cost": {"type": "number", "format": "float"}
-                    }
+                        "cost": {"type": "number", "format": "float"},
+                    },
                 },
                 "SubscriptionPlan": {
                     "type": "object",
                     "properties": {
-                        "tier": {"type": "string", "enum": ["free", "pro", "enterprise"]},
+                        "tier": {
+                            "type": "string",
+                            "enum": ["free", "pro", "enterprise"],
+                        },
                         "name": {"type": "string"},
                         "price_monthly": {"type": "number", "format": "float"},
                         "price_annual": {"type": "number", "format": "float"},
                         "max_tasks": {"type": "integer", "nullable": True},
                         "agent_count": {"type": "integer"},
-                        "features": {"type": "array", "items": {"type": "string"}}
-                    }
-                }
+                        "features": {"type": "array", "items": {"type": "string"}},
+                    },
+                },
             },
             "securitySchemes": {
                 "bearerAuth": {
                     "type": "http",
                     "scheme": "bearer",
-                    "bearerFormat": "JWT"
+                    "bearerFormat": "JWT",
                 }
-            }
+            },
         }
 
         # Add security requirement globally
@@ -357,6 +392,7 @@ def setup_api_documentation(app: FastAPI):
 
     app.openapi = custom_openapi
     create_api_documentation_endpoints(app)
+
 
 if __name__ == "__main__":
     # Generate standalone documentation files
