@@ -19,12 +19,13 @@ import sqlite3
 from typing import Any
 import uuid
 
-from flask import Flask, jsonify, render_template_string, request
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
 from analytics_engine import AnalyticsEngine
 from business_pm_gateway import BusinessPMGateway, ProjectPlan
-from crm_service import CRMService
 
 
 class BusinessIntelligenceDashboard:
@@ -33,7 +34,6 @@ class BusinessIntelligenceDashboard:
     def __init__(self, db_path: str = "business_analytics.db"):
         self.db_path = db_path
         self.business_gateway = BusinessPMGateway()
-        self.crm_service = CRMService()
         self.analytics_engine = AnalyticsEngine()
         self._init_database()
 
@@ -430,10 +430,56 @@ class BusinessIntelligenceDashboard:
         }
 
 
+# Pydantic model for project storage
+class ProjectData(BaseModel):
+    name: str
+    business_goal: str
+    target_revenue: float
+    estimated_cost: float
+
+
 def create_dashboard_app():
-    """Create Flask app for business intelligence dashboard."""
-    app = Flask(__name__)
-    CORS(app)
+    """Create FastAPI app for business intelligence dashboard."""
+    app = FastAPI(
+        title="Business Intelligence Dashboard",
+        description="Dashboard for business analytics and project management",
+        version="2.0.0",
+    )
+
+    # Security headers middleware
+    @app.middleware("http")
+    async def add_security_headers(request: Request, call_next):
+        """Add security headers to all responses."""
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'"
+        )
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = (
+            "geolocation=(), microphone=(), camera=()"
+        )
+        return response
+
+    # Secure CORS configuration - only allow specific origins
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "https://crm.zae.life",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
+        ],
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+    )
 
     dashboard = BusinessIntelligenceDashboard()
 
@@ -624,44 +670,43 @@ def create_dashboard_app():
     </html>
     """
 
-    @app.route("/")
-    def dashboard_home():
+    @app.get("/", response_class=HTMLResponse)
+    async def dashboard_home():
         """Main dashboard page."""
-        return render_template_string(DASHBOARD_TEMPLATE)
+        return HTMLResponse(content=DASHBOARD_TEMPLATE)
 
-    @app.route("/api/executive-dashboard")
-    def get_executive_dashboard():
+    @app.get("/api/executive-dashboard")
+    async def get_executive_dashboard():
         """Get executive dashboard data."""
-        return jsonify(dashboard.get_executive_dashboard())
+        return dashboard.get_executive_dashboard()
 
-    @app.route("/api/project-health")
-    def get_project_health():
+    @app.get("/api/project-health")
+    async def get_project_health():
         """Get project health analytics."""
-        return jsonify(dashboard.get_project_health_analytics())
+        return dashboard.get_project_health_analytics()
 
-    @app.route("/api/roi-analytics")
-    def get_roi_analytics():
+    @app.get("/api/roi-analytics")
+    async def get_roi_analytics():
         """Get ROI analytics data."""
-        return jsonify(dashboard.get_roi_analytics())
+        return dashboard.get_roi_analytics()
 
-    @app.route("/api/store-project", methods=["POST"])
-    def store_project():
+    @app.post("/api/store-project")
+    async def store_project(project: ProjectData):
         """Store a new project plan."""
         try:
-            data = request.json
             # This would integrate with BusinessPMGateway to create ProjectPlan object
             # For now, return success
-            return jsonify(
-                {"status": "success", "message": "Project stored successfully"}
-            )
+            return {"status": "success", "message": "Project stored successfully"}
         except Exception as e:
-            return jsonify({"status": "error", "message": str(e)}), 500
+            raise HTTPException(status_code=500, detail=str(e))
 
     return app
 
 
 def main():
     """Run the business intelligence dashboard."""
+    import uvicorn
+
     app = create_dashboard_app()
     print("🎯 Starting AI Project Manager - Business Intelligence Dashboard")
     print("📊 Dashboard available at: http://localhost:5001")
@@ -670,7 +715,7 @@ def main():
     print("   - /api/project-health")
     print("   - /api/roi-analytics")
 
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    uvicorn.run(app, host="0.0.0.0", port=5001)
 
 
 if __name__ == "__main__":

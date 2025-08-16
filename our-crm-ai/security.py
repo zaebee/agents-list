@@ -71,7 +71,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
             "email": user_row.get("email"),
             "full_name": user_row.get("full_name"),
             "role": user_row.get("role", "user"),
-            "disabled": False
+            "disabled": False,
         }
         return user
 
@@ -93,6 +93,6 @@ def authenticate_user(username, password, db_path="business_analytics.db"):
             "email": user_row.get("email"),
             "full_name": user_row.get("full_name"),
             "role": user_row.get("role", "user"),
-            "disabled": False
+            "disabled": False,
         }
         return user

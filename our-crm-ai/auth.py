@@ -118,9 +118,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     if expires_delta:
         expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(
-            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+        expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode.update(
         {
@@ -160,13 +158,17 @@ def verify_token(token: str) -> dict | None:
         return None
 
 
-def authenticate_user(username: str, password: str, db: Session) -> dict[str, Any] | None:
+def authenticate_user(
+    username: str, password: str, db: Session
+) -> dict[str, Any] | None:
     """Authenticate user with username/email and password."""
     try:
         # Try to find user by username or email
-        user = db.query(User).filter(
-            (User.username == username) | (User.email == username)
-        ).first()
+        user = (
+            db.query(User)
+            .filter((User.username == username) | (User.email == username))
+            .first()
+        )
 
         if not user:
             return None
@@ -184,8 +186,10 @@ def authenticate_user(username: str, password: str, db: Session) -> dict[str, An
             "email": user.email,
             "full_name": user.full_name,
             "role": user.role.value if user.role else "user",
-            "subscription_tier": user.subscription_tier.value if user.subscription_tier else "free",
-            "disabled": not user.is_active
+            "subscription_tier": user.subscription_tier.value
+            if user.subscription_tier
+            else "free",
+            "disabled": not user.is_active,
         }
 
         return user_dict
@@ -260,8 +264,10 @@ async def get_current_user(
         "email": user.email,
         "full_name": user.full_name,
         "role": user.role.value if user.role else "user",
-        "subscription_tier": user.subscription_tier.value if user.subscription_tier else "free",
-        "disabled": not user.is_active
+        "subscription_tier": user.subscription_tier.value
+        if user.subscription_tier
+        else "free",
+        "disabled": not user.is_active,
     }
 
     return user_dict
@@ -270,7 +276,9 @@ async def get_current_user(
 def require_roles(allowed_roles: list[UserRole]):
     """Decorator to require specific roles."""
 
-    def role_checker(current_user: dict[str, Any] = Depends(get_current_user)) -> dict[str, Any]:
+    def role_checker(
+        current_user: dict[str, Any] = Depends(get_current_user),
+    ) -> dict[str, Any]:
         user_role = UserRole(current_user.get("role", "user"))
         if user_role not in allowed_roles:
             raise HTTPException(
@@ -289,7 +297,9 @@ def require_subscription_tier(required_tier: SubscriptionTier):
         SubscriptionTier.ENTERPRISE: 2,
     }
 
-    def tier_checker(current_user: dict[str, Any] = Depends(get_current_user)) -> dict[str, Any]:
+    def tier_checker(
+        current_user: dict[str, Any] = Depends(get_current_user),
+    ) -> dict[str, Any]:
         user_tier = SubscriptionTier(current_user.get("subscription_tier", "free"))
         user_tier_level = tier_hierarchy.get(user_tier, -1)
         required_tier_level = tier_hierarchy.get(required_tier, 999)

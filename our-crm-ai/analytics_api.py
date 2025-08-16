@@ -1,12 +1,50 @@
 import logging
 
-from flask import Flask, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from analytics_engine import initialize_analytics
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+app = FastAPI(
+    title="Analytics API",
+    description="API for analytics and metrics collection",
+    version="1.0.0",
+)
+
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    """Add security headers to all responses."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = (
+        "max-age=31536000; includeSubDomains"
+    )
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'"
+    )
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
+
+
+# Secure CORS configuration - only allow specific origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://crm.zae.life",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+)
 
 # Initialize analytics engine
 analytics_engine = initialize_analytics()
@@ -18,8 +56,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-@app.route("/api/v1/analytics/task-completion", methods=["GET"])
-def get_task_completion_metrics():
+@app.get("/api/v1/analytics/task-completion", summary="Get task completion metrics")
+async def get_task_completion_metrics():
     """
     Endpoint to retrieve task completion metrics
 
@@ -34,14 +72,14 @@ def get_task_completion_metrics():
             {"status": "completed", "duration": 7200},
         ]
         metrics = analytics_engine.collect_task_completion_metrics(sample_tasks)
-        return jsonify(metrics), 200
+        return metrics
     except Exception as e:
         logger.error(f"Error retrieving task completion metrics: {e}")
-        return jsonify({"error": "Unable to retrieve metrics"}), 500
+        raise HTTPException(status_code=500, detail="Unable to retrieve metrics")
 
 
-@app.route("/api/v1/analytics/agent-performance", methods=["GET"])
-def get_agent_performance():
+@app.get("/api/v1/analytics/agent-performance", summary="Get agent performance metrics")
+async def get_agent_performance():
     """
     Endpoint to retrieve agent performance metrics
 
@@ -56,14 +94,16 @@ def get_agent_performance():
             {"agent_name": "CustomerSupportAgent", "status": "completed"},
         ]
         performance = analytics_engine.analyze_agent_performance(sample_agent_logs)
-        return jsonify(performance), 200
+        return performance
     except Exception as e:
         logger.error(f"Error retrieving agent performance: {e}")
-        return jsonify({"error": "Unable to retrieve performance data"}), 500
+        raise HTTPException(
+            status_code=500, detail="Unable to retrieve performance data"
+        )
 
 
-@app.route("/api/v1/analytics/executive-dashboard", methods=["GET"])
-def get_executive_dashboard():
+@app.get("/api/v1/analytics/executive-dashboard", summary="Get executive dashboard")
+async def get_executive_dashboard():
     """
     Endpoint to retrieve executive-level dashboard
 
@@ -72,45 +112,29 @@ def get_executive_dashboard():
     """
     try:
         dashboard = analytics_engine.generate_executive_dashboard()
-        return jsonify(dashboard), 200
+        return dashboard
     except Exception as e:
         logger.error(f"Error generating executive dashboard: {e}")
-        return jsonify({"error": "Unable to generate dashboard"}), 500
+        raise HTTPException(status_code=500, detail="Unable to generate dashboard")
 
 
-@app.errorhandler(404)
-def not_found(error):
-    """
-    Custom 404 error handler
-
-    Returns:
-        JSON: Error message
-    """
-    return jsonify({"error": "Endpoint not found"}), 404
-
-
-@app.errorhandler(500)
-def server_error(error):
-    """
-    Custom 500 error handler
-
-    Returns:
-        JSON: Error message
-    """
-    return jsonify({"error": "Internal server error"}), 500
+# FastAPI handles 404 and 500 errors automatically
+# Custom error handlers can be added using exception handlers if needed
 
 
 def create_analytics_app():
     """
-    Create and configure Flask application for analytics
+    Create and configure FastAPI application for analytics
 
     Returns:
-        Flask: Configured Flask application
+        FastAPI: Configured FastAPI application
     """
     return app
 
 
 if __name__ == "__main__":
+    import uvicorn
+
     analytics_app = create_analytics_app()
-    # In production, use gunicorn or another WSGI server
-    analytics_app.run(host="0.0.0.0", port=5000, debug=False)
+    # In production, use uvicorn or another ASGI server
+    uvicorn.run(analytics_app, host="0.0.0.0", port=5000)

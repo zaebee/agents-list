@@ -34,15 +34,17 @@ if "postgresql" in DATABASE_URL:
         DATABASE_URL,
         pool_pre_ping=True,
         pool_recycle=300,
-        echo=os.getenv("DEBUG", "false").lower() == "true"
+        echo=os.getenv("DEBUG", "false").lower() == "true",
     )
-    print(f"🐘 Using PostgreSQL database: {DATABASE_URL.split('@')[-1] if '@' in DATABASE_URL else 'configured'}")
+    print(
+        f"🐘 Using PostgreSQL database: {DATABASE_URL.split('@')[-1] if '@' in DATABASE_URL else 'configured'}"
+    )
 elif "sqlite" in DATABASE_URL:
     # SQLite configuration
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},
-        echo=os.getenv("DEBUG", "false").lower() == "true"
+        echo=os.getenv("DEBUG", "false").lower() == "true",
     )
     db_file = DATABASE_URL.replace("sqlite:///", "")
     print(f"📱 Using SQLite database: {db_file}")
@@ -54,7 +56,7 @@ else:
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},
-        echo=os.getenv("DEBUG", "false").lower() == "true"
+        echo=os.getenv("DEBUG", "false").lower() == "true",
     )
 
 # Create session factory
@@ -343,6 +345,7 @@ def create_default_admin(db: SessionLocal):
 
     # Import password hashing function (same as in auth.py)
     from passlib.context import CryptContext
+
     pwd_context = CryptContext(
         schemes=["argon2"],
         deprecated="auto",
@@ -361,7 +364,7 @@ def create_default_admin(db: SessionLocal):
         subscription_tier=SubscriptionTier.ENTERPRISE,
         is_active=True,
         is_verified=True,
-        account_status=AccountStatus.ACTIVE
+        account_status=AccountStatus.ACTIVE,
     )
 
     db.add(admin_user)

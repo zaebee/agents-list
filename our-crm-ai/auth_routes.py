@@ -85,14 +85,13 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     if db.query(User).filter(User.username == user_data.username).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered"
+            detail="Username already registered",
         )
 
     # Check if email already exists
     if db.query(User).filter(User.email == user_data.email).first():
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered"
         )
 
     # Validate password strength
@@ -100,7 +99,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     if not password_validation["is_valid"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Password validation failed: {', '.join(password_validation['feedback'])}"
+            detail=f"Password validation failed: {', '.join(password_validation['feedback'])}",
         )
 
     # Create new user
@@ -115,7 +114,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         email_verification_token=verification_token,
         account_status=AccountStatus.PENDING_VERIFICATION,
         role=UserRole.USER,
-        subscription_tier=SubscriptionTier.FREE
+        subscription_tier=SubscriptionTier.FREE,
     )
 
     db.add(new_user)
@@ -127,15 +126,13 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     return {
         "message": "User registered successfully",
         "user_id": new_user.id,
-        "verification_required": True
+        "verification_required": True,
     }
 
 
 @router.post("/login", response_model=LoginResponse)
 async def login(
-    user_credentials: UserLogin,
-    request: Request,
-    db: Session = Depends(get_db)
+    user_credentials: UserLogin, request: Request, db: Session = Depends(get_db)
 ):
     """Authenticate user and return tokens."""
 
@@ -189,15 +186,13 @@ async def login(
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer",
-        "user": user
+        "user": user,
     }
 
 
 @router.post("/token/refresh")
 async def refresh_token(
-    token_data: TokenRefresh,
-    request: Request,
-    db: Session = Depends(get_db)
+    token_data: TokenRefresh, request: Request, db: Session = Depends(get_db)
 ):
     """Refresh access token using refresh token."""
 
@@ -205,27 +200,29 @@ async def refresh_token(
     payload = verify_token(token_data.refresh_token)
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
         )
 
     user_id = payload.get("user_id")
     if not user_id:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
         )
 
     # Check if session exists and is active
-    session = db.query(AuthSession).filter(
-        AuthSession.refresh_token == token_data.refresh_token,
-        AuthSession.is_active == True
-    ).first()
+    session = (
+        db.query(AuthSession)
+        .filter(
+            AuthSession.refresh_token == token_data.refresh_token,
+            AuthSession.is_active == True,
+        )
+        .first()
+    )
 
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Session not found or expired"
+            detail="Session not found or expired",
         )
 
     # Get user
@@ -233,7 +230,7 @@ async def refresh_token(
     if not user or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found or inactive"
+            detail="User not found or inactive",
         )
 
     # Create new access token
@@ -249,17 +246,14 @@ async def refresh_token(
 
     db.commit()
 
-    return {
-        "access_token": new_access_token,
-        "token_type": "bearer"
-    }
+    return {"access_token": new_access_token, "token_type": "bearer"}
 
 
 @router.post("/logout")
 async def logout(
     request: Request,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Logout user and invalidate session."""
 
@@ -268,7 +262,7 @@ async def logout(
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header"
+            detail="Invalid authorization header",
         )
 
     token = auth_header.split(" ")[1]
@@ -277,10 +271,14 @@ async def logout(
 
     if jti:
         # Deactivate session
-        session = db.query(AuthSession).filter(
-            AuthSession.access_token_jti == jti,
-            AuthSession.user_id == current_user["id"]
-        ).first()
+        session = (
+            db.query(AuthSession)
+            .filter(
+                AuthSession.access_token_jti == jti,
+                AuthSession.user_id == current_user["id"],
+            )
+            .first()
+        )
 
         if session:
             session.is_active = False
@@ -314,8 +312,7 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
 
 @router.post("/password/reset-request")
 async def request_password_reset(
-    request_data: PasswordResetRequest,
-    db: Session = Depends(get_db)
+    request_data: PasswordResetRequest, db: Session = Depends(get_db)
 ):
     """Request password reset."""
 
@@ -339,21 +336,22 @@ async def request_password_reset(
 
 
 @router.post("/password/reset")
-async def reset_password(
-    reset_data: PasswordReset,
-    db: Session = Depends(get_db)
-):
+async def reset_password(reset_data: PasswordReset, db: Session = Depends(get_db)):
     """Reset password using reset token."""
 
-    user = db.query(User).filter(
-        User.password_reset_token == reset_data.token,
-        User.password_reset_expires > datetime.now(UTC)
-    ).first()
+    user = (
+        db.query(User)
+        .filter(
+            User.password_reset_token == reset_data.token,
+            User.password_reset_expires > datetime.now(UTC),
+        )
+        .first()
+    )
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired reset token"
+            detail="Invalid or expired reset token",
         )
 
     # Validate new password
@@ -361,7 +359,7 @@ async def reset_password(
     if not password_validation["is_valid"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Password validation failed: {', '.join(password_validation['feedback'])}"
+            detail=f"Password validation failed: {', '.join(password_validation['feedback'])}",
         )
 
     # Update password
