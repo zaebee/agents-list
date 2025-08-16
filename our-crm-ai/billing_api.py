@@ -7,21 +7,22 @@ and usage tracking. Integrates with the pricing models and supports Stripe
 for payment processing.
 """
 
-from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
-import os
-import stripe
 import logging
+import os
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel, Field
+import stripe
 
 from pricing_models import (
     PricingManager,
     SubscriptionTier,
     UsageMetrics,
-    pricing_manager,
     get_pricing_for_api,
+    pricing_manager,
 )
 
 # Configure logging
@@ -60,10 +61,10 @@ class SubscriptionResponse(BaseModel):
 class UsageResponse(BaseModel):
     user_id: str
     subscription_tier: str
-    current_usage: Dict[str, Any]
-    limits: Dict[str, Any]
-    billing_summary: Dict[str, Any]
-    recommendations: List[Dict[str, Any]]
+    current_usage: dict[str, Any]
+    limits: dict[str, Any]
+    billing_summary: dict[str, Any]
+    recommendations: list[dict[str, Any]]
 
 
 class PaymentMethodRequest(BaseModel):
@@ -230,7 +231,7 @@ async def create_subscription(
         logger.error(f"Stripe error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Payment processing error: {str(e)}",
+            detail=f"Payment processing error: {e!s}",
         )
     except Exception as e:
         logger.error(f"Subscription creation error: {e}")
@@ -337,7 +338,7 @@ async def add_payment_method(
         logger.error(f"Stripe payment method error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Payment method error: {str(e)}",
+            detail=f"Payment method error: {e!s}",
         )
     except Exception as e:
         logger.error(f"Payment method addition error: {e}")
@@ -380,7 +381,7 @@ async def cancel_subscription(current_user: dict = Depends(get_current_user)):
         logger.error(f"Stripe cancellation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cancellation error: {str(e)}",
+            detail=f"Cancellation error: {e!s}",
         )
     except Exception as e:
         logger.error(f"Subscription cancellation error: {e}")
@@ -433,7 +434,7 @@ async def get_invoices(current_user: dict = Depends(get_current_user)):
         logger.error(f"Stripe invoice error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invoice retrieval error: {str(e)}",
+            detail=f"Invoice retrieval error: {e!s}",
         )
     except Exception as e:
         logger.error(f"Invoice retrieval error: {e}")

@@ -1,7 +1,8 @@
-import os
 import json
-import numpy as np
+import os
+
 import faiss
+import numpy as np
 from sentence_transformers import SentenceTransformer
 
 # --- Configuration ---
@@ -66,7 +67,7 @@ def main():
     print("Chunking documents...")
     for file_path in files_to_index:
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             chunks = chunk_text(content, CHUNK_SIZE, CHUNK_OVERLAP)

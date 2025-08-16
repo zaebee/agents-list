@@ -9,10 +9,9 @@ This module implements the tiered pricing structure based on our monetization st
 """
 
 from dataclasses import dataclass
-from enum import Enum
-from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
-import json
+from enum import Enum
+from typing import Any
 
 
 class SubscriptionTier(Enum):
@@ -39,9 +38,9 @@ class PricingPlan:
     name: str
     price_per_month: float
     price_per_year: float  # Usually with discount
-    max_tasks_per_month: Optional[int]  # None = unlimited
-    available_agents: Dict[AgentModelType, int]
-    features: List[str]
+    max_tasks_per_month: int | None  # None = unlimited
+    available_agents: dict[AgentModelType, int]
+    features: list[str]
     target_audience: str
     support_level: str
 
@@ -56,8 +55,8 @@ class UsageMetrics:
     current_period_end: datetime
     tasks_used_this_month: int
     total_tokens_used: int
-    cost_breakdown: Dict[str, float]
-    agent_usage: Dict[str, int]
+    cost_breakdown: dict[str, float]
+    agent_usage: dict[str, int]
 
 
 class PricingManager:
@@ -67,7 +66,7 @@ class PricingManager:
         self.pricing_plans = self._initialize_pricing_plans()
         self.agent_configurations = self._initialize_agent_configurations()
 
-    def _initialize_pricing_plans(self) -> Dict[SubscriptionTier, PricingPlan]:
+    def _initialize_pricing_plans(self) -> dict[SubscriptionTier, PricingPlan]:
         """Initialize the three-tier pricing structure."""
         return {
             SubscriptionTier.FREE: PricingPlan(
@@ -144,7 +143,7 @@ class PricingManager:
             ),
         }
 
-    def _initialize_agent_configurations(self) -> Dict[str, Dict]:
+    def _initialize_agent_configurations(self) -> dict[str, dict]:
         """Initialize agent configurations by tier and capability."""
         return {
             "free_tier_agents": [
@@ -222,7 +221,7 @@ class PricingManager:
         """Get pricing plan for a specific tier."""
         return self.pricing_plans[tier]
 
-    def get_all_pricing_plans(self) -> List[PricingPlan]:
+    def get_all_pricing_plans(self) -> list[PricingPlan]:
         """Get all available pricing plans."""
         return list(self.pricing_plans.values())
 
@@ -238,7 +237,7 @@ class PricingManager:
         annual_cost = plan.price_per_year * users
         return monthly_cost - annual_cost
 
-    def check_usage_limits(self, usage: UsageMetrics) -> Dict[str, Any]:
+    def check_usage_limits(self, usage: UsageMetrics) -> dict[str, Any]:
         """Check if user is within their subscription limits."""
         plan = self.pricing_plans[usage.subscription_tier]
 
@@ -278,7 +277,7 @@ class PricingManager:
 
         return result
 
-    def get_available_agents(self, tier: SubscriptionTier) -> List[str]:
+    def get_available_agents(self, tier: SubscriptionTier) -> list[str]:
         """Get list of agents available for a subscription tier."""
         available_agents = []
 
@@ -300,7 +299,7 @@ class PricingManager:
 
         return available_agents
 
-    def get_upgrade_recommendations(self, usage: UsageMetrics) -> List[Dict[str, Any]]:
+    def get_upgrade_recommendations(self, usage: UsageMetrics) -> list[dict[str, Any]]:
         """Suggest upgrades based on usage patterns."""
         recommendations = []
         current_plan = self.pricing_plans[usage.subscription_tier]
@@ -359,7 +358,7 @@ class PricingManager:
 
         return recommendations
 
-    def generate_billing_summary(self, usage: UsageMetrics) -> Dict[str, Any]:
+    def generate_billing_summary(self, usage: UsageMetrics) -> dict[str, Any]:
         """Generate billing summary for a user."""
         plan = self.pricing_plans[usage.subscription_tier]
 
@@ -393,7 +392,7 @@ class PricingManager:
 pricing_manager = PricingManager()
 
 
-def get_pricing_for_api() -> Dict[str, Any]:
+def get_pricing_for_api() -> dict[str, Any]:
     """Get pricing information formatted for API responses."""
     plans = pricing_manager.get_all_pricing_plans()
 
@@ -458,7 +457,7 @@ if __name__ == "__main__":
         print(f"🛟 Support: {plan.support_level}")
 
     # Demo usage check
-    print(f"\n🔍 Usage Example")
+    print("\n🔍 Usage Example")
     print("=" * 30)
 
     sample_usage = UsageMetrics(
@@ -478,6 +477,6 @@ if __name__ == "__main__":
 
     recommendations = pm.get_upgrade_recommendations(sample_usage)
     if recommendations:
-        print(f"\n💡 Upgrade recommendations:")
+        print("\n💡 Upgrade recommendations:")
         for rec in recommendations:
             print(f"   - Upgrade to {rec['to_tier'].value}: {rec['reason']}")

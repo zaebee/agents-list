@@ -4,31 +4,58 @@ Database configuration and models for AI-CRM authentication system.
 Adapted from web-ui for our-crm-ai integration.
 """
 
-from sqlalchemy import (
-    create_engine,
-    Column,
-    Integer,
-    String,
-    Boolean,
-    DateTime,
-    Text,
-    ForeignKey,
-    Enum as SQLEnum,
-)
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.sql import func
 from enum import Enum
 import os
 
-# Database configuration
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    create_engine,
+)
+from sqlalchemy import (
+    Enum as SQLEnum,
+)
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.sql import func
+
+# Database configuration with development-friendly defaults
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ai_crm.db")
 
-# Create engine
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
-)
+# Create engine with appropriate settings for PostgreSQL or SQLite
+if "postgresql" in DATABASE_URL:
+    # PostgreSQL configuration
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        echo=os.getenv("DEBUG", "false").lower() == "true"
+    )
+    print(f"🐘 Using PostgreSQL database: {DATABASE_URL.split('@')[-1] if '@' in DATABASE_URL else 'configured'}")
+elif "sqlite" in DATABASE_URL:
+    # SQLite configuration
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        echo=os.getenv("DEBUG", "false").lower() == "true"
+    )
+    db_file = DATABASE_URL.replace("sqlite:///", "")
+    print(f"📱 Using SQLite database: {db_file}")
+else:
+    # Fallback to SQLite if database type not recognized
+    print(f"⚠️ Unknown database URL format: {DATABASE_URL[:20]}...")
+    print("📱 Falling back to SQLite")
+    DATABASE_URL = "sqlite:///./ai_crm.db"
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        echo=os.getenv("DEBUG", "false").lower() == "true"
+    )
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -306,8 +333,50 @@ DEFAULT_RATE_LIMITS = [
 ]
 
 
+def create_default_admin(db: SessionLocal):
+    """Create default admin user if it doesn't exist."""
+    # Check if admin user already exists
+    existing_admin = db.query(User).filter_by(username="admin").first()
+    if existing_admin:
+        print("✅ Admin user already exists")
+        return existing_admin
+
+    # Import password hashing function (same as in auth.py)
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(
+        schemes=["argon2"],
+        deprecated="auto",
+        argon2__memory_cost=65536,  # 64 MB
+        argon2__time_cost=3,
+        argon2__parallelism=1,
+    )
+
+    # Create admin user
+    admin_user = User(
+        username="admin",
+        email="admin@aipm.local",
+        hashed_password=pwd_context.hash("admin123"),
+        full_name="System Administrator",
+        role=UserRole.ADMIN,
+        subscription_tier=SubscriptionTier.ENTERPRISE,
+        is_active=True,
+        is_verified=True,
+        account_status=AccountStatus.ACTIVE
+    )
+
+    db.add(admin_user)
+    db.commit()
+    db.refresh(admin_user)
+
+    print("✅ Created default admin user: admin / admin123")
+    return admin_user
+
+
 def seed_default_data(db: SessionLocal):
-    """Seed database with default features and rate limits."""
+    """Seed database with default features, rate limits, and admin user."""
+    # Create default admin user first
+    create_default_admin(db)
+
     # Add subscription features
     for feature_data in DEFAULT_FEATURES:
         existing = (

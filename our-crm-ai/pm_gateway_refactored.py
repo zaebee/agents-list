@@ -11,20 +11,20 @@ This refactored version:
 5. Provides better error handling and logging
 """
 
+from datetime import datetime, timedelta
 import json
 import logging
 import os
 from pathlib import Path
-from typing import List, Dict, Optional, Any
-from datetime import datetime, timedelta
+from typing import Any
 
+from exceptions import AnalysisError
 from models import (
-    TaskPriority,
-    TaskComplexity,
     PMAnalysisRequest,
     PMAnalysisResult,
+    TaskComplexity,
+    TaskPriority,
 )
-from exceptions import AnalysisError
 
 
 class WorkflowState:
@@ -32,16 +32,16 @@ class WorkflowState:
 
     def __init__(self, storage_path: str = "workflow_state.json"):
         self.storage_path = Path(storage_path)
-        self.workflows: Dict[str, Dict[str, Any]] = {}
+        self.workflows: dict[str, dict[str, Any]] = {}
         self._load_state()
 
     def _load_state(self):
         """Load workflow state from persistence."""
         if self.storage_path.exists():
             try:
-                with open(self.storage_path, "r") as f:
+                with open(self.storage_path) as f:
                     self.workflows = json.load(f)
-            except (json.JSONDecodeError, IOError) as e:
+            except (OSError, json.JSONDecodeError) as e:
                 logging.warning(f"Failed to load workflow state: {e}")
                 self.workflows = {}
 
@@ -50,10 +50,10 @@ class WorkflowState:
         try:
             with open(self.storage_path, "w") as f:
                 json.dump(self.workflows, f, indent=2, default=str)
-        except IOError as e:
+        except OSError as e:
             logging.warning(f"Failed to save workflow state: {e}")
 
-    def create_workflow(self, task_id: str, workflow_data: Dict[str, Any]):
+    def create_workflow(self, task_id: str, workflow_data: dict[str, Any]):
         """Create new workflow state."""
         self.workflows[task_id] = {
             **workflow_data,
@@ -62,14 +62,14 @@ class WorkflowState:
         }
         self._save_state()
 
-    def update_workflow(self, task_id: str, updates: Dict[str, Any]):
+    def update_workflow(self, task_id: str, updates: dict[str, Any]):
         """Update workflow state."""
         if task_id in self.workflows:
             self.workflows[task_id].update(updates)
             self.workflows[task_id]["updated_at"] = datetime.utcnow().isoformat()
             self._save_state()
 
-    def get_workflow(self, task_id: str) -> Optional[Dict[str, Any]]:
+    def get_workflow(self, task_id: str) -> dict[str, Any] | None:
         """Get workflow state."""
         return self.workflows.get(task_id)
 
@@ -202,7 +202,7 @@ class TaskAnalyzer:
         }
         return effort_map[complexity]
 
-    def identify_risk_factors(self, title: str, description: str) -> List[str]:
+    def identify_risk_factors(self, title: str, description: str) -> list[str]:
         """Identify potential risk factors."""
         text = f"{title} {description}".lower()
         risks = []
@@ -223,7 +223,7 @@ class TaskAnalyzer:
 
         return risks
 
-    def generate_success_criteria(self, title: str, description: str) -> List[str]:
+    def generate_success_criteria(self, title: str, description: str) -> list[str]:
         """Generate success criteria based on task content."""
         criteria = ["Task completed successfully", "Quality standards met"]
         text = f"{title} {description}".lower()
@@ -243,7 +243,7 @@ class TaskAnalyzer:
 
         return criteria
 
-    def suggest_required_agents(self, title: str, description: str) -> List[str]:
+    def suggest_required_agents(self, title: str, description: str) -> list[str]:
         """Suggest required agents using agent selector."""
         if not self.agent_selector:
             return ["general-purpose"]
@@ -397,8 +397,8 @@ class WorkflowEngine:
         title: str,
         description: str,
         complexity: TaskComplexity,
-        required_agents: List[str],
-    ) -> Dict[str, Any]:
+        required_agents: list[str],
+    ) -> dict[str, Any]:
         """Create customized workflow based on analysis."""
 
         # Select base template
@@ -446,8 +446,8 @@ class WorkflowEngine:
         }
 
     def decompose_complex_task(
-        self, title: str, description: str, workflow: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        self, title: str, description: str, workflow: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Break down complex tasks into subtasks based on workflow."""
         subtasks = []
 
@@ -478,7 +478,7 @@ class PMAgentGatewayRefactored:
 
     def __init__(
         self,
-        config_path: Optional[str] = None,
+        config_path: str | None = None,
         storage_path: str = "workflow_state.json",
         agent_selector_module=None,
     ):
@@ -494,7 +494,7 @@ class PMAgentGatewayRefactored:
         self.config = None
         if config_path and os.path.exists(config_path):
             try:
-                with open(config_path, "r") as f:
+                with open(config_path) as f:
                     self.config = json.load(f)
             except Exception as e:
                 self.logger.warning(f"Failed to load config from {config_path}: {e}")
@@ -598,11 +598,11 @@ class PMAgentGatewayRefactored:
 
         except Exception as e:
             self.logger.error(f"Task analysis failed: {e}")
-            raise AnalysisError(f"Task analysis failed: {str(e)}", request.title)
+            raise AnalysisError(f"Task analysis failed: {e!s}", request.title)
 
     def create_managed_task(
         self, title: str, description: str, auto_assign: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Legacy compatibility method for existing code.
 
@@ -671,7 +671,7 @@ class PMAgentGatewayRefactored:
                 "task": {"title": title, "description": description},
             }
 
-    async def monitor_task_progress(self, task_id: str) -> Dict[str, Any]:
+    async def monitor_task_progress(self, task_id: str) -> dict[str, Any]:
         """Monitor task progress with workflow state."""
         workflow = self.workflow_state.get_workflow(task_id)
 
@@ -697,7 +697,7 @@ class PMAgentGatewayRefactored:
 
 # Factory function for creating PM Gateway instance
 def create_pm_gateway(
-    config_path: Optional[str] = None, storage_path: str = "workflow_state.json"
+    config_path: str | None = None, storage_path: str = "workflow_state.json"
 ) -> PMAgentGatewayRefactored:
     """Create PM Gateway instance with proper dependencies."""
 

@@ -10,17 +10,17 @@ This module provides:
 5. Evaluation metrics and benchmarking
 """
 
-import json
-import time
-import uuid
-import logging
+from collections import defaultdict, deque
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
 from enum import Enum
+import json
+import logging
 import sqlite3
 import statistics
-from collections import defaultdict, deque
+import time
+from typing import Any
+import uuid
 
 # Import existing system components
 from agent_selector import AGENT_KEYWORDS
@@ -64,11 +64,11 @@ class TrainingSession:
     agent_name: str
     phase: TrainingPhase
     start_time: datetime
-    end_time: Optional[datetime]
+    end_time: datetime | None
     training_data_count: int
-    performance_before: Dict[str, float]
-    performance_after: Dict[str, float]
-    improvement_metrics: Dict[str, float]
+    performance_before: dict[str, float]
+    performance_after: dict[str, float]
+    improvement_metrics: dict[str, float]
     status: str
     notes: str
 
@@ -93,9 +93,9 @@ class TrainingDatapoint:
     agent_name: str
     input_text: str
     expected_output: str
-    actual_output: Optional[str]
+    actual_output: str | None
     performance_score: float
-    context: Dict[str, Any]
+    context: dict[str, Any]
     timestamp: datetime
     validated: bool
 
@@ -185,7 +185,7 @@ class TrainingDataCollector:
         self,
         task_title: str,
         task_description: str,
-        pm_recommendation: Dict,
+        pm_recommendation: dict,
         user_accepted: bool,
     ):
         """Collect training data from PM Gateway decisions."""
@@ -210,7 +210,7 @@ class TrainingDataCollector:
     def collect_agent_suggestions(
         self,
         task_description: str,
-        suggestions: List[Dict],
+        suggestions: list[dict],
         user_selected: str,
         task_outcome: float,
     ):
@@ -253,7 +253,7 @@ class TrainingDataCollector:
 
         with sqlite3.connect(self.db_path) as conn:
             for agent in agents_to_flush:
-                if agent in self.collection_buffer and self.collection_buffer[agent]:
+                if self.collection_buffer.get(agent):
                     for datapoint in self.collection_buffer[agent]:
                         conn.execute(
                             """
@@ -301,7 +301,7 @@ class TrainingDataCollector:
 
     def get_training_data(
         self, agent_name: str, min_quality: float = 0.3, limit: int = 1000
-    ) -> List[TrainingDatapoint]:
+    ) -> list[TrainingDatapoint]:
         """Retrieve training data for an agent."""
         self._flush_buffer(agent_name)
 
@@ -390,7 +390,7 @@ class PerformanceEvaluator:
 
     def get_agent_performance_summary(
         self, agent_name: str, days_back: int = 30
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> dict[str, dict[str, float]]:
         """Get comprehensive performance summary for an agent."""
         cutoff_date = datetime.now() - timedelta(days=days_back)
         summary = {}
@@ -416,7 +416,7 @@ class PerformanceEvaluator:
 
         return summary
 
-    def _calculate_trend(self, values: List[float]) -> float:
+    def _calculate_trend(self, values: list[float]) -> float:
         """Calculate trend direction (-1 to 1, where 1 is strongly improving)."""
         if len(values) < 2:
             return 0.0
@@ -440,8 +440,8 @@ class PerformanceEvaluator:
         return correlation
 
     def compare_agents(
-        self, metric: PerformanceMetric, agent_names: List[str] = None
-    ) -> Dict[str, float]:
+        self, metric: PerformanceMetric, agent_names: list[str] = None
+    ) -> dict[str, float]:
         """Compare agents on a specific metric."""
         if agent_names is None:
             agent_names = list(self.metric_history.keys())
@@ -465,7 +465,7 @@ class PerformanceEvaluator:
 
     def identify_training_needs(
         self, threshold_percentile: float = 0.25
-    ) -> Dict[str, List[str]]:
+    ) -> dict[str, list[str]]:
         """Identify agents that need additional training based on performance."""
         training_needs = defaultdict(list)
 
@@ -584,7 +584,7 @@ class ContinuousLearningEngine:
             }
             logging.info(f"Scheduled retraining for agent {agent_name}")
 
-    def get_learning_insights(self, agent_name: str) -> Dict[str, Any]:
+    def get_learning_insights(self, agent_name: str) -> dict[str, Any]:
         """Generate learning insights for an agent."""
 
         # Get recent training data
@@ -614,8 +614,8 @@ class ContinuousLearningEngine:
         }
 
     def _analyze_failure_patterns(
-        self, training_data: List[TrainingDatapoint]
-    ) -> Dict[str, Any]:
+        self, training_data: list[TrainingDatapoint]
+    ) -> dict[str, Any]:
         """Analyze common patterns in failed tasks."""
         low_performance_data = [
             dp for dp in training_data if dp.performance_score < 0.5
@@ -658,8 +658,8 @@ class ContinuousLearningEngine:
         }
 
     def _generate_improvement_recommendations(
-        self, agent_name: str, performance_summary: Dict, failure_patterns: Dict
-    ) -> List[str]:
+        self, agent_name: str, performance_summary: dict, failure_patterns: dict
+    ) -> list[str]:
         """Generate specific improvement recommendations."""
         recommendations = []
 
@@ -703,8 +703,8 @@ class ContinuousLearningEngine:
         return recommendations
 
     def _assess_training_data_quality(
-        self, training_data: List[TrainingDatapoint]
-    ) -> Dict[str, float]:
+        self, training_data: list[TrainingDatapoint]
+    ) -> dict[str, float]:
         """Assess quality of training data."""
         if not training_data:
             return {"overall": 0.0, "validated_ratio": 0.0, "completeness": 0.0}
@@ -736,9 +736,7 @@ class ContinuousLearningEngine:
             if metric_name in ["accuracy", "task_success_rate", "user_satisfaction"]:
                 if stats["average"] < 0.5:
                     priority_score += 3
-                elif stats["average"] < 0.7:
-                    priority_score += 2
-                elif stats["trend"] < -0.4:
+                elif stats["average"] < 0.7 or stats["trend"] < -0.4:
                     priority_score += 2
 
         if priority_score >= 6:
@@ -765,7 +763,7 @@ class AgentTrainingPipeline:
         self.training_sessions = {}
         self.agent_metadata = self._load_agent_metadata()
 
-    def _load_config(self, config_path: str) -> Dict:
+    def _load_config(self, config_path: str) -> dict:
         """Load training configuration."""
         default_config = {
             "training_batch_size": 100,
@@ -778,7 +776,7 @@ class AgentTrainingPipeline:
         }
 
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 user_config = json.load(f)
                 default_config.update(user_config)
         except FileNotFoundError:
@@ -786,7 +784,7 @@ class AgentTrainingPipeline:
 
         return default_config
 
-    def _load_agent_metadata(self) -> Dict[str, Dict]:
+    def _load_agent_metadata(self) -> dict[str, dict]:
         """Load metadata for all agents."""
         metadata = {}
 
@@ -865,7 +863,7 @@ class AgentTrainingPipeline:
     def complete_training_session(
         self,
         session_id: str,
-        performance_metrics: Dict[str, float] = None,
+        performance_metrics: dict[str, float] = None,
         notes: str = "",
     ) -> bool:
         """Complete a training session and record results."""
@@ -918,12 +916,12 @@ class AgentTrainingPipeline:
         return True
 
     def _calculate_improvement_metrics(
-        self, before: Dict, after: Dict
-    ) -> Dict[str, float]:
+        self, before: dict, after: dict
+    ) -> dict[str, float]:
         """Calculate improvement metrics between before and after performance."""
         improvements = {}
 
-        for metric_name in before.keys():
+        for metric_name in before:
             if metric_name in after:
                 before_avg = before[metric_name].get("average", 0)
                 after_avg = after[metric_name].get("average", 0)
@@ -934,7 +932,7 @@ class AgentTrainingPipeline:
 
         return improvements
 
-    def run_comprehensive_training(self, agent_name: str) -> Dict[str, Any]:
+    def run_comprehensive_training(self, agent_name: str) -> dict[str, Any]:
         """Run comprehensive training pipeline for an agent."""
         results = {
             "agent_name": agent_name,
@@ -996,8 +994,8 @@ class AgentTrainingPipeline:
         return results
 
     def _determine_training_phases(
-        self, agent_name: str, insights: Dict
-    ) -> List[TrainingPhase]:
+        self, agent_name: str, insights: dict
+    ) -> list[TrainingPhase]:
         """Determine which training phases are needed for an agent."""
         phases = []
 
@@ -1062,7 +1060,7 @@ class AgentTrainingPipeline:
                 feedback_source=FeedbackType.AUTOMATED_METRIC,
             )
 
-    def train_all_agents(self, batch_size: int = 5) -> Dict[str, Any]:
+    def train_all_agents(self, batch_size: int = 5) -> dict[str, Any]:
         """Train all agents in the system."""
         all_agents = list(AGENT_KEYWORDS.keys()) + [
             "pm-agent-gateway",
@@ -1100,7 +1098,7 @@ class AgentTrainingPipeline:
 
         return results
 
-    def _generate_system_insights(self) -> Dict[str, Any]:
+    def _generate_system_insights(self) -> dict[str, Any]:
         """Generate insights across the entire agent system."""
         insights = {
             "top_performers": {},
@@ -1142,7 +1140,7 @@ class AgentTrainingPipeline:
 
         return insights
 
-    def get_training_dashboard_data(self) -> Dict[str, Any]:
+    def get_training_dashboard_data(self) -> dict[str, Any]:
         """Get comprehensive data for training dashboard."""
 
         # Recent training sessions
@@ -1188,7 +1186,7 @@ class AgentTrainingPipeline:
             "generated_at": datetime.now().isoformat(),
         }
 
-    def _calculate_average_improvement(self, sessions: List[TrainingSession]) -> float:
+    def _calculate_average_improvement(self, sessions: list[TrainingSession]) -> float:
         """Calculate average improvement across training sessions."""
         improvements = []
 

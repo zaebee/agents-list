@@ -1,12 +1,13 @@
 import argparse
-import re
 import os
+import re
 import subprocess
 import sys
 
 # Add project root to path to allow sibling imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from crm import CRMClient
+
 # from rag.query_rag import query_rag # No longer used
 
 
@@ -100,7 +101,7 @@ def execute_action(intent, params):
                 print("RAG index not found. Building it now...")
                 prepare_result = subprocess.run(
                     ["python3", rag_script_path, "prepare"],
-                    capture_output=True,
+                    check=False, capture_output=True,
                     text=True,
                 )
                 if prepare_result.returncode != 0:

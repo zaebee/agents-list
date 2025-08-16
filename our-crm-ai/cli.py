@@ -1,23 +1,24 @@
 # our-crm-ai/cli.py
 import argparse
-import os
 import json
-from commands import (
-    create_task,
-    update_task,
-    list_tasks,
-    view_task,
-    comment_on_task,
-    move_task,
-    complete_task,
-    uncomplete_task,
-    archive_task,
-    unarchive_task,
-    list_agents,
-)
+import os
+
 from agent_selector import suggest_agents
-from pm_agent_gateway import PMAgentGateway
 from business_pm_gateway import BusinessPMGateway
+from commands import (
+    archive_task,
+    comment_on_task,
+    complete_task,
+    create_task,
+    list_agents,
+    list_tasks,
+    move_task,
+    unarchive_task,
+    uncomplete_task,
+    update_task,
+    view_task,
+)
+from pm_agent_gateway import PMAgentGateway
 
 
 def load_config():
@@ -25,7 +26,7 @@ def load_config():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(script_dir, "config.json")
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"Error: {config_path} not found.")

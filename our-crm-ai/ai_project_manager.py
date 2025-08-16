@@ -14,12 +14,11 @@ goals into technical execution with real-time monitoring and ROI tracking.
 
 import argparse
 import asyncio
-import os
 from datetime import datetime
-from typing import Dict
+import os
 
-from business_pm_gateway import BusinessPMGateway
 from business_analytics_cli import BusinessAnalyticsCLI
+from business_pm_gateway import BusinessPMGateway
 from workflow_orchestrator import (
     create_orchestrator_with_business_handlers,
 )
@@ -34,7 +33,7 @@ class AIProjectManager:
         self.orchestrator = create_orchestrator_with_business_handlers()
 
         # Track active projects and workflows
-        self.active_projects: Dict[str, Dict] = {}
+        self.active_projects: dict[str, dict] = {}
 
     def show_welcome(self):
         """Show AI Project Manager welcome message."""
@@ -72,7 +71,7 @@ class AIProjectManager:
         print("\n📊 Phase 2: Business Intelligence Integration")
         try:
             # Get analytics data (simplified for integration)
-            with open("business_analytics.db", "r") as f:
+            with open("business_analytics.db") as f:
                 print("   📈 Analytics database ready")
                 print("   💼 Project integrated with BI system")
         except:

@@ -15,26 +15,26 @@ Features:
 - Alert management
 """
 
+import asyncio
+from dataclasses import dataclass
+from datetime import datetime
+import logging
 import os
 import time
-import asyncio
-import logging
-from typing import Dict, Any
-from datetime import datetime
-from dataclasses import dataclass
+from typing import Any
 
-from prometheus_client import (
-    Counter,
-    Histogram,
-    Gauge,
-    Info,
-    generate_latest,
-    CONTENT_TYPE_LATEST,
-)
-from flask import Flask, Response, jsonify
-import psutil
 import aioredis
 from dotenv import load_dotenv
+from flask import Flask, Response, jsonify
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    Counter,
+    Gauge,
+    Histogram,
+    Info,
+    generate_latest,
+)
+import psutil
 
 # Load environment variables
 load_dotenv()
@@ -53,7 +53,7 @@ class HealthStatus:
     name: str
     status: str  # healthy, unhealthy, degraded
     last_check: datetime
-    details: Dict[str, Any]
+    details: dict[str, Any]
     response_time_ms: float = 0
 
 
@@ -180,8 +180,8 @@ class MetricsCollector:
 
     def update_business_metrics(
         self,
-        projects_by_status: Dict[str, int],
-        project_values: Dict[str, Dict[str, float]],
+        projects_by_status: dict[str, int],
+        project_values: dict[str, dict[str, float]],
     ):
         """Update business metrics."""
         # Update project counts
@@ -226,7 +226,7 @@ class HealthChecker:
     """Health check system for all components."""
 
     def __init__(self):
-        self.health_status: Dict[str, HealthStatus] = {}
+        self.health_status: dict[str, HealthStatus] = {}
         self.redis_client = None
 
     async def initialize(self):
@@ -377,7 +377,7 @@ class HealthChecker:
         self.health_status["system"] = status
         return status
 
-    async def check_all_health(self) -> Dict[str, HealthStatus]:
+    async def check_all_health(self) -> dict[str, HealthStatus]:
         """Check health of all components."""
         checks = [
             self.check_database_health(),

@@ -2,13 +2,13 @@
 
 ## Overview
 
-This guide covers deploying the AI-CRM system to production with 100% YouGile integration. The system has been thoroughly tested and is ready for enterprise deployment.
+This guide covers deploying the AI-CRM system to production with PostgreSQL database integration. The system has been thoroughly tested and is ready for enterprise deployment.
 
 ## ✅ Pre-Deployment Checklist
 
-- [x] 100% YouGile integration test success (10/10 tests passing)
+- [x] PostgreSQL database integration complete
 - [ ] Production environment configured
-- [ ] API keys secured
+- [ ] API keys secured (Anthropic, OpenAI, etc.)
 - [ ] Monitoring setup
 - [ ] Backup strategy implemented
 - [ ] Security review completed
@@ -17,8 +17,8 @@ This guide covers deploying the AI-CRM system to production with 100% YouGile in
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Web UI        │    │   AI-CRM Core    │    │   YouGile API   │
-│ (Port 3000)     │◄──►│  (Port 8000)     │◄──►│  (External)     │
+│   Web UI        │    │   AI-CRM Core    │    │  AI Agent APIs  │
+│ (Port 3000)     │◄──►│  (Port 5001)     │◄──►│  (External)     │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
          │                       │                       │
          ▼                       ▼                       ▼

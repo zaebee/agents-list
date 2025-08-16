@@ -1,14 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
-from fastapi.responses import HTMLResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Optional
 import shutil
 
-from database import init_database, init_default_users, get_db_connection
-from security import create_access_token, get_current_user, authenticate_user, Token
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
 from analytics_engine import AnalyticsEngine
 from business_pm_gateway import BusinessPMGateway
+from database import get_db_connection, init_database, init_default_users
+from security import authenticate_user, create_access_token, get_current_user
 
 # Initialize database
 init_database()
@@ -41,9 +40,9 @@ business_gateway = BusinessPMGateway()
 
 class User(BaseModel):
     username: str
-    email: Optional[str] = None
-    full_name: Optional[str] = None
-    disabled: Optional[bool] = None
+    email: str | None = None
+    full_name: str | None = None
+    disabled: bool | None = None
 
 
 class UserInDB(User):
@@ -58,13 +57,13 @@ class LoginRequest(BaseModel):
 class Task(BaseModel):
     id: str
     description: str
-    agent_id: Optional[str] = None
+    agent_id: str | None = None
     status: str
 
 
 class TaskCreate(BaseModel):
     description: str
-    agent_id: Optional[str] = None
+    agent_id: str | None = None
 
 
 class LoginResponse(BaseModel):
@@ -189,7 +188,7 @@ async def execute_agent_task(
     return {"status": "success", "task_id": "123"}
 
 
-@app.get("/api/tasks", response_model=List[Task])
+@app.get("/api/tasks", response_model=list[Task])
 async def get_tasks(current_user: User = Depends(get_current_user)):
     with get_db_connection() as conn:
         cursor = conn.cursor()

@@ -4,13 +4,14 @@ Configuration Management with Validation
 Advanced configuration system with Pydantic validation, environment variables, and multiple sources.
 """
 
-import os
+from enum import Enum
 import json
 import logging
+import os
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field, validator, ValidationError
-from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field, ValidationError, validator
 
 from exceptions import ConfigurationError
 
@@ -38,10 +39,10 @@ class AIProviderConfig(BaseModel):
 
     provider: str = Field(..., description="AI provider name")
     model: str = Field(..., description="Model name")
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         None, description="API key (can be from environment)"
     )
-    endpoint: Optional[str] = Field(None, description="Custom endpoint URL")
+    endpoint: str | None = Field(None, description="Custom endpoint URL")
     max_tokens: int = Field(default=4000, ge=1, le=32000)
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     timeout: int = Field(default=30, ge=1, le=300)
@@ -57,7 +58,7 @@ class AIProviderConfig(BaseModel):
 class YouGileConfig(BaseModel):
     """YouGile integration configuration."""
 
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         None, description="YouGile API key (from environment)"
     )
     base_url: str = Field(default="https://yougile.com/api/v2")
@@ -65,12 +66,12 @@ class YouGileConfig(BaseModel):
     board_id: str = Field(..., description="YouGile board ID")
 
     # Column mappings
-    columns: Dict[str, str] = Field(
+    columns: dict[str, str] = Field(
         default_factory=dict, description="Status column mappings"
     )
 
     # Agent sticker configuration
-    ai_owner_sticker: Dict[str, Any] = Field(
+    ai_owner_sticker: dict[str, Any] = Field(
         default_factory=dict, description="AI owner sticker config"
     )
 
@@ -93,12 +94,12 @@ class AgentConfig(BaseModel):
 
     name: str = Field(..., description="Agent name")
     description: str = Field(default="", description="Agent description")
-    keywords: List[str] = Field(default_factory=list, description="Agent keywords")
+    keywords: list[str] = Field(default_factory=list, description="Agent keywords")
     max_concurrent_tasks: int = Field(default=5, ge=1, le=20)
     average_response_time_hours: float = Field(default=4.0, ge=0.1, le=72.0)
     is_available: bool = Field(default=True)
-    specializations: List[str] = Field(default_factory=list)
-    tools: List[str] = Field(default_factory=list, description="Available tools")
+    specializations: list[str] = Field(default_factory=list)
+    tools: list[str] = Field(default_factory=list, description="Available tools")
 
     @validator("name")
     def validate_name(cls, v):
@@ -110,10 +111,10 @@ class AgentConfig(BaseModel):
 class AgentSystemConfig(BaseModel):
     """Agent system configuration."""
 
-    enabled_agents: List[str] = Field(
+    enabled_agents: list[str] = Field(
         default_factory=list, description="List of enabled agent names"
     )
-    agent_configs: Dict[str, AgentConfig] = Field(default_factory=dict)
+    agent_configs: dict[str, AgentConfig] = Field(default_factory=dict)
     default_agent: str = Field(
         default="general-purpose", description="Default fallback agent"
     )
@@ -160,7 +161,7 @@ class WorkflowConfig(BaseModel):
             try:
                 path.mkdir(parents=True, exist_ok=True)
             except Exception as e:
-                raise ValueError(f"Cannot create storage path {v}: {str(e)}")
+                raise ValueError(f"Cannot create storage path {v}: {e!s}")
         return str(path)
 
 
@@ -183,14 +184,14 @@ class LoggingConfig(BaseModel):
 
     level: LogLevel = Field(default=LogLevel.INFO)
     format: str = Field(default="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    file_path: Optional[str] = Field(
+    file_path: str | None = Field(
         None, description="Log file path (None for console only)"
     )
     max_file_size_mb: int = Field(default=10, ge=1, le=100)
     backup_count: int = Field(default=5, ge=1, le=20)
 
     # Component-specific log levels
-    component_levels: Dict[str, LogLevel] = Field(default_factory=dict)
+    component_levels: dict[str, LogLevel] = Field(default_factory=dict)
 
     @validator("file_path")
     def validate_log_path(cls, v):
@@ -201,7 +202,7 @@ class LoggingConfig(BaseModel):
                 try:
                     log_dir.mkdir(parents=True, exist_ok=True)
                 except Exception as e:
-                    raise ValueError(f"Cannot create log directory {log_dir}: {str(e)}")
+                    raise ValueError(f"Cannot create log directory {log_dir}: {e!s}")
         return v
 
 
@@ -237,7 +238,7 @@ class MainConfig(BaseModel):
     debug: bool = Field(default=False)
 
     # Feature flags
-    features: Dict[str, bool] = Field(
+    features: dict[str, bool] = Field(
         default_factory=lambda: {
             "semantic_matching": True,
             "learning_system": True,
@@ -258,15 +259,15 @@ class ConfigurationManager:
     Advanced configuration manager with validation, environment variables, and multiple sources.
     """
 
-    def __init__(self, config_path: Optional[str] = None, env_prefix: str = "AI_CRM_"):
+    def __init__(self, config_path: str | None = None, env_prefix: str = "AI_CRM_"):
         self.config_path = Path(config_path) if config_path else Path("config.json")
         self.env_prefix = env_prefix
         self.logger = logging.getLogger("config_manager")
 
-        self._config: Optional[MainConfig] = None
-        self._env_overrides: Dict[str, Any] = {}
+        self._config: MainConfig | None = None
+        self._env_overrides: dict[str, Any] = {}
 
-    def _load_environment_overrides(self) -> Dict[str, Any]:
+    def _load_environment_overrides(self) -> dict[str, Any]:
         """Load configuration overrides from environment variables."""
         overrides = {}
 
@@ -334,8 +335,8 @@ class ConfigurationManager:
         return value
 
     def _merge_configs(
-        self, base: Dict[str, Any], override: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, base: dict[str, Any], override: dict[str, Any]
+    ) -> dict[str, Any]:
         """Recursively merge configuration dictionaries."""
         result = base.copy()
 
@@ -357,7 +358,7 @@ class ConfigurationManager:
             # Load base configuration from file
             base_config = {}
             if self.config_path.exists():
-                with open(self.config_path, "r") as f:
+                with open(self.config_path) as f:
                     base_config = json.load(f)
                 self.logger.info(f"Loaded base configuration from {self.config_path}")
             else:
@@ -381,12 +382,12 @@ class ConfigurationManager:
             return self._config
 
         except ValidationError as e:
-            error_msg = f"Configuration validation failed: {str(e)}"
+            error_msg = f"Configuration validation failed: {e!s}"
             self.logger.error(error_msg)
             raise ConfigurationError(error_msg)
 
         except Exception as e:
-            error_msg = f"Failed to load configuration: {str(e)}"
+            error_msg = f"Failed to load configuration: {e!s}"
             self.logger.error(error_msg)
             raise ConfigurationError(error_msg)
 
@@ -444,7 +445,7 @@ class ConfigurationManager:
         self._config = None
         return self.load_config()
 
-    def save_config(self, config_path: Optional[str] = None) -> bool:
+    def save_config(self, config_path: str | None = None) -> bool:
         """Save current configuration to file (excluding environment overrides)."""
         if not self._config:
             raise ConfigurationError("No configuration loaded to save")
@@ -472,7 +473,7 @@ class ConfigurationManager:
             self.logger.error(f"Failed to save configuration: {e}")
             return False
 
-    def validate_runtime_config(self) -> Dict[str, Any]:
+    def validate_runtime_config(self) -> dict[str, Any]:
         """Validate runtime configuration and return status."""
         if not self._config:
             return {"valid": False, "error": "No configuration loaded"}
@@ -516,9 +517,9 @@ class ConfigurationManager:
             }
 
         except Exception as e:
-            return {"valid": False, "error": f"Validation failed: {str(e)}"}
+            return {"valid": False, "error": f"Validation failed: {e!s}"}
 
-    def get_effective_config_summary(self) -> Dict[str, Any]:
+    def get_effective_config_summary(self) -> dict[str, Any]:
         """Get a summary of the effective configuration."""
         if not self._config:
             return {"error": "No configuration loaded"}
@@ -559,10 +560,10 @@ class ConfigurationManager:
 
 
 # Factory functions and global instance
-_config_manager: Optional[ConfigurationManager] = None
+_config_manager: ConfigurationManager | None = None
 
 
-def get_config_manager(config_path: Optional[str] = None) -> ConfigurationManager:
+def get_config_manager(config_path: str | None = None) -> ConfigurationManager:
     """Get global configuration manager instance."""
     global _config_manager
 
@@ -572,7 +573,7 @@ def get_config_manager(config_path: Optional[str] = None) -> ConfigurationManage
     return _config_manager
 
 
-def load_config(config_path: Optional[str] = None) -> MainConfig:
+def load_config(config_path: str | None = None) -> MainConfig:
     """Load configuration using global manager."""
     return get_config_manager(config_path).get_config()
 

@@ -5,33 +5,32 @@ Comprehensive tests for YouGile API integration with the refactored AI-CRM syste
 """
 
 import asyncio
+from datetime import datetime
 import json
 import os
 import sys
-from datetime import datetime
-from typing import Optional
 
 # Add current directory to path for imports
 sys.path.append(".")
 
+from config_manager import ConfigurationManager
+from crm_service import create_crm_service
+from exceptions import ConfigurationError
 from models import (
     Task,
     TaskCreateRequest,
-    TaskUpdateRequest,
-    TaskStatus,
     TaskPriority,
+    TaskStatus,
+    TaskUpdateRequest,
 )
-from exceptions import ConfigurationError
-from config_manager import ConfigurationManager
 from repositories import YouGileTaskRepository
-from crm_service import create_crm_service
 
 
 class YouGileIntegrationTester:
     """Comprehensive YouGile integration tester."""
 
     def __init__(
-        self, config_path: str = "config_enhanced.json", api_key: Optional[str] = None
+        self, config_path: str = "config_enhanced.json", api_key: str | None = None
     ):
         self.config_path = config_path
         self.api_key = api_key or os.getenv("YOUGILE_API_KEY")
@@ -118,7 +117,7 @@ class YouGileIntegrationTester:
             self.log_test_result("Health Check", False, error=str(e))
             return False
 
-    async def test_task_creation(self) -> Optional[Task]:
+    async def test_task_creation(self) -> Task | None:
         """Test task creation."""
         try:
             # Create test task

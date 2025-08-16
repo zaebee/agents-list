@@ -14,12 +14,13 @@ Key Features:
 - Risk assessment visualization
 """
 
+from datetime import datetime
+import sqlite3
+from typing import Any
+import uuid
+
 from flask import Flask, jsonify, render_template_string, request
 from flask_cors import CORS
-import sqlite3
-from datetime import datetime
-from typing import Dict, Any
-import uuid
 
 from analytics_engine import AnalyticsEngine
 from business_pm_gateway import BusinessPMGateway, ProjectPlan
@@ -192,7 +193,7 @@ class BusinessIntelligenceDashboard:
 
         return project_id
 
-    def get_executive_dashboard(self) -> Dict[str, Any]:
+    def get_executive_dashboard(self) -> dict[str, Any]:
         """Generate executive-level dashboard data."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -271,7 +272,7 @@ class BusinessIntelligenceDashboard:
             "generated_at": datetime.now().isoformat(),
         }
 
-    def get_project_health_analytics(self) -> Dict[str, Any]:
+    def get_project_health_analytics(self) -> dict[str, Any]:
         """Get real-time project health analytics."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -361,7 +362,7 @@ class BusinessIntelligenceDashboard:
             },
         }
 
-    def get_roi_analytics(self) -> Dict[str, Any]:
+    def get_roi_analytics(self) -> dict[str, Any]:
         """Calculate and return ROI analytics."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row

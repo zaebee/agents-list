@@ -4,14 +4,14 @@ Context-Aware Agent Routing
 Advanced agent routing system with workload balancing, context awareness, and intelligent scheduling.
 """
 
-import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
+import logging
+from typing import Any
 
-from models import Agent, TaskPriority, TaskComplexity, AgentSuggestion
 from exceptions import AgentError, AgentUnavailableError
+from models import Agent, AgentSuggestion, TaskComplexity, TaskPriority
 from repositories import AgentRepository
 
 
@@ -32,11 +32,11 @@ class RoutingContext:
     task_priority: TaskPriority
     task_complexity: TaskComplexity
     estimated_hours: float
-    deadline: Optional[datetime] = None
-    required_skills: List[str] = None
-    team_preferences: Dict[str, Any] = None
-    previous_agent: Optional[str] = None  # For related tasks
-    user_preferences: Dict[str, float] = None  # User-specific agent preferences
+    deadline: datetime | None = None
+    required_skills: list[str] = None
+    team_preferences: dict[str, Any] = None
+    previous_agent: str | None = None  # For related tasks
+    user_preferences: dict[str, float] = None  # User-specific agent preferences
 
     def __post_init__(self):
         if self.required_skills is None:
@@ -123,10 +123,10 @@ class WorkloadBalancer:
 
     async def get_balanced_agents(
         self,
-        candidate_agents: List[Agent],
+        candidate_agents: list[Agent],
         context: RoutingContext,
         max_agents: int = 3,
-    ) -> List[Tuple[Agent, float]]:
+    ) -> list[tuple[Agent, float]]:
         """Get agents balanced by workload with scores."""
         agent_scores = []
 
@@ -208,7 +208,7 @@ class ContextAnalyzer:
             "security_review": ["security-auditor", "code-reviewer"],
         }
 
-    def analyze_task_context(self, task_description: str) -> Dict[str, Any]:
+    def analyze_task_context(self, task_description: str) -> dict[str, Any]:
         """Analyze task context to extract routing insights."""
         context_insights = {
             "task_type": self._classify_task_type(task_description),
@@ -244,7 +244,7 @@ class ContextAnalyzer:
         else:
             return "general"
 
-    def _extract_urgency_indicators(self, description: str) -> List[str]:
+    def _extract_urgency_indicators(self, description: str) -> list[str]:
         """Extract urgency indicators from task description."""
         desc_lower = description.lower()
         indicators = []
@@ -267,7 +267,7 @@ class ContextAnalyzer:
 
         return indicators
 
-    def _assess_collaboration_needs(self, description: str) -> Dict[str, Any]:
+    def _assess_collaboration_needs(self, description: str) -> dict[str, Any]:
         """Assess if task requires collaboration between agents."""
         desc_lower = description.lower()
 
@@ -288,7 +288,7 @@ class ContextAnalyzer:
 
         return {k: v for k, v in collaboration_indicators.items() if v}
 
-    def _assess_technical_complexity(self, description: str) -> Dict[str, int]:
+    def _assess_technical_complexity(self, description: str) -> dict[str, int]:
         """Assess technical complexity indicators."""
         desc_lower = description.lower()
 
@@ -315,7 +315,7 @@ class ContextAnalyzer:
         return complexity_indicators
 
     def calculate_context_score(
-        self, agent_name: str, context: RoutingContext, task_insights: Dict[str, Any]
+        self, agent_name: str, context: RoutingContext, task_insights: dict[str, Any]
     ) -> float:
         """Calculate context-aware score for agent."""
         score = 0.5  # Base neutral score
@@ -364,11 +364,11 @@ class SmartAgentRouter:
 
     async def route_task(
         self,
-        agent_suggestions: List[AgentSuggestion],
+        agent_suggestions: list[AgentSuggestion],
         context: RoutingContext,
         strategy: RoutingStrategy = RoutingStrategy.CONTEXT_AWARE,
         task_description: str = "",
-    ) -> Tuple[str, RoutingScore]:
+    ) -> tuple[str, RoutingScore]:
         """
         Route task to optimal agent using specified strategy.
 
@@ -412,11 +412,11 @@ class SmartAgentRouter:
 
         except Exception as e:
             self.logger.error(f"Agent routing failed: {e}")
-            raise AgentError(f"Agent routing failed: {str(e)}")
+            raise AgentError(f"Agent routing failed: {e!s}")
 
     async def _route_best_match(
-        self, agents: List[Tuple[Agent, AgentSuggestion]], context: RoutingContext
-    ) -> Tuple[str, RoutingScore]:
+        self, agents: list[tuple[Agent, AgentSuggestion]], context: RoutingContext
+    ) -> tuple[str, RoutingScore]:
         """Route to agent with best capability match."""
         best_agent = None
         best_score = 0.0
@@ -445,8 +445,8 @@ class SmartAgentRouter:
         return agent.name, routing_score
 
     async def _route_load_balanced(
-        self, agents: List[Tuple[Agent, AgentSuggestion]], context: RoutingContext
-    ) -> Tuple[str, RoutingScore]:
+        self, agents: list[tuple[Agent, AgentSuggestion]], context: RoutingContext
+    ) -> tuple[str, RoutingScore]:
         """Route to agent with best workload balance."""
         agent_list = [agent for agent, _ in agents]
         balanced_agents = await self.workload_balancer.get_balanced_agents(
@@ -473,10 +473,10 @@ class SmartAgentRouter:
 
     async def _route_priority_aware(
         self,
-        agents: List[Tuple[Agent, AgentSuggestion]],
+        agents: list[tuple[Agent, AgentSuggestion]],
         context: RoutingContext,
         task_description: str,
-    ) -> Tuple[str, RoutingScore]:
+    ) -> tuple[str, RoutingScore]:
         """Route considering task priority and urgency."""
         best_agent = None
         best_score = 0.0
@@ -534,10 +534,10 @@ class SmartAgentRouter:
 
     async def _route_context_aware(
         self,
-        agents: List[Tuple[Agent, AgentSuggestion]],
+        agents: list[tuple[Agent, AgentSuggestion]],
         context: RoutingContext,
         task_description: str,
-    ) -> Tuple[str, RoutingScore]:
+    ) -> tuple[str, RoutingScore]:
         """Full context-aware routing with all factors."""
         task_insights = self.context_analyzer.analyze_task_context(task_description)
 
@@ -631,8 +631,8 @@ class SmartAgentRouter:
         return agent.name, routing_score
 
     async def _route_round_robin(
-        self, agents: List[Tuple[Agent, AgentSuggestion]]
-    ) -> Tuple[str, RoutingScore]:
+        self, agents: list[tuple[Agent, AgentSuggestion]]
+    ) -> tuple[str, RoutingScore]:
         """Simple round-robin routing."""
         available_agents = [agent for agent, _ in agents if agent.is_available]
 
@@ -669,10 +669,10 @@ class SmartAgentRouter:
 
     async def get_routing_recommendations(
         self,
-        agent_suggestions: List[AgentSuggestion],
+        agent_suggestions: list[AgentSuggestion],
         context: RoutingContext,
         task_description: str = "",
-    ) -> List[Tuple[str, RoutingScore]]:
+    ) -> list[tuple[str, RoutingScore]]:
         """Get routing recommendations with scores for all strategies."""
         recommendations = []
 

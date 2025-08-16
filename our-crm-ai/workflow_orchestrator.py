@@ -15,16 +15,16 @@ Key Features:
 """
 
 import asyncio
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Callable
-from dataclasses import dataclass, asdict
 from enum import Enum
-import uuid
 import logging
+import uuid
 
-from business_pm_gateway import BusinessPMGateway, ProjectPlan
-from workflow_persistence import WorkflowStorageBackend, FileWorkflowStorage
 from analytics_engine import AnalyticsEngine
+from business_pm_gateway import BusinessPMGateway, ProjectPlan
+from workflow_persistence import FileWorkflowStorage, WorkflowStorageBackend
 
 
 class WorkflowStatus(Enum):
@@ -58,10 +58,10 @@ class AgentTask:
     estimated_hours: float
     actual_hours: float = 0.0
     status: WorkflowStatus = WorkflowStatus.PENDING
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    output: Optional[Dict] = None
-    context: Optional[Dict] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    output: dict | None = None
+    context: dict | None = None
     quality_score: float = 0.0
     business_value: float = 0.0
 
@@ -74,29 +74,29 @@ class WorkflowExecution:
     project_id: str
     project_name: str
     status: WorkflowStatus
-    tasks: List[AgentTask]
+    tasks: list[AgentTask]
     current_task_index: int = 0
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     total_estimated_hours: float = 0.0
     total_actual_hours: float = 0.0
-    business_context: Optional[Dict] = None
+    business_context: dict | None = None
     progress_percentage: float = 0.0
-    next_milestone: Optional[str] = None
+    next_milestone: str | None = None
 
 
 class WorkflowOrchestrator:
     """Advanced multi-agent workflow orchestration system."""
 
-    def __init__(self, storage_backend: Optional[WorkflowStorageBackend] = None):
+    def __init__(self, storage_backend: WorkflowStorageBackend | None = None):
         self.storage = storage_backend or FileWorkflowStorage()
         self.business_gateway = BusinessPMGateway()
         self.analytics = AnalyticsEngine()
-        self.active_workflows: Dict[str, WorkflowExecution] = {}
-        self.agent_status: Dict[str, AgentStatus] = {}
+        self.active_workflows: dict[str, WorkflowExecution] = {}
+        self.agent_status: dict[str, AgentStatus] = {}
 
         # Workflow event handlers
-        self.event_handlers: Dict[str, List[Callable]] = {
+        self.event_handlers: dict[str, list[Callable]] = {
             "workflow_started": [],
             "task_started": [],
             "task_completed": [],
@@ -445,7 +445,7 @@ class WorkflowOrchestrator:
             },
         )
 
-    async def _emit_event(self, event_type: str, data: Dict):
+    async def _emit_event(self, event_type: str, data: dict):
         """Emit workflow event to registered handlers."""
         handlers = self.event_handlers.get(event_type, [])
         for handler in handlers:
@@ -457,7 +457,7 @@ class WorkflowOrchestrator:
             except Exception as e:
                 self.logger.error(f"Event handler failed for {event_type}: {e}")
 
-    async def _get_workflow(self, workflow_id: str) -> Optional[WorkflowExecution]:
+    async def _get_workflow(self, workflow_id: str) -> WorkflowExecution | None:
         """Get workflow from memory or storage."""
         if workflow_id in self.active_workflows:
             return self.active_workflows[workflow_id]
@@ -494,7 +494,7 @@ class WorkflowOrchestrator:
 
         return None
 
-    async def get_workflow_status(self, workflow_id: str) -> Optional[Dict]:
+    async def get_workflow_status(self, workflow_id: str) -> dict | None:
         """Get current workflow status and progress."""
         workflow = await self._get_workflow(workflow_id)
         if not workflow:
@@ -517,7 +517,7 @@ class WorkflowOrchestrator:
             "next_milestone": workflow.next_milestone,
         }
 
-    async def list_active_workflows(self) -> List[Dict]:
+    async def list_active_workflows(self) -> list[dict]:
         """List all active workflows."""
         workflows = []
         for workflow_id, workflow in self.active_workflows.items():
@@ -538,7 +538,7 @@ class WorkflowOrchestrator:
 
 
 # Event handlers for business notifications
-async def business_stakeholder_notification_handler(data: Dict):
+async def business_stakeholder_notification_handler(data: dict):
     """Handle business stakeholder notifications."""
     event_type = data.get("event_type", "unknown")
 

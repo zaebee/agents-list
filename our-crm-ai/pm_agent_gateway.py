@@ -10,11 +10,12 @@ This module acts as a Project Manager agent that:
 5. Provides intelligent task decomposition
 """
 
-import json
-from typing import List, Dict
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from enum import Enum
+import json
+
 from agent_selector import suggest_agents
+
 # Import removed to avoid circular imports - will use local validation
 
 
@@ -42,10 +43,10 @@ class TaskAnalysis:
 
     complexity: TaskComplexity
     estimated_hours: float
-    required_agents: List[str]
-    dependencies: List[str]
-    risk_factors: List[str]
-    success_criteria: List[str]
+    required_agents: list[str]
+    dependencies: list[str]
+    risk_factors: list[str]
+    success_criteria: list[str]
 
 
 @dataclass
@@ -54,10 +55,10 @@ class AgentWorkflow:
 
     task_id: str
     primary_agent: str
-    supporting_agents: List[str]
-    workflow_steps: List[Dict]
+    supporting_agents: list[str]
+    workflow_steps: list[dict]
     estimated_completion: str
-    dependencies: List[str]
+    dependencies: list[str]
 
 
 class PMAgentGateway:
@@ -65,7 +66,7 @@ class PMAgentGateway:
 
     def __init__(self, config_path: str = "config.json"):
         """Initialize the PM Agent Gateway."""
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             self.config = json.load(f)
 
         # Agent specializations for workflow planning
@@ -154,7 +155,7 @@ class PMAgentGateway:
         }
 
     def analyze_task(
-        self, title: str, description: str, context: Dict = None
+        self, title: str, description: str, context: dict = None
     ) -> TaskAnalysis:
         """Perform comprehensive task analysis."""
         text = f"{title} {description}".lower()
@@ -282,7 +283,7 @@ class PMAgentGateway:
             dependencies=task_analysis.dependencies,
         )
 
-    def decompose_complex_task(self, title: str, description: str) -> List[Dict]:
+    def decompose_complex_task(self, title: str, description: str) -> list[dict]:
         """Break down complex tasks into manageable subtasks."""
         analysis = self.analyze_task(title, description)
 
@@ -316,7 +317,7 @@ class PMAgentGateway:
         return subtasks
 
     def recommend_task_priority(
-        self, title: str, description: str, context: Dict = None
+        self, title: str, description: str, context: dict = None
     ) -> TaskPriority:
         """Analyze and recommend task priority."""
         text = f"{title} {description}".lower()
@@ -354,7 +355,7 @@ class PMAgentGateway:
 
     def create_managed_task(
         self, title: str, description: str, auto_assign: bool = True
-    ) -> Dict:
+    ) -> dict:
         """Create a task with full PM analysis and workflow planning."""
 
         print(f"🎯 PM Agent analyzing task: '{title}'")
@@ -412,7 +413,7 @@ class PMAgentGateway:
             "recommendation": f"Assign to {assigned_agent} - estimated {analysis.estimated_hours} hours",
         }
 
-    def monitor_task_progress(self, task_id: str) -> Dict:
+    def monitor_task_progress(self, task_id: str) -> dict:
         """Monitor and analyze task progress (placeholder for future API integration)."""
         # Basic validation without circular import
         if not task_id or len(task_id) < 8:

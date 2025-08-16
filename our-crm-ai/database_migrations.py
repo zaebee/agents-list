@@ -13,11 +13,11 @@ Features:
 - Environment-based configuration
 """
 
-import os
 import asyncio
-import logging
-import sqlite3
 from datetime import datetime
+import logging
+import os
+import sqlite3
 
 import asyncpg
 from dotenv import load_dotenv
@@ -406,12 +406,13 @@ class PostgreSQLMigrator:
 
     async def create_default_admin(self):
         """Create default admin user in PostgreSQL."""
-        import bcrypt
         import uuid
+
+        import bcrypt
 
         admin_id = str(uuid.uuid4())
         password_hash = bcrypt.hashpw(
-            "admin123".encode("utf-8"), bcrypt.gensalt()
+            b"admin123", bcrypt.gensalt()
         ).decode("utf-8")
 
         async with self.pool.acquire() as conn:

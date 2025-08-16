@@ -6,12 +6,14 @@ This module generates comprehensive OpenAPI/Swagger documentation
 for all API endpoints including billing, analytics, and agent management.
 """
 
-from fastapi import FastAPI
-from fastapi.openapi.utils import get_openapi
-from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
-from fastapi.responses import HTMLResponse
 import json
+
+from fastapi import FastAPI
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import HTMLResponse
 import yaml
+
 
 def generate_openapi_spec(app: FastAPI) -> dict:
     """Generate comprehensive OpenAPI specification."""
@@ -75,7 +77,7 @@ The API uses standard HTTP status codes and returns error responses in JSON form
 
 def create_api_documentation_endpoints(app: FastAPI):
     """Add custom documentation endpoints."""
-    
+
     @app.get("/docs", include_in_schema=False)
     async def custom_swagger_ui_html():
         """Custom Swagger UI with enhanced styling."""
@@ -93,7 +95,7 @@ def create_api_documentation_endpoints(app: FastAPI):
                 "tryItOutEnabled": True
             }
         )
-    
+
     @app.get("/redoc", include_in_schema=False)
     async def redoc_html():
         """Alternative documentation using ReDoc."""
@@ -102,14 +104,14 @@ def create_api_documentation_endpoints(app: FastAPI):
             title="AI-CRM API Documentation",
             redoc_js_url="https://cdn.jsdelivr.net/npm/redoc@2.0.0/bundles/redoc.standalone.js",
         )
-    
+
     @app.get("/openapi.yaml", include_in_schema=False)
     async def get_openapi_yaml():
         """Get OpenAPI spec in YAML format."""
         openapi_spec = generate_openapi_spec(app)
         yaml_str = yaml.dump(openapi_spec, default_flow_style=False)
         return HTMLResponse(content=yaml_str, media_type="application/x-yaml")
-    
+
     @app.get("/api-guide", include_in_schema=False)
     async def api_guide():
         """Comprehensive API usage guide."""
@@ -288,14 +290,14 @@ client = AICRMClient(api_key='YOUR_API_KEY')
 # Example usage for integrating with existing FastAPI app
 def setup_api_documentation(app: FastAPI):
     """Setup comprehensive API documentation."""
-    
+
     # Override the default OpenAPI schema
     def custom_openapi():
         if app.openapi_schema:
             return app.openapi_schema
-        
+
         openapi_schema = generate_openapi_spec(app)
-        
+
         # Add custom schema components
         openapi_schema["components"] = {
             "schemas": {
@@ -346,31 +348,31 @@ def setup_api_documentation(app: FastAPI):
                 }
             }
         }
-        
+
         # Add security requirement globally
         openapi_schema["security"] = [{"bearerAuth": []}]
-        
+
         app.openapi_schema = openapi_schema
         return app.openapi_schema
-    
+
     app.openapi = custom_openapi
     create_api_documentation_endpoints(app)
 
 if __name__ == "__main__":
     # Generate standalone documentation files
     from api import app
-    
+
     # Generate OpenAPI spec
     openapi_spec = generate_openapi_spec(app)
-    
+
     # Save as JSON
     with open("openapi.json", "w") as f:
         json.dump(openapi_spec, f, indent=2)
-    
+
     # Save as YAML
     with open("openapi.yaml", "w") as f:
         yaml.dump(openapi_spec, f, default_flow_style=False)
-    
+
     print("📚 API documentation generated:")
     print("  - openapi.json")
     print("  - openapi.yaml")

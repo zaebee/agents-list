@@ -13,10 +13,10 @@ Key Features:
 - Executive-level project planning
 """
 
-import re
-from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
+import re
+
 from pm_agent_gateway import (
     PMAgentGateway,
     TaskComplexity,
@@ -53,7 +53,7 @@ class BusinessObjective:
 
     metric: BusinessMetric
     target_value: float
-    current_value: Optional[float] = None
+    current_value: float | None = None
     timeline_months: int = 12
     confidence_level: float = 0.8  # 0-1 scale
 
@@ -62,14 +62,14 @@ class BusinessObjective:
 class BusinessContext:
     """Business context for project planning."""
 
-    business_goals: List[str]
-    target_market: Optional[str] = None
-    competitive_landscape: List[str] = None
-    budget_range: Optional[Tuple[int, int]] = None  # (min, max) in USD
-    timeline_constraints: Optional[str] = None
-    success_metrics: List[BusinessObjective] = None
-    stakeholders: List[str] = None
-    compliance_requirements: List[str] = None
+    business_goals: list[str]
+    target_market: str | None = None
+    competitive_landscape: list[str] = None
+    budget_range: tuple[int, int] | None = None  # (min, max) in USD
+    timeline_constraints: str | None = None
+    success_metrics: list[BusinessObjective] = None
+    stakeholders: list[str] = None
+    compliance_requirements: list[str] = None
 
 
 @dataclass
@@ -78,14 +78,14 @@ class ProjectPlan:
 
     project_name: str
     business_context: BusinessContext
-    technical_phases: List[Dict]
+    technical_phases: list[dict]
     total_estimated_hours: float
-    estimated_cost: Optional[float] = None
-    roi_projection: Optional[Dict] = None
-    risk_assessment: Dict = None
-    success_criteria: List[str] = None
-    milestones: List[Dict] = None
-    resource_requirements: Dict = None
+    estimated_cost: float | None = None
+    roi_projection: dict | None = None
+    risk_assessment: dict = None
+    success_criteria: list[str] = None
+    milestones: list[dict] = None
+    resource_requirements: dict = None
 
 
 class BusinessPMGateway(PMAgentGateway):
@@ -366,7 +366,7 @@ class BusinessPMGateway(PMAgentGateway):
 
     def identify_project_type(
         self, title: str, description: str
-    ) -> Tuple[str, ProjectScale]:
+    ) -> tuple[str, ProjectScale]:
         """Identify project type and scale from description."""
         text = f"{title} {description}".lower()
 
@@ -388,7 +388,7 @@ class BusinessPMGateway(PMAgentGateway):
 
     def generate_project_phases(
         self, project_type: str, business_context: BusinessContext
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Generate comprehensive project phases based on type and business context."""
 
         # Get base workflow
@@ -468,7 +468,7 @@ class BusinessPMGateway(PMAgentGateway):
 
     def calculate_roi_projection(
         self, business_context: BusinessContext, total_cost: float
-    ) -> Dict:
+    ) -> dict:
         """Calculate ROI projection based on business metrics."""
         if not business_context.success_metrics:
             return {"message": "No business metrics provided for ROI calculation"}
@@ -507,7 +507,7 @@ class BusinessPMGateway(PMAgentGateway):
 
     def assess_business_risks(
         self, business_context: BusinessContext, project_type: str
-    ) -> Dict:
+    ) -> dict:
         """Comprehensive business risk assessment."""
         risks = {
             "market_risks": [],

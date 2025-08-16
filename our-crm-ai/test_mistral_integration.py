@@ -6,9 +6,9 @@ This script tests the Mistral AI provider functionality and verifies
 that all components work together correctly.
 """
 
-import os
 import asyncio
-import json
+import os
+
 from agent_integration_framework import (
     AgentIntegrationFramework,
     TaskExecution,
@@ -66,7 +66,7 @@ async def test_mistral_integration():
             print(f"❌ Mistral agent '{test_config.agent_name}' health check failed")
             return False
     except Exception as e:
-        print(f"❌ Health check error: {str(e)}")
+        print(f"❌ Health check error: {e!s}")
         return False
 
     # Test 3: Execute a simple task
@@ -106,7 +106,7 @@ async def test_mistral_integration():
             return False
 
     except Exception as e:
-        print(f"❌ Task execution error: {str(e)}")
+        print(f"❌ Task execution error: {e!s}")
         return False
 
     # Test 4: Test different Mistral models if multiple agents exist
@@ -139,7 +139,7 @@ async def test_mistral_integration():
                 else:
                     print(f"     ❌ Failed: {result.status}")
             except Exception as e:
-                print(f"     ❌ Error: {str(e)}")
+                print(f"     ❌ Error: {e!s}")
 
     # Test 5: Performance comparison
     print("\n📊 Test 5: Performance summary...")

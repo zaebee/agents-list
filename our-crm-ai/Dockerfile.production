@@ -218,8 +218,8 @@ ENCRYPTION_KEY=your_32_character_encryption_key
 ENVIRONMENT=production
 DEBUG=false
 LOG_LEVEL=INFO
-DOMAIN=your-domain.com
-ALLOWED_ORIGINS=https://your-domain.com,https://app.your-domain.com
+DOMAIN=crm.zae.life
+ALLOWED_ORIGINS=https://crm.zae.life,https://crm.zae.life:8080
 
 # Performance
 WORKERS=4
