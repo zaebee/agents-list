@@ -334,26 +334,25 @@ class WorkflowOrchestrator:
             if (
                 gate_name.lower() in task.title.lower()
                 or gate_name.lower() in task.description.lower()
-            ):
-                if task.quality_score < gate_config["required_score"]:
-                    if gate_config["blocking"]:
-                        # Failing quality gate blocks progress
-                        task.status = WorkflowStatus.FAILED
-                        task.output = task.output or {}
-                        task.output["quality_gate_failure"] = {
-                            "gate": gate_name,
-                            "required_score": gate_config["required_score"],
-                            "actual_score": task.quality_score,
-                            "blocking": True,
-                        }
-                        self.logger.warning(
-                            f"Task {task.task_id} failed quality gate: {gate_name}"
-                        )
-                    else:
-                        # Non-blocking quality gate, just log warning
-                        self.logger.warning(
-                            f"Task {task.task_id} quality warning: {gate_name}"
-                        )
+            ) and task.quality_score < gate_config["required_score"]:
+                if gate_config["blocking"]:
+                    # Failing quality gate blocks progress
+                    task.status = WorkflowStatus.FAILED
+                    task.output = task.output or {}
+                    task.output["quality_gate_failure"] = {
+                        "gate": gate_name,
+                        "required_score": gate_config["required_score"],
+                        "actual_score": task.quality_score,
+                        "blocking": True,
+                    }
+                    self.logger.warning(
+                        f"Task {task.task_id} failed quality gate: {gate_name}"
+                    )
+                else:
+                    # Non-blocking quality gate, just log warning
+                    self.logger.warning(
+                        f"Task {task.task_id} quality warning: {gate_name}"
+                    )
 
     async def _update_workflow_progress(self, workflow: WorkflowExecution):
         """Update workflow progress and milestones."""

@@ -10,9 +10,9 @@ from enum import Enum
 import logging
 from typing import Any
 
-from exceptions import AgentError, AgentUnavailableError
-from models import Agent, AgentSuggestion, TaskComplexity, TaskPriority
 from repositories import AgentRepository
+from src.ai_crm.core.exceptions import AgentError, AgentUnavailableError
+from src.ai_crm.core.models import Agent, AgentSuggestion, TaskComplexity, TaskPriority
 
 
 class RoutingStrategy(Enum):

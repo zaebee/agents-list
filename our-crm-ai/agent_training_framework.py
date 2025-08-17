@@ -788,7 +788,7 @@ class AgentTrainingPipeline:
         """Load metadata for all agents."""
         metadata = {}
 
-        for agent_name in AGENT_KEYWORDS.keys():
+        for agent_name in AGENT_KEYWORDS:
             metadata[agent_name] = {
                 "keywords": AGENT_KEYWORDS[agent_name],
                 "specialization_level": 0.5,  # Initial level

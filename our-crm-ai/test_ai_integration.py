@@ -85,8 +85,6 @@ class AIIntegrationTester:
         }
 
         # Register agents with framework - This is now handled by the framework's __init__
-        # for agent_name, config in agents.items():
-        #     await self.framework.register_agent(config)
 
         return agents
 

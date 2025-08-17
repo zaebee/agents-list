@@ -6,7 +6,13 @@ Test script for the new authentication integration.
 import json
 
 from src.ai_crm.auth import get_password_hash
-from src.ai_crm.auth.database import AccountStatus, SessionLocal, SubscriptionTier, User, UserRole
+from src.ai_crm.auth.database import (
+    AccountStatus,
+    SessionLocal,
+    SubscriptionTier,
+    User,
+    UserRole,
+)
 
 
 def create_test_user():

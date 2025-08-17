@@ -16,6 +16,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from src.ai_crm.agents.pm.gateway import TaskAnalyzer, WorkflowEngine
 from src.ai_crm.agents.routing import (
     RoutingStrategy,
     SmartAgentRouter,
@@ -42,7 +43,6 @@ from src.ai_crm.core.models import (
     TaskPriority,
     TaskStatus,
 )
-from src.ai_crm.agents.pm.gateway import TaskAnalyzer, WorkflowEngine
 from workflow_persistence import (
     FileWorkflowStorage,
     create_file_persistence_manager,
