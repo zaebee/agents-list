@@ -84,13 +84,13 @@ def setup_databases():
             if "training_data" in db_name:
                 from training_data_manager import TrainingDataCurator
 
-                curator = TrainingDataCurator(str(db_path))
+                TrainingDataCurator(str(db_path))
                 logging.info(f"Initialized training data database: {db_path}")
 
             elif "performance_optimization" in db_name:
                 from performance_optimizer import AgentOptimizer
 
-                optimizer = AgentOptimizer(str(db_path))
+                AgentOptimizer(str(db_path))
                 logging.info(
                     f"Initialized performance optimization database: {db_path}"
                 )
@@ -483,7 +483,7 @@ def check_sample_data():
     try:
         from training_data_manager import TrainingDataCurator
 
-        curator = TrainingDataCurator("data/training_data.db")
+        TrainingDataCurator("data/training_data.db")
 
         # Check if any datasets exist
         with sqlite3.connect("data/training_data.db") as conn:

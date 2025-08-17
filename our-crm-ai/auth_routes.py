@@ -4,6 +4,9 @@ Authentication routes for AI-CRM system.
 """
 
 from datetime import UTC, datetime, timedelta
+
+# Python 3.9 compatibility - UTC was added in Python 3.11
+UTC = UTC
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status

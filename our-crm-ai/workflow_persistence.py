@@ -432,8 +432,8 @@ class SQLiteWorkflowStorage(WorkflowStorageBackend):
                 # Delete old completed/cancelled workflows
                 cursor = await db.execute(
                     """
-                    DELETE FROM workflows 
-                    WHERE created_at < ? 
+                    DELETE FROM workflows
+                    WHERE created_at < ?
                     AND status IN ('completed', 'cancelled')
                 """,
                     (cutoff_date,),

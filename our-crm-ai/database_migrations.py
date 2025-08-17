@@ -85,7 +85,7 @@ class PostgreSQLMigrator:
             last_login TIMESTAMP WITH TIME ZONE,
             failed_login_attempts INTEGER DEFAULT 0,
             locked_until TIMESTAMP WITH TIME ZONE,
-            
+
             CONSTRAINT valid_role CHECK (role IN ('admin', 'pm', 'stakeholder', 'viewer'))
         );
 
@@ -108,7 +108,7 @@ class PostgreSQLMigrator:
             created_by UUID REFERENCES users(id),
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            
+
             CONSTRAINT valid_status CHECK (status IN ('planning', 'in_progress', 'completed', 'cancelled', 'on_hold')),
             CONSTRAINT valid_risk_score CHECK (risk_score >= 0 AND risk_score <= 1)
         );
@@ -128,7 +128,7 @@ class PostgreSQLMigrator:
             quality_score NUMERIC(3,2),
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            
+
             CONSTRAINT valid_phase_status CHECK (status IN ('pending', 'running', 'completed', 'failed', 'paused'))
         );
 
@@ -141,7 +141,7 @@ class PostgreSQLMigrator:
             target_value NUMERIC(15,2),
             measurement_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             confidence_level NUMERIC(3,2),
-            
+
             CONSTRAINT valid_confidence CHECK (confidence_level >= 0 AND confidence_level <= 1)
         );
 
@@ -183,7 +183,7 @@ class PostgreSQLMigrator:
             progress_percentage NUMERIC(5,2) DEFAULT 0,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            
+
             CONSTRAINT valid_workflow_status CHECK (status IN ('pending', 'running', 'completed', 'failed', 'cancelled'))
         );
 
@@ -280,7 +280,7 @@ class PostgreSQLMigrator:
         for user in users:
             await pg_conn.execute(
                 """
-                INSERT INTO users (id, username, email, password_hash, role, is_active, 
+                INSERT INTO users (id, username, email, password_hash, role, is_active,
                                  created_at, last_login, failed_login_attempts, locked_until)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                 ON CONFLICT (id) DO NOTHING

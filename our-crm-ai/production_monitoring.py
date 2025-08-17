@@ -583,7 +583,7 @@ async def main():
     print("   System metrics updated")
 
     # Create monitoring app
-    app = monitoring_system.create_monitoring_app()
+    monitoring_system.create_monitoring_app()
     print("\n🚀 Monitoring endpoints available:")
     print("   - /health")
     print("   - /health/detailed")

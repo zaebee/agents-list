@@ -5,6 +5,9 @@ Integrates auth_database.py with existing security patterns.
 """
 
 from datetime import UTC, datetime, timedelta
+
+# Python 3.9 compatibility - UTC was added in Python 3.11
+UTC = UTC
 import logging
 import os
 import re
@@ -56,7 +59,7 @@ class PasswordValidator:
     @staticmethod
     def validate(password: str) -> dict[str, Any]:
         """Validate password strength."""
-        result = {"is_valid": False, "score": 0, "feedback": []}
+        result: dict[str, Any] = {"is_valid": False, "score": 0, "feedback": []}
 
         if len(password) < 8:
             result["feedback"].append("Password must be at least 8 characters long")
@@ -111,7 +114,9 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    data: dict[str, Any], expires_delta: timedelta | None = None
+) -> str:
     """Create a JWT access token."""
     to_encode = data.copy()
 
@@ -148,7 +153,7 @@ def create_refresh_token(user_id: int) -> str:
     return encoded_jwt
 
 
-def verify_token(token: str) -> dict | None:
+def verify_token(token: str) -> dict[str, Any] | None:
     """Verify and decode a JWT token."""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -273,7 +278,7 @@ async def get_current_user(
     return user_dict
 
 
-def require_roles(allowed_roles: list[UserRole]):
+def require_roles(allowed_roles: list[UserRole]) -> Any:
     """Decorator to require specific roles."""
 
     def role_checker(
@@ -289,7 +294,7 @@ def require_roles(allowed_roles: list[UserRole]):
     return role_checker
 
 
-def require_subscription_tier(required_tier: SubscriptionTier):
+def require_subscription_tier(required_tier: SubscriptionTier) -> Any:
     """Decorator to require specific subscription tier or higher."""
     tier_hierarchy = {
         SubscriptionTier.FREE: 0,
@@ -359,14 +364,14 @@ async def check_feature_access(
     return True
 
 
-def require_feature_access(feature_name: str):
+def require_feature_access(feature_name: str) -> Any:
     """Decorator to require access to a specific feature."""
 
-    def feature_checker(
+    async def feature_checker(
         current_user: dict[str, Any] = Depends(get_current_user),
         db: Session = Depends(get_db),
     ) -> dict[str, Any]:
-        if not check_feature_access(feature_name, current_user, db):
+        if not await check_feature_access(feature_name, current_user, db):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Feature '{feature_name}' not available for your subscription tier",

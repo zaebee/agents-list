@@ -183,13 +183,13 @@ class BusinessAnalyticsCLI:
 
             # Overall metrics
             cursor.execute("""
-                SELECT 
+                SELECT
                     COUNT(*) as total_projects,
                     SUM(estimated_cost) as total_investment,
                     SUM(target_revenue) as projected_revenue,
                     AVG(projected_roi) as avg_roi,
                     AVG(risk_score) as avg_risk_score
-                FROM business_projects 
+                FROM business_projects
                 WHERE status != 'cancelled'
             """)
             metrics = cursor.fetchone()
@@ -204,8 +204,8 @@ class BusinessAnalyticsCLI:
 
             # Project status breakdown
             cursor.execute("""
-                SELECT status, COUNT(*) as count 
-                FROM business_projects 
+                SELECT status, COUNT(*) as count
+                FROM business_projects
                 GROUP BY status
             """)
             status_data = cursor.fetchall()
@@ -217,7 +217,7 @@ class BusinessAnalyticsCLI:
 
             # Recent projects with performance
             cursor.execute("""
-                SELECT 
+                SELECT
                     p.name,
                     p.target_revenue,
                     p.estimated_cost,
@@ -264,7 +264,7 @@ class BusinessAnalyticsCLI:
             # Projects at risk
             cursor.execute("""
                 SELECT name, risk_score, status, projected_roi, estimated_cost
-                FROM business_projects 
+                FROM business_projects
                 WHERE risk_score > 0.5 AND status IN ('planning', 'in_progress')
                 ORDER BY risk_score DESC
             """)
@@ -289,7 +289,7 @@ class BusinessAnalyticsCLI:
 
             # Timeline analysis
             cursor.execute("""
-                SELECT 
+                SELECT
                     p.name,
                     COUNT(ph.id) as total_phases,
                     SUM(ph.estimated_hours) as estimated_hours,
@@ -355,7 +355,7 @@ class BusinessAnalyticsCLI:
 
             # ROI projections
             cursor.execute("""
-                SELECT 
+                SELECT
                     name,
                     estimated_cost,
                     actual_cost,
@@ -483,7 +483,7 @@ def main():
         epilog="""
 Examples:
   %(prog)s dashboard           # Show executive dashboard
-  %(prog)s health             # Show project health monitor  
+  %(prog)s health             # Show project health monitor
   %(prog)s roi                # Show ROI analysis
   %(prog)s create-sample      # Create sample data for demo
         """,
@@ -492,24 +492,16 @@ Examples:
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Dashboard command
-    dashboard_parser = subparsers.add_parser(
-        "dashboard", help="Show executive-level business dashboard"
-    )
+    subparsers.add_parser("dashboard", help="Show executive-level business dashboard")
 
     # Health command
-    health_parser = subparsers.add_parser(
-        "health", help="Show project health analytics"
-    )
+    subparsers.add_parser("health", help="Show project health analytics")
 
     # ROI command
-    roi_parser = subparsers.add_parser(
-        "roi", help="Show ROI analysis and financial performance"
-    )
+    subparsers.add_parser("roi", help="Show ROI analysis and financial performance")
 
     # Sample data command
-    sample_parser = subparsers.add_parser(
-        "create-sample", help="Create sample data for demonstration"
-    )
+    subparsers.add_parser("create-sample", help="Create sample data for demonstration")
 
     args = parser.parse_args()
 

@@ -71,7 +71,7 @@ class AIProjectManager:
         print("\n📊 Phase 2: Business Intelligence Integration")
         try:
             # Get analytics data (simplified for integration)
-            with open("business_analytics.db") as f:
+            with open("business_analytics.db"):
                 print("   📈 Analytics database ready")
                 print("   💼 Project integrated with BI system")
         except:
@@ -304,7 +304,7 @@ async def main():
 Examples:
   %(prog)s welcome                           # Show welcome and features
   %(prog)s create --title "Launch SaaS Platform" --description "Business Goal: $1M ARR, 10K users, React/Node.js, 6 months"
-  %(prog)s execute --project-id abc123       # Start project execution  
+  %(prog)s execute --project-id abc123       # Start project execution
   %(prog)s monitor --project-id abc123       # Monitor project progress
   %(prog)s dashboard                         # Show portfolio dashboard
   %(prog)s insights                          # Show business insights
@@ -315,9 +315,7 @@ Examples:
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Welcome command
-    welcome_parser = subparsers.add_parser(
-        "welcome", help="Show AI Project Manager welcome"
-    )
+    subparsers.add_parser("welcome", help="Show AI Project Manager welcome")
 
     # Create project command
     create_parser = subparsers.add_parser(
@@ -349,17 +347,13 @@ Examples:
     )
 
     # Dashboard command
-    dashboard_parser = subparsers.add_parser(
-        "dashboard", help="Show portfolio dashboard"
-    )
+    subparsers.add_parser("dashboard", help="Show portfolio dashboard")
 
     # Insights command
-    insights_parser = subparsers.add_parser("insights", help="Show business insights")
+    subparsers.add_parser("insights", help="Show business insights")
 
     # Demo command
-    demo_parser = subparsers.add_parser(
-        "demo", help="Run complete AI Project Manager demo"
-    )
+    subparsers.add_parser("demo", help="Run complete AI Project Manager demo")
 
     args = parser.parse_args()
 
@@ -375,7 +369,7 @@ Examples:
             ai_pm.show_welcome()
 
         elif args.command == "create":
-            project_id = await ai_pm.create_complete_project(
+            await ai_pm.create_complete_project(
                 args.title, args.description, args.auto_execute
             )
 

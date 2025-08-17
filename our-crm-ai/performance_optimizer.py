@@ -613,8 +613,8 @@ class AgentOptimizer:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO optimization_history 
-                (optimization_id, agent_name, strategy, technique, before_metrics, 
+                INSERT INTO optimization_history
+                (optimization_id, agent_name, strategy, technique, before_metrics,
                  after_metrics, success, timestamp, notes)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
@@ -880,7 +880,6 @@ class AgentOptimizer:
             )
 
             # Simplified significance test (in real implementation, use proper statistical tests)
-            significance_threshold = 0.05  # 5% significance level
 
             # Simple t-test approximation
             pooled_std = ((control_std**2 + treatment_std**2) / 2) ** 0.5

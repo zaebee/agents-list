@@ -396,7 +396,7 @@ async def get_invoices(current_user: dict = Depends(get_current_user)):
     """
     Get billing history and invoices for the user.
     """
-    user_id = current_user["user_id"]
+    current_user["user_id"]
 
     try:
         if not stripe.api_key:

@@ -136,8 +136,8 @@ class CommandResponse(BaseModel):
 class TaskResponse(BaseModel):
     success: bool
     task: Task | None = None
-    pm_analysis: dict | None = None
-    agent_suggestions: list | None = None
+    pm_analysis: dict[str, Any] | None = None
+    agent_suggestions: list[str] | None = None
 
 
 class AgentSuggestion(BaseModel):
@@ -162,7 +162,7 @@ class PMAnalysisResult(BaseModel):
     estimated_hours: float
     required_agents: list[str]
     recommended_agent: str
-    subtasks: list[dict]
+    subtasks: list[dict[str, Any]]
     risk_factors: list[str]
     success_criteria: list[str]
     recommendation: str

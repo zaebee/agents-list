@@ -61,7 +61,7 @@ class APIError(CRMError):
         status_code: int | None = None,
         response_data: dict[str, Any] | None = None,
     ):
-        details = {}
+        details: dict[str, Any] = {}
         if status_code:
             details["status_code"] = status_code
         if response_data:
@@ -280,7 +280,7 @@ HTTP_STATUS_EXCEPTIONS = {
 
 def create_api_exception(
     status_code: int, message: str, response_data: dict[str, Any] | None = None
-) -> APIError:
+) -> CRMError:
     """Create appropriate exception based on HTTP status code."""
     exception_class = HTTP_STATUS_EXCEPTIONS.get(status_code, APIError)
 

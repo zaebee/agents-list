@@ -51,7 +51,7 @@ def test_login_endpoint():
     client = TestClient(app)
 
     # Setup test user
-    user_id = setup_test_user()
+    setup_test_user()
 
     print("🧪 Testing /api/auth/login endpoint...")
 

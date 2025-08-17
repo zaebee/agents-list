@@ -389,9 +389,7 @@ class IntegratedTrainingSystem:
             self.agent_status[agent_name].current_phase = TrainingPhase.INITIAL
 
             # Determine training phases needed
-            insights = self.training_pipeline.continuous_learning.get_learning_insights(
-                agent_name
-            )
+            self.training_pipeline.continuous_learning.get_learning_insights(agent_name)
 
             # Check for emergency optimization
             if training_item.get("emergency"):
@@ -926,10 +924,10 @@ def main():
     start_parser.add_argument("--config", help="Config file path")
 
     # Status command
-    status_parser = subparsers.add_parser("status", help="Show system status")
+    subparsers.add_parser("status", help="Show system status")
 
     # Dashboard command
-    dashboard_parser = subparsers.add_parser("dashboard", help="Show system dashboard")
+    subparsers.add_parser("dashboard", help="Show system dashboard")
 
     # Agent details command
     agent_parser = subparsers.add_parser("agent", help="Show agent details")

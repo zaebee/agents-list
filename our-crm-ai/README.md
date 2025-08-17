@@ -5,9 +5,10 @@ Enterprise-grade AI-powered CRM and project management system with multi-agent a
 ## ⚡ Quick Start
 
 ```bash
-# Development Setup
+# Development Setup (Phase 2A)
 git clone <repository>
 cd our-crm-ai
+uv sync  # Install dependencies
 ./start-dev.sh
 
 # Production Deployment  
@@ -17,7 +18,7 @@ docker-compose -f docker-compose.phase2a.yml up -d
 ## 🎯 Key Features
 
 - **🔐 Enterprise Authentication** - JWT-based auth with role-based access control
-- **🤖 Multi-Agent AI System** - 59+ specialized AI agents for task automation  
+- **🤖 Multi-Agent AI System** - 28+ specialized AI agents for task automation  
 - **📊 Analytics Dashboard** - Real-time metrics and performance monitoring
 - **🐳 Production Ready** - Complete Docker stack with PostgreSQL, Redis, monitoring
 - **🔒 Security Hardened** - OWASP compliance, Argon2 hashing, audit logging
@@ -86,11 +87,12 @@ graph TD
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 18+ and npm/bun
-- Docker and Docker Compose
-- PostgreSQL 15+ (or SQLite for development)
-- AI API keys (Anthropic Claude recommended)
+- **Python 3.11+** with uv package manager
+- **Node.js 18+** and npm/bun for frontend
+- **Docker and Docker Compose** for containerized deployment
+- **PostgreSQL 15+** (or SQLite for development)
+- **AI API keys** (Anthropic Claude recommended)
+- **uv** - Fast Python package installer ([install guide](https://docs.astral.sh/uv/))
 
 ### Environment Setup
 
@@ -125,18 +127,25 @@ graph TD
     export STRIPE_PUBLISHABLE_KEY="your_stripe_publishable_key"
     ```
 
-### Development Setup
+### Development Setup (Modern Python with uv)
 
-1.  **Backend Dependencies**: Install the required Python libraries.
+1.  **Backend Dependencies**: Install with modern Python package manager.
     ```bash
-    pip install -r requirements.txt
-    pip install -r requirements-dev.txt  # For development tools
+    # Install uv if not already installed
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    
+    # Install all dependencies (production + development)
+    uv sync
+    
+    # Or install specific groups
+    uv sync --extra dev  # Development tools
+    uv sync --extra ai   # AI/ML features
     ```
 
 2.  **Database Initialization**: Set up database tables and admin user.
     ```bash
     # Initialize database with admin user (admin/admin123)
-    python -c "
+    uv run python -c "
     from auth_database import create_tables, seed_default_data, SessionLocal
     create_tables()
     db = SessionLocal()
@@ -160,10 +169,14 @@ The system is now fully integrated with PostgreSQL for robust data management. N
 
 ## 🏃 Development
 
-To run the application in development mode, use the provided shell script. This will start the backend server with hot-reloading enabled.
+To run the application in development mode, use the provided shell script (Phase 2A). This will start the backend server with hot-reloading enabled.
 
 ```bash
+# Quick start (automatically handles dependencies)
 ./start-dev.sh
+
+# Or manual start with uv
+uv run uvicorn api:app --host 127.0.0.1 --port 5001 --reload
 ```
 
 -   **Web UI**: You will need to start the frontend separately.
@@ -217,48 +230,65 @@ curl -X GET "http://localhost:5001/api/auth/me" \
 - **Pro Tier ($49/month)**: Unlimited commands, 46 agents, analytics dashboard
 - **Enterprise Tier ($299/month)**: All 59 agents, custom features, priority support
 
-## 🛠️ Docker Deployment
+## 🐳 Docker Deployment (Phase 2A - Current)
 
-For production deployment, use Docker Compose:
+For production deployment, use our Phase 2A Docker setup with nginx + supervisor:
 
 ```bash
-# Build and start all services
+# Phase 2A Production Deployment
 docker-compose -f docker-compose.phase2a.yml up --build
 
 # Run in background
 docker-compose -f docker-compose.phase2a.yml up -d
 
-# Check logs
-docker-compose -f docker-compose.phase2a.yml logs -f
+# Check status and logs
+docker-compose -f docker-compose.phase2a.yml ps
+docker-compose -f docker-compose.phase2a.yml logs -f aicrm-app
 
 # Stop services
 docker-compose -f docker-compose.phase2a.yml down
 ```
 
-The system will be available at:
-- **API**: http://localhost:5001
-- **Frontend**: http://localhost:3000
-- **API Documentation**: http://localhost:5001/docs
+**Phase 2A Endpoints:**
+- **Frontend & API**: http://localhost:8080 (nginx reverse proxy)
+- **API Documentation**: http://localhost:8080/docs
+- **Health Check**: http://localhost:8080/health
+- **Direct API**: http://localhost:5001 (development)
 
-##  CLI Usage
+## 🖥️ CLI Usage
 
-The `crm_enhanced.py` script provides a powerful command-line interface for interacting with the system.
+The CLI tools provide powerful command-line interfaces for system interaction:
 
-### Create a Task
+### Main CRM CLI
 ```bash
-python3 crm_enhanced.py create --title "<task_title>" --description "<task_description>" [--owner <agent_name>]
+# Using uv (recommended)
+uv run python crm_enhanced.py create --title "<task_title>" --description "<task_description>"
+
+# Analyze with PM Agent
+uv run python crm_enhanced.py pm --title "<task_title>" --description "<task_description>"
+
+# Modern CLI interface
+uv run python cli_modern.py --help
 ```
 
-### Analyze a Task with the PM Agent
+### Development Commands
 ```bash
-python3 crm_enhanced.py pm --title "<task_title>" --description "<task_description>"
+# Code quality checks
+uv run ruff check
+uv run ruff format
+uv run mypy .
+
+# Security scanning
+uv run safety scan
+
+# Run tests
+uv run pytest
 ```
 
-### Other Commands
-For a full list of commands and their options, you can use the `--help` flag.
+### Help and Documentation
 ```bash
-python3 crm_enhanced.py --help
-python3 crm_enhanced.py create --help
+uv run python crm_enhanced.py --help
+uv run python cli_modern.py --help
 ```
 
 ## 📚 Documentation

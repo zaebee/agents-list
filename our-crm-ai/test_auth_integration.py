@@ -47,7 +47,7 @@ def test_login_api():
     """Test the login API endpoint."""
     try:
         # Create test user
-        user_id = create_test_user()
+        create_test_user()
 
         # Test login
         login_data = {"username": "testuser", "password": "testpassword123"}

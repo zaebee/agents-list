@@ -96,9 +96,7 @@ class ModernCLI:
                     TextColumn("[progress.description]{task.description}"),
                     console=self.console,
                 ) as progress:
-                    task = progress.add_task(
-                        "Initializing AI-CRM service...", total=None
-                    )
+                    progress.add_task("Initializing AI-CRM service...", total=None)
                     self.service = await create_crm_service(api_key, config_path)
             else:
                 print("Initializing AI-CRM service...")
@@ -292,7 +290,7 @@ class ModernCLI:
                     TextColumn("[progress.description]{task.description}"),
                     console=self.console,
                 ) as progress:
-                    task = progress.add_task("Fetching tasks...", total=None)
+                    progress.add_task("Fetching tasks...", total=None)
                     tasks = await self.service.list_tasks(
                         status=status,
                         assigned_agent=args.agent,

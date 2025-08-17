@@ -201,34 +201,34 @@ class BusinessIntelligenceDashboard:
 
             # Overall business metrics
             cursor.execute("""
-                SELECT 
+                SELECT
                     COUNT(*) as total_projects,
                     SUM(estimated_cost) as total_investment,
                     SUM(target_revenue) as projected_revenue,
                     AVG(projected_roi) as avg_roi,
                     AVG(risk_score) as avg_risk_score
-                FROM business_projects 
+                FROM business_projects
                 WHERE status != 'cancelled'
             """)
             overall_metrics = dict(cursor.fetchone())
 
             # Project status breakdown
             cursor.execute("""
-                SELECT status, COUNT(*) as count 
-                FROM business_projects 
+                SELECT status, COUNT(*) as count
+                FROM business_projects
                 GROUP BY status
             """)
             project_status = {row["status"]: row["count"] for row in cursor.fetchall()}
 
             # Top performing agents by business value
             cursor.execute("""
-                SELECT 
+                SELECT
                     agent_name,
                     COUNT(*) as tasks_completed,
                     AVG(business_value_delivered) as avg_business_value,
                     AVG(quality_score) as avg_quality,
                     AVG(stakeholder_satisfaction) as avg_satisfaction
-                FROM agent_business_performance 
+                FROM agent_business_performance
                 WHERE task_completed = 1
                 GROUP BY agent_name
                 ORDER BY avg_business_value DESC
@@ -238,7 +238,7 @@ class BusinessIntelligenceDashboard:
 
             # Recent projects with performance
             cursor.execute("""
-                SELECT 
+                SELECT
                     p.name,
                     p.target_revenue,
                     p.estimated_cost,
@@ -281,7 +281,7 @@ class BusinessIntelligenceDashboard:
             # Projects at risk
             cursor.execute("""
                 SELECT name, risk_score, status, projected_roi, estimated_cost
-                FROM business_projects 
+                FROM business_projects
                 WHERE risk_score > 0.6 AND status IN ('planning', 'in_progress')
                 ORDER BY risk_score DESC
             """)
@@ -289,7 +289,7 @@ class BusinessIntelligenceDashboard:
 
             # Timeline analysis
             cursor.execute("""
-                SELECT 
+                SELECT
                     p.name,
                     p.target_completion,
                     COUNT(ph.id) as total_phases,
@@ -326,11 +326,11 @@ class BusinessIntelligenceDashboard:
 
             # Budget analysis
             cursor.execute("""
-                SELECT 
+                SELECT
                     SUM(estimated_cost) as total_budget,
                     SUM(actual_cost) as total_spent,
                     COUNT(*) as active_projects
-                FROM business_projects 
+                FROM business_projects
                 WHERE status IN ('planning', 'in_progress')
             """)
             budget_data = dict(cursor.fetchone())
@@ -370,7 +370,7 @@ class BusinessIntelligenceDashboard:
 
             # ROI projections vs actuals
             cursor.execute("""
-                SELECT 
+                SELECT
                     name,
                     estimated_cost,
                     actual_cost,
@@ -395,7 +395,7 @@ class BusinessIntelligenceDashboard:
 
             # Risk-adjusted returns
             cursor.execute("""
-                SELECT 
+                SELECT
                     projected_roi,
                     risk_score,
                     estimated_cost
@@ -520,25 +520,25 @@ def create_dashboard_app():
             <p>Business Intelligence Dashboard</p>
             <button class="refresh-btn" onclick="location.reload()">🔄 Refresh Data</button>
         </div>
-        
+
         <div class="metrics-grid" id="executive-metrics">
             <!-- Executive metrics will be populated here -->
         </div>
-        
+
         <div class="chart-container">
             <h3>Project Portfolio Overview</h3>
             <canvas id="portfolioChart" width="400" height="200"></canvas>
         </div>
-        
+
         <div class="chart-container">
             <h3>ROI Analysis</h3>
             <canvas id="roiChart" width="400" height="200"></canvas>
         </div>
-        
+
         <div class="project-list" id="project-health">
             <!-- Project health data will be populated here -->
         </div>
-        
+
         <script>
             // Load dashboard data
             async function loadDashboard() {
@@ -548,25 +548,25 @@ def create_dashboard_app():
                         fetch('/api/project-health'),
                         fetch('/api/roi-analytics')
                     ]);
-                    
+
                     const execData = await execResponse.json();
                     const healthData = await healthResponse.json();
                     const roiData = await roiResponse.json();
-                    
+
                     updateExecutiveMetrics(execData);
                     updatePortfolioChart(execData);
                     updateROIChart(roiData);
                     updateProjectHealth(healthData);
-                    
+
                 } catch (error) {
                     console.error('Error loading dashboard:', error);
                 }
             }
-            
+
             function updateExecutiveMetrics(data) {
                 const metrics = data.overall_metrics;
                 const container = document.getElementById('executive-metrics');
-                
+
                 container.innerHTML = `
                     <div class="metric-card">
                         <div class="metric-label">Total Projects</div>
@@ -586,11 +586,11 @@ def create_dashboard_app():
                     </div>
                 `;
             }
-            
+
             function updatePortfolioChart(data) {
                 const ctx = document.getElementById('portfolioChart').getContext('2d');
                 const statusData = data.project_status_breakdown;
-                
+
                 new Chart(ctx, {
                     type: 'doughnut',
                     data: {
@@ -608,11 +608,11 @@ def create_dashboard_app():
                     }
                 });
             }
-            
+
             function updateROIChart(data) {
                 const ctx = document.getElementById('roiChart').getContext('2d');
                 const projects = data.project_roi_analysis.slice(0, 10);
-                
+
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -631,17 +631,17 @@ def create_dashboard_app():
                     }
                 });
             }
-            
+
             function updateProjectHealth(data) {
                 const container = document.getElementById('project-health');
                 const projects = data.timeline_analysis;
-                
+
                 let html = '<div style="padding: 20px; background: #f8f9fa; border-bottom: 2px solid #dee2e6;"><h3>Project Health Monitor</h3></div>';
-                
+
                 projects.forEach(project => {
-                    const healthClass = project.health_score > 70 ? 'health-good' : 
+                    const healthClass = project.health_score > 70 ? 'health-good' :
                                       project.health_score > 50 ? 'health-warning' : 'health-danger';
-                    
+
                     html += `
                         <div class="project-item">
                             <div>
@@ -656,13 +656,13 @@ def create_dashboard_app():
                         </div>
                     `;
                 });
-                
+
                 container.innerHTML = html;
             }
-            
+
             // Load dashboard on page load
             loadDashboard();
-            
+
             // Auto-refresh every 5 minutes
             setInterval(loadDashboard, 300000);
         </script>

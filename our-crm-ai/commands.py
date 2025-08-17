@@ -208,7 +208,7 @@ def update_task(args, config):
 def list_tasks(args, config):
     """Lists all tasks on the board with enhanced display."""
     print("📋 Fetching tasks from the board...")
-    board_id = config["board_id"]
+    config["board_id"]
 
     all_tasks = []
     try:

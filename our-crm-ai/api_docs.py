@@ -40,7 +40,7 @@ Authorization: Bearer <your-jwt-token>
 
 ## Rate Limits
 - **Free Tier**: 10 tasks/month, 100 API calls/hour
-- **Pro Tier**: Unlimited tasks, 1000 API calls/hour  
+- **Pro Tier**: Unlimited tasks, 1000 API calls/hour
 - **Enterprise**: Unlimited tasks and API calls
 
 ## Error Handling
@@ -137,24 +137,24 @@ def create_api_documentation_endpoints(app: FastAPI):
         </head>
         <body>
             <h1>AI-CRM API Usage Guide</h1>
-            
+
             <div class="section">
                 <h2>Quick Start</h2>
                 <p>Get started with the AI-CRM API in 5 minutes:</p>
-                
+
                 <h3>1. Authentication</h3>
                 <div class="code">
 curl -X POST https://api.aicrm.com/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{"username": "your-username", "password": "your-password"}'
                 </div>
-                
+
                 <h3>2. List Available Agents</h3>
                 <div class="code">
 curl -X GET https://api.aicrm.com/api/agents \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
                 </div>
-                
+
                 <h3>3. Create and Execute a Task</h3>
                 <div class="code">
 curl -X POST https://api.aicrm.com/api/tasks \\
@@ -167,51 +167,51 @@ curl -X POST https://api.aicrm.com/api/tasks \\
   }'
                 </div>
             </div>
-            
+
             <div class="section">
                 <h2>Core API Endpoints</h2>
-                
+
                 <div class="endpoint">
                     <span class="method">GET</span> /api/agents - List all available AI agents
                 </div>
-                
+
                 <div class="endpoint">
                     <span class="method">POST</span> /api/tasks - Create a new task
                 </div>
-                
+
                 <div class="endpoint">
                     <span class="method">GET</span> /api/tasks/{id} - Get task details and results
                 </div>
-                
+
                 <div class="endpoint">
                     <span class="method">POST</span> /api/agents/analyze - Get agent recommendations for a task
                 </div>
-                
+
                 <div class="endpoint">
                     <span class="method">GET</span> /api/analytics - Get system analytics and metrics
                 </div>
             </div>
-            
+
             <div class="section">
                 <h2>Billing API Endpoints</h2>
-                
+
                 <div class="endpoint">
                     <span class="method">GET</span> /api/billing/pricing - Get pricing plans
                 </div>
-                
+
                 <div class="endpoint">
                     <span class="method">GET</span> /api/billing/subscription - Get current subscription
                 </div>
-                
+
                 <div class="endpoint">
                     <span class="method">POST</span> /api/billing/subscription - Create/update subscription
                 </div>
-                
+
                 <div class="endpoint">
                     <span class="method">GET</span> /api/billing/usage - Get usage statistics
                 </div>
             </div>
-            
+
             <div class="section">
                 <h2>Agent Specializations</h2>
                 <table>
@@ -223,7 +223,7 @@ curl -X POST https://api.aicrm.com/api/tasks \\
                     <tr><td>frontend-developer</td><td>UI/UX, React, JavaScript</td><td>Frontend development</td></tr>
                 </table>
             </div>
-            
+
             <div class="section">
                 <h2>WebSocket Real-time Updates</h2>
                 <p>Connect to real-time task updates:</p>
@@ -242,7 +242,7 @@ socket.emit('join_room', 'tasks');
 socket.emit('join_room', 'agents');
                 </div>
             </div>
-            
+
             <div class="section">
                 <h2>SDKs and Libraries</h2>
                 <h3>JavaScript/Node.js</h3>
@@ -252,7 +252,7 @@ npm install @aicrm/api-client
 import { AICRMClient } from '@aicrm/api-client';
 const client = new AICRMClient('YOUR_API_KEY');
                 </div>
-                
+
                 <h3>Python</h3>
                 <div class="code">
 pip install aicrm-api
@@ -261,7 +261,7 @@ from aicrm_api import AICRMClient
 client = AICRMClient(api_key='YOUR_API_KEY')
                 </div>
             </div>
-            
+
             <div class="section">
                 <h2>Error Codes</h2>
                 <table>
@@ -273,7 +273,7 @@ client = AICRMClient(api_key='YOUR_API_KEY')
                     <tr><td>INSUFFICIENT_CREDITS</td><td>402</td><td>Not enough credits for operation</td></tr>
                 </table>
             </div>
-            
+
             <div class="section">
                 <h2>Support</h2>
                 <ul>

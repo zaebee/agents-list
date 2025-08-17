@@ -33,7 +33,7 @@ class AIIntegrationTester:
         self.framework = AgentIntegrationFramework()
         self.test_results = []
 
-    async def setup_test_agents(self) -> dict[str, AgentConfig]:
+    async def setup_test_agents(self) -> Dict[str, AgentConfig]:
         """Setup test agent configurations."""
 
         # Get API keys from environment
@@ -106,7 +106,7 @@ class AIIntegrationTester:
         status = "✅ PASS" if success else "❌ FAIL"
         print(f"{status} {test_name}: {details}")
 
-    async def test_api_key_validation(self, agents: dict[str, AgentConfig]):
+    async def test_api_key_validation(self, agents: Dict[str, AgentConfig]):
         """Test 1: Validate API key configuration."""
         print("\n🔑 Testing API Key Configuration...")
 
@@ -131,7 +131,7 @@ class AIIntegrationTester:
                     },
                 )
 
-    async def test_agent_health_checks(self, agents: dict[str, AgentConfig]):
+    async def test_agent_health_checks(self, agents: Dict[str, AgentConfig]):
         """Test 2: Agent health checks."""
         print("\n🏥 Testing Agent Health Checks...")
 
@@ -159,7 +159,7 @@ class AIIntegrationTester:
                     f"Health check failed: {e!s}",
                 )
 
-    async def test_simple_task_execution(self, agents: dict[str, AgentConfig]):
+    async def test_simple_task_execution(self, agents: Dict[str, AgentConfig]):
         """Test 3: Simple task execution."""
         print("\n🚀 Testing Simple Task Execution...")
 
@@ -204,7 +204,7 @@ class AIIntegrationTester:
                 "Simple Task Execution", False, f"Task execution error: {e!s}"
             )
 
-    async def test_agent_routing_logic(self, agents: dict[str, AgentConfig]):
+    async def test_agent_routing_logic(self, agents: Dict[str, AgentConfig]):
         """Test 4: Agent routing and selection logic."""
         print("\n🎯 Testing Agent Routing Logic...")
 

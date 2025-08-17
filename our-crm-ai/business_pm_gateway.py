@@ -732,9 +732,7 @@ def main():
         gateway = BusinessPMGateway()
 
         if args.command == "plan":
-            project_plan = gateway.create_business_project_plan(
-                args.title, args.description
-            )
+            gateway.create_business_project_plan(args.title, args.description)
             print("\n🎯 Project plan generated successfully!")
             print("📄 Full project details available in generated plan object")
 

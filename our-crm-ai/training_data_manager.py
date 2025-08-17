@@ -327,8 +327,8 @@ class TrainingDataCurator:
     def validate_training_data(self, data_point: dict) -> tuple[bool, list[dict]]:
         """Validate a training data point against all applicable rules."""
         agent_name = data_point.get("agent_name", "")
-        input_text = data_point.get("input_text", "")
-        expected_output = data_point.get("expected_output", "")
+        data_point.get("input_text", "")
+        data_point.get("expected_output", "")
 
         validation_errors = []
         is_valid = True
@@ -537,7 +537,7 @@ class TrainingDataCurator:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO training_datasets 
+                INSERT INTO training_datasets
                 (dataset_id, name, version, agent_name, creation_date, data_sources,
                  quality_metrics, size, privacy_level, validation_status, tags, description)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -594,7 +594,7 @@ class TrainingDataCurator:
                 data_id = str(uuid.uuid4())
                 conn.execute(
                     """
-                    INSERT INTO training_data_v2 
+                    INSERT INTO training_data_v2
                     (id, dataset_id, agent_name, data_source, input_text, expected_output,
                      actual_output, context_data, quality_score, privacy_level,
                      validation_status, validation_errors, created_at, updated_at,
@@ -633,9 +633,9 @@ class TrainingDataCurator:
             # Update dataset size
             conn.execute(
                 """
-                UPDATE training_datasets 
+                UPDATE training_datasets
                 SET size = (
-                    SELECT COUNT(*) FROM training_data_v2 
+                    SELECT COUNT(*) FROM training_data_v2
                     WHERE dataset_id = ? AND validation_status = 'valid'
                 )
                 WHERE dataset_id = ?
@@ -681,8 +681,8 @@ class TrainingDataCurator:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT input_text, expected_output, context_data 
-                FROM training_data_v2 
+                SELECT input_text, expected_output, context_data
+                FROM training_data_v2
                 WHERE dataset_id = ? AND validation_status = 'valid'
                 AND quality_score > 0.6
                 LIMIT 100
@@ -785,14 +785,14 @@ class TrainingDataCurator:
             # Basic statistics
             cursor = conn.execute(
                 """
-                SELECT 
+                SELECT
                     COUNT(*) as total_points,
                     COUNT(CASE WHEN validation_status = 'valid' THEN 1 END) as valid_points,
                     AVG(quality_score) as avg_quality,
                     MIN(quality_score) as min_quality,
                     MAX(quality_score) as max_quality,
                     COUNT(DISTINCT data_source) as unique_sources
-                FROM training_data_v2 
+                FROM training_data_v2
                 WHERE dataset_id = ?
             """,
                 (dataset_id,),
@@ -803,7 +803,7 @@ class TrainingDataCurator:
             # Quality distribution
             cursor = conn.execute(
                 """
-                SELECT quality_score FROM training_data_v2 
+                SELECT quality_score FROM training_data_v2
                 WHERE dataset_id = ? AND quality_score > 0
             """,
                 (dataset_id,),
@@ -815,7 +815,7 @@ class TrainingDataCurator:
             cursor = conn.execute(
                 """
                 SELECT data_source, COUNT(*) as count
-                FROM training_data_v2 
+                FROM training_data_v2
                 WHERE dataset_id = ?
                 GROUP BY data_source
             """,
@@ -827,7 +827,7 @@ class TrainingDataCurator:
             # Validation errors
             cursor = conn.execute(
                 """
-                SELECT validation_errors FROM training_data_v2 
+                SELECT validation_errors FROM training_data_v2
                 WHERE dataset_id = ? AND validation_status = 'invalid'
             """,
                 (dataset_id,),
@@ -938,7 +938,7 @@ class TrainingDataCurator:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT * FROM training_data_v2 
+                SELECT * FROM training_data_v2
                 WHERE dataset_id = ? AND validation_status = 'valid'
                 ORDER BY quality_score DESC
             """,

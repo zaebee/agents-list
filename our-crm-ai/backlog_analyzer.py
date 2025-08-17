@@ -149,7 +149,7 @@ class BacklogAnalyzer:
     def _assess_business_value(self, task: dict) -> BusinessValue:
         """Assess business value based on impact categories."""
         title_lower = task["title"].lower()
-        description_lower = task["description"].lower()
+        task["description"].lower()
 
         value_score = 0
 

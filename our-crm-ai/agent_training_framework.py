@@ -257,7 +257,7 @@ class TrainingDataCollector:
                     for datapoint in self.collection_buffer[agent]:
                         conn.execute(
                             """
-                            INSERT OR REPLACE INTO training_data 
+                            INSERT OR REPLACE INTO training_data
                             (id, agent_name, input_text, expected_output, actual_output,
                              performance_score, context, timestamp, validated, quality_score)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -308,7 +308,7 @@ class TrainingDataCollector:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT * FROM training_data 
+                SELECT * FROM training_data
                 WHERE agent_name = ? AND quality_score >= ?
                 ORDER BY quality_score DESC, timestamp DESC
                 LIMIT ?
@@ -373,7 +373,7 @@ class PerformanceEvaluator:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO performance_metrics 
+                INSERT INTO performance_metrics
                 (id, agent_name, metric_type, value, timestamp, task_context, feedback_source)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
@@ -518,7 +518,7 @@ class ContinuousLearningEngine:
         with sqlite3.connect(self.data_collector.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO feedback_data 
+                INSERT INTO feedback_data
                 (id, agent_name, task_id, feedback_type, rating, comments, timestamp, user_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
@@ -1224,9 +1224,7 @@ def main():
     status_parser.add_argument("--agent", help="Specific agent to show status for")
 
     # Dashboard command
-    dashboard_parser = subparsers.add_parser(
-        "dashboard", help="Show training dashboard data"
-    )
+    subparsers.add_parser("dashboard", help="Show training dashboard data")
 
     # Collect command
     collect_parser = subparsers.add_parser(

@@ -582,7 +582,7 @@ class TestConfigurationManager(unittest.TestCase):
             json.dump(valid_config, f)
 
         config_manager = ConfigurationManager(str(self.config_path))
-        config = config_manager.load_config()
+        config_manager.load_config()
 
         # Test runtime validation
         validation_result = config_manager.validate_runtime_config()

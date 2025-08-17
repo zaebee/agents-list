@@ -565,7 +565,7 @@ class LearningSystem:
         """Load learning data from storage."""
         if self.storage_path.exists():
             try:
-                with open(self.storage_path) as f:
+                with self.storage_path.open() as f:
                     data = json.load(f)
 
                 # Load outcomes
@@ -608,7 +608,7 @@ class LearningSystem:
                 "agent_performance": self.agent_performance,
             }
 
-            with open(self.storage_path, "w") as f:
+            with self.storage_path.open("w") as f:
                 json.dump(data, f, indent=2)
 
         except Exception as e:

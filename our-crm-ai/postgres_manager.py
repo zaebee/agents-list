@@ -107,31 +107,31 @@ class PostgreSQLManager:
                 WHERE p.id = $1
             """,
             "get_project_phases": """
-                SELECT * FROM project_phases 
-                WHERE project_id = $1 
+                SELECT * FROM project_phases
+                WHERE project_id = $1
                 ORDER BY created_at
             """,
             "get_user_by_username": """
-                SELECT * FROM users 
+                SELECT * FROM users
                 WHERE username = $1 AND is_active = true
             """,
             "update_user_login": """
-                UPDATE users 
+                UPDATE users
                 SET last_login = $1, failed_login_attempts = 0, locked_until = NULL
                 WHERE id = $2
             """,
             "get_executive_metrics": """
-                SELECT 
+                SELECT
                     COUNT(*) as total_projects,
                     SUM(estimated_cost) as total_investment,
                     SUM(target_revenue) as projected_revenue,
                     AVG(projected_roi) as avg_roi,
                     AVG(risk_score) as avg_risk_score
-                FROM business_projects 
+                FROM business_projects
                 WHERE status != 'cancelled'
             """,
             "get_recent_projects": """
-                SELECT 
+                SELECT
                     p.id, p.name, p.target_revenue, p.estimated_cost, p.projected_roi,
                     p.risk_score, p.status, p.created_at, u.username as created_by_username,
                     COUNT(ph.id) as total_phases,
@@ -252,7 +252,7 @@ class PostgreSQLManager:
         async with self.get_transaction() as conn:
             result = await conn.execute(
                 """
-                UPDATE business_projects 
+                UPDATE business_projects
                 SET status = $1, updated_at = CURRENT_TIMESTAMP
                 WHERE id = $2 AND (created_by = $3 OR $3 IN (
                     SELECT id FROM users WHERE role IN ('admin', 'pm')
@@ -276,8 +276,8 @@ class PostgreSQLManager:
 
             # Project status breakdown
             status_data = await conn.fetch("""
-                SELECT status, COUNT(*) as count 
-                FROM business_projects 
+                SELECT status, COUNT(*) as count
+                FROM business_projects
                 GROUP BY status
             """)
 
@@ -313,14 +313,14 @@ class PostgreSQLManager:
             # High risk projects
             high_risk = await conn.fetch("""
                 SELECT name, risk_score, status, projected_roi, estimated_cost
-                FROM business_projects 
+                FROM business_projects
                 WHERE risk_score > 0.6 AND status IN ('planning', 'in_progress')
                 ORDER BY risk_score DESC
             """)
 
             # Active projects timeline analysis
             timeline_analysis = await conn.fetch("""
-                SELECT 
+                SELECT
                     p.name,
                     COUNT(ph.id) as total_phases,
                     SUM(ph.estimated_hours) as estimated_hours,
@@ -361,11 +361,11 @@ class PostgreSQLManager:
 
             # Budget analysis
             budget_data = await conn.fetchrow("""
-                SELECT 
+                SELECT
                     SUM(estimated_cost) as total_budget,
                     SUM(actual_cost) as total_spent,
                     COUNT(*) as active_projects
-                FROM business_projects 
+                FROM business_projects
                 WHERE status IN ('planning', 'in_progress')
             """)
 
@@ -402,7 +402,7 @@ class PostgreSQLManager:
         async with self.get_connection() as conn:
             # ROI projections
             roi_data = await conn.fetch("""
-                SELECT 
+                SELECT
                     name, estimated_cost, actual_cost, target_revenue,
                     projected_roi, actual_roi, status, risk_score
                 FROM business_projects
@@ -458,11 +458,11 @@ class PostgreSQLManager:
         try:
             async with self.get_connection() as conn:
                 # Check basic connectivity
-                result = await conn.fetchval("SELECT 1")
+                await conn.fetchval("SELECT 1")
 
                 # Get database stats
                 stats = await conn.fetchrow("""
-                    SELECT 
+                    SELECT
                         (SELECT COUNT(*) FROM business_projects) as total_projects,
                         (SELECT COUNT(*) FROM users WHERE is_active = true) as active_users,
                         (SELECT COUNT(*) FROM project_phases) as total_phases,
@@ -495,7 +495,7 @@ class PostgreSQLManager:
         """Create backup information (actual backup would use pg_dump)."""
         async with self.get_connection() as conn:
             stats = await conn.fetchrow("""
-                SELECT 
+                SELECT
                     pg_database_size(current_database()) as db_size_bytes,
                     (SELECT COUNT(*) FROM business_projects) as projects_count,
                     (SELECT COUNT(*) FROM users) as users_count,
