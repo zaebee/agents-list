@@ -5,8 +5,14 @@ Test script for the new authentication integration.
 
 import json
 
-from auth import get_password_hash
-from auth_database import AccountStatus, SessionLocal, SubscriptionTier, User, UserRole
+from src.ai_crm.auth import get_password_hash
+from src.ai_crm.auth.database import (
+    AccountStatus,
+    SessionLocal,
+    SubscriptionTier,
+    User,
+    UserRole,
+)
 
 
 def create_test_user():
@@ -57,8 +63,8 @@ def test_login_api():
 
         # This would normally be a request to the actual API
         # For now, we'll test the auth function directly
-        from auth import authenticate_user
-        from auth_database import SessionLocal
+        from src.ai_crm.auth import authenticate_user
+        from src.ai_crm.auth.database import SessionLocal
 
         db = SessionLocal()
         try:

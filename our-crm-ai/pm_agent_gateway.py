@@ -43,10 +43,10 @@ class TaskAnalysis:
 
     complexity: TaskComplexity
     estimated_hours: float
-    required_agents: List[str]
-    dependencies: List[str]
-    risk_factors: List[str]
-    success_criteria: List[str]
+    required_agents: list[str]
+    dependencies: list[str]
+    risk_factors: list[str]
+    success_criteria: list[str]
 
 
 @dataclass
@@ -55,10 +55,10 @@ class AgentWorkflow:
 
     task_id: str
     primary_agent: str
-    supporting_agents: List[str]
-    workflow_steps: List[dict]
+    supporting_agents: list[str]
+    workflow_steps: list[dict]
     estimated_completion: str
-    dependencies: List[str]
+    dependencies: list[str]
 
 
 class PMAgentGateway:

@@ -16,23 +16,24 @@ from unittest.mock import Mock
 
 import pytest
 
-from agent_routing import (
+from src.ai_crm.agents.pm.gateway import TaskAnalyzer, WorkflowEngine
+from src.ai_crm.agents.routing import (
     RoutingStrategy,
     SmartAgentRouter,
 )
-from agent_selector import EnhancedAgentSelector, LearningSystem
-from config_manager import (
+from src.ai_crm.agents.selector import EnhancedAgentSelector, LearningSystem
+from src.ai_crm.core.config import (
     ConfigurationManager,
     MainConfig,
 )
-from exceptions import (
+from src.ai_crm.core.exceptions import (
     ConfigurationError,
     CRMError,
     TaskNotFoundError,
 )
 
 # Import components to test
-from models import (
+from src.ai_crm.core.models import (
     Agent,
     AgentSuggestion,
     RoutingContext,
@@ -42,7 +43,6 @@ from models import (
     TaskPriority,
     TaskStatus,
 )
-from pm_gateway_refactored import TaskAnalyzer, WorkflowEngine
 from workflow_persistence import (
     FileWorkflowStorage,
     create_file_persistence_manager,

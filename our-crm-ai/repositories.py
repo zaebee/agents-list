@@ -534,7 +534,7 @@ class InMemoryAgentRepository(AgentRepository):
             if ai_owner_config and "states" in ai_owner_config:
                 from agent_selector import AGENT_KEYWORDS
 
-                for agent_name in ai_owner_config["states"].keys():
+                for agent_name in ai_owner_config["states"]:
                     keywords = AGENT_KEYWORDS.get(agent_name, [])
                     # Categorize agent
                     category = self._categorize_agent(agent_name)

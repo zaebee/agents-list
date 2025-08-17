@@ -244,28 +244,27 @@ class PostgreSQLMigrator:
         sqlite_conn = sqlite3.connect(self.sqlite_path)
         sqlite_conn.row_factory = sqlite3.Row
 
-        async with self.pool.acquire() as pg_conn:
-            async with pg_conn.transaction():
-                try:
-                    # Migrate users table
-                    await self._migrate_users(sqlite_conn, pg_conn)
+        async with self.pool.acquire() as pg_conn, pg_conn.transaction():
+            try:
+                # Migrate users table
+                await self._migrate_users(sqlite_conn, pg_conn)
 
-                    # Migrate business projects
-                    await self._migrate_business_projects(sqlite_conn, pg_conn)
+                # Migrate business projects
+                await self._migrate_business_projects(sqlite_conn, pg_conn)
 
-                    # Migrate project phases
-                    await self._migrate_project_phases(sqlite_conn, pg_conn)
+                # Migrate project phases
+                await self._migrate_project_phases(sqlite_conn, pg_conn)
 
-                    # Migrate business metrics
-                    await self._migrate_business_metrics(sqlite_conn, pg_conn)
+                # Migrate business metrics
+                await self._migrate_business_metrics(sqlite_conn, pg_conn)
 
-                    logger.info("Data migration completed successfully")
+                logger.info("Data migration completed successfully")
 
-                except Exception as e:
-                    logger.error(f"Migration failed: {e}")
-                    raise DatabaseMigrationError(f"Migration failed: {e}")
-                finally:
-                    sqlite_conn.close()
+            except Exception as e:
+                logger.error(f"Migration failed: {e}")
+                raise DatabaseMigrationError(f"Migration failed: {e}")
+            finally:
+                sqlite_conn.close()
 
     async def _migrate_users(self, sqlite_conn, pg_conn):
         """Migrate users table."""

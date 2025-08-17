@@ -1,25 +1,21 @@
 import argparse
-import os
+from pathlib import Path
 import re
 import subprocess
 import sys
 
 # Add project root to path to allow sibling imports
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.append(str(Path(__file__).parent.parent.resolve()))
 from crm import CRMClient
-
-# from rag.query_rag import query_rag # No longer used
 
 
 def recognize_intent(command):
     """Recognizes the user's intent from the command."""
     command_lower = command.lower()
 
-    # Intent: query_rag (prioritized)
     if command_lower.startswith(("what is", "what's", "tell me about")):
         return "query_rag", {"query": command}
 
-    # Intent: list_tasks
     if any(
         keyword in command_lower for keyword in ["list", "show all", "board", "tasks"]
     ):
@@ -91,16 +87,14 @@ def execute_action(intent, params):
             if not query:
                 return "Error: Query not provided for 'query_rag' intent."
 
-            rag_script_path = os.path.join(
-                os.path.dirname(__file__), "../rag/rag_system.py"
-            )
-            index_path = os.path.join(os.path.dirname(__file__), "../rag/index.faiss")
+            rag_script_path = Path(__file__).parent / "../rag/rag_system.py"
+            index_path = Path(__file__).parent / "../rag/index.faiss"
 
             # Check if the index exists, if not, build it.
-            if not os.path.exists(index_path):
+            if not index_path.exists():
                 print("RAG index not found. Building it now...")
                 prepare_result = subprocess.run(
-                    ["python3", rag_script_path, "prepare"],
+                    ["python3", str(rag_script_path), "prepare"],
                     check=False,
                     capture_output=True,
                     text=True,
@@ -111,7 +105,7 @@ def execute_action(intent, params):
 
             # Now, query the RAG system
             result = subprocess.run(
-                ["python3", rag_script_path, "query", query],
+                ["python3", str(rag_script_path), "query", query],
                 capture_output=True,
                 text=True,
                 check=True,

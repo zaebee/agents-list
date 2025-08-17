@@ -213,7 +213,7 @@ class IntegratedTrainingSystem:
         for agent_name, cron_expr in self.config.training_schedule.items():
             if agent_name == "*":
                 # Apply to all agents without specific schedules
-                for agent in self.agent_status.keys():
+                for agent in self.agent_status:
                     if agent not in self.config.training_schedule:
                         schedule.every().sunday.at("00:00").do(
                             self._schedule_agent_training, agent
@@ -298,13 +298,13 @@ class IntegratedTrainingSystem:
         if "memory" in metric:
             return [
                 agent
-                for agent in self.agent_status.keys()
+                for agent in self.agent_status
                 if "database" in agent or "data" in agent or "ml" in agent
             ]
         elif "response_time" in metric:
             return [
                 agent
-                for agent in self.agent_status.keys()
+                for agent in self.agent_status
                 if "frontend" in agent or "api" in agent
             ]
         else:
@@ -635,7 +635,7 @@ class IntegratedTrainingSystem:
     async def _process_continuous_learning(self):
         """Process continuous learning updates."""
         # Collect recent feedback and interactions
-        for agent_name in self.agent_status.keys():
+        for agent_name in self.agent_status:
             try:
                 # Mock feedback collection (in real implementation, this would collect actual feedback)
                 if hash(agent_name) % 10 == 0:  # 10% chance of new feedback

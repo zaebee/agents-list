@@ -7,13 +7,13 @@ import bcrypt
 logger = logging.getLogger(__name__)
 
 
-def get_db_connection(db_path: str = "business_analytics.db"):
+def get_db_connection(db_path: str = "business_analytics.db") -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
 
-def init_database(db_path: str = "business_analytics.db"):
+def init_database(db_path: str = "business_analytics.db") -> None:
     """Initialize database with enhanced security and users table."""
     with get_db_connection(db_path) as conn:
         cursor = conn.cursor()
@@ -105,7 +105,7 @@ def init_database(db_path: str = "business_analytics.db"):
         conn.commit()
 
 
-def init_default_users(db_path: str = "business_analytics.db"):
+def init_default_users(db_path: str = "business_analytics.db") -> None:
     """Create default admin user if none exists."""
     with get_db_connection(db_path) as conn:
         cursor = conn.cursor()

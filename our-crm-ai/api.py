@@ -2,13 +2,13 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from auth import require_feature_access
-from auth_database import SessionLocal, create_tables, seed_default_data
-from auth_routes import router as auth_router
 from billing_api import router as billing_router
 import crm_service
 from dashboard_api import app as dashboard_app
 from models import CommandRequest, CommandResponse
+from src.ai_crm.auth import require_feature_access
+from src.ai_crm.auth.database import SessionLocal, create_tables, seed_default_data
+from src.ai_crm.auth.routes import router as auth_router
 
 
 class CommandExecutionError(Exception):
@@ -25,6 +25,7 @@ app = FastAPI(
 origins = [
     "http://localhost:3000",
     "http://crm.zae.life:3000",
+    "https://zae.life",
     "https://crm.zae.life",
 ]
 
@@ -90,7 +91,7 @@ async def execute_command(
         result = crm_service.execute_command(request.command)
         return CommandResponse(response=result)
     except Exception as e:
-        raise CommandExecutionError(str(e))
+        raise CommandExecutionError(str(e)) from e
 
 
 if __name__ == "__main__":

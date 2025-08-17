@@ -485,11 +485,10 @@ class ConfigurationManager:
             if (
                 ai_provider in ["openai", "anthropic"]
                 and not self._config.ai_provider.api_key
-            ):
-                if not os.getenv(f"{self.env_prefix}AI_API_KEY"):
-                    issues.append(
-                        f"AI_API_KEY environment variable required for {ai_provider}"
-                    )
+            ) and not os.getenv(f"{self.env_prefix}AI_API_KEY"):
+                issues.append(
+                    f"AI_API_KEY environment variable required for {ai_provider}"
+                )
 
             # Check file paths exist
             if self._config.logging.file_path:

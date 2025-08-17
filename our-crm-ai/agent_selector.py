@@ -34,8 +34,8 @@ except ImportError:
 
 import difflib
 
-from exceptions import ConfigurationError
-from models import AgentSuggestion
+from src.ai_crm.core.exceptions import ConfigurationError
+from src.ai_crm.core.models import AgentSuggestion
 
 # Agent categories and keywords for intelligent task routing
 AGENT_KEYWORDS = {
@@ -775,7 +775,7 @@ class EnhancedAgentSelector:
     Enhanced agent selector with semantic matching, learning, and context awareness.
     """
 
-    def __init__(self, enable_semantic: bool = None):
+    def __init__(self, enable_semantic: bool | None = None):
         self.logger = logging.getLogger("enhanced_agent_selector")
 
         # Auto-detect semantic capabilities

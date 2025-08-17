@@ -8,8 +8,14 @@ import json
 from fastapi.testclient import TestClient
 
 from api import app
-from auth import get_password_hash
-from auth_database import AccountStatus, SessionLocal, SubscriptionTier, User, UserRole
+from src.ai_crm.auth import get_password_hash
+from src.ai_crm.auth.database import (
+    AccountStatus,
+    SessionLocal,
+    SubscriptionTier,
+    User,
+    UserRole,
+)
 
 
 def setup_test_user():
