@@ -42,10 +42,10 @@ class WebSocketService {
       return;
     }
 
-    const url = serverURL || 
+    const url = 'https://crm.zae.life' || serverURL || 
       (process.env.NODE_ENV === 'development' 
-        ? 'http://zae.life:5001' 
-        : window.location.origin);
+        ? 'https://crm.zae.life' 
+        : 'https://crm.zae.life'); // window.location.origin);
 
     console.log('Connecting to WebSocket server:', url);
 

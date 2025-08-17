@@ -308,24 +308,23 @@ class PricingManager:
         if (
             current_plan.max_tasks_per_month is not None
             and usage.tasks_used_this_month >= current_plan.max_tasks_per_month * 0.9
-        ):
-            if usage.subscription_tier == SubscriptionTier.FREE:
-                recommendations.append(
-                    {
-                        "type": "tier_upgrade",
-                        "from_tier": SubscriptionTier.FREE,
-                        "to_tier": SubscriptionTier.PRO,
-                        "reason": "Task limit approaching",
-                        "benefits": [
-                            "Unlimited tasks per month",
-                            "Access to 37 additional Sonnet-powered agents",
-                            "API access and advanced features",
-                        ],
-                        "cost_increase": self.pricing_plans[
-                            SubscriptionTier.PRO
-                        ].price_per_month,
-                    }
-                )
+        ) and usage.subscription_tier == SubscriptionTier.FREE:
+            recommendations.append(
+                {
+                    "type": "tier_upgrade",
+                    "from_tier": SubscriptionTier.FREE,
+                    "to_tier": SubscriptionTier.PRO,
+                    "reason": "Task limit approaching",
+                    "benefits": [
+                        "Unlimited tasks per month",
+                        "Access to 37 additional Sonnet-powered agents",
+                        "API access and advanced features",
+                    ],
+                    "cost_increase": self.pricing_plans[
+                        SubscriptionTier.PRO
+                    ].price_per_month,
+                }
+            )
 
         # Analyze agent usage patterns for Pro users
         if usage.subscription_tier == SubscriptionTier.PRO:

@@ -81,13 +81,6 @@ def prepare_data():
     print(f"Found {len(files_to_index)} local files.")
 
     # NOTE: Skipping attachment download due to 404 issue.
-    # try:
-    #     client = CRMClient()
-    #     attached_files = find_attached_files(client)
-    #     files_to_index.extend(attached_files)
-    #     print(f"Found and downloaded {len(attached_files)} attached files.")
-    # except Exception as e:
-    #     print(f"Could not connect to CRM to fetch attachments: {e}")
 
     if not files_to_index:
         print("No documents found to index. Exiting.")

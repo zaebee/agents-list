@@ -59,7 +59,11 @@ def wait_for_database():
 def initialize_database():
     """Initialize database tables and create admin user."""
     try:
-        from src.ai_crm.auth.database import SessionLocal, create_tables, seed_default_data
+        from src.ai_crm.auth.database import (
+            SessionLocal,
+            create_tables,
+            seed_default_data,
+        )
 
         logger.info("📊 Creating database tables...")
         create_tables()

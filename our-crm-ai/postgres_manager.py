@@ -93,9 +93,8 @@ class PostgreSQLManager:
     @asynccontextmanager
     async def get_transaction(self):
         """Get database transaction."""
-        async with self.get_connection() as conn:
-            async with conn.transaction():
-                yield conn
+        async with self.get_connection() as conn, conn.transaction():
+            yield conn
 
     async def _prepare_statements(self):
         """Prepare frequently used SQL statements for better performance."""

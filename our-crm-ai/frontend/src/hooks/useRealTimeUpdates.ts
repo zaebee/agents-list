@@ -25,6 +25,7 @@ export function useRealTimeUpdates(options: UseRealTimeUpdatesOptions = {}) {
 
   useEffect(() => {
     if (autoConnect) {
+      console.log("start WS connect...");
       webSocketService.connect();
     }
 

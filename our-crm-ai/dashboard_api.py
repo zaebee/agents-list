@@ -7,7 +7,11 @@ from pydantic import BaseModel
 from analytics_engine import AnalyticsEngine
 from business_pm_gateway import BusinessPMGateway
 from database import get_db_connection, init_database, init_default_users
-from src.ai_crm.auth.security import authenticate_user, create_access_token, get_current_user
+from src.ai_crm.auth.security import (
+    authenticate_user,
+    create_access_token,
+    get_current_user,
+)
 
 # Initialize database
 init_database()

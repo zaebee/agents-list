@@ -3,8 +3,8 @@ import axios, { AxiosInstance } from 'axios';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://zae.life:5001' 
-  : '';
+  ? 'https://crm.zae.life' 
+  : 'https://crm.zae.life';
 
 const TOKEN_KEY = 'ai_pm_token';
 
