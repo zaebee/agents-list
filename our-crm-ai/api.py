@@ -2,9 +2,9 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from auth import require_feature_access
-from auth_database import SessionLocal, create_tables, seed_default_data
-from auth_routes import router as auth_router
+from src.ai_crm.auth import require_feature_access
+from src.ai_crm.auth.database import SessionLocal, create_tables, seed_default_data
+from src.ai_crm.auth.routes import router as auth_router
 from billing_api import router as billing_router
 import crm_service
 from dashboard_api import app as dashboard_app
