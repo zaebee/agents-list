@@ -334,15 +334,17 @@ class SQLiteWorkflowStorage(WorkflowStorageBackend):
         try:
             await self._ensure_initialized()
 
-            async with aiosqlite.connect(self.db_path) as db:
-                async with db.execute(
+            async with (
+                aiosqlite.connect(self.db_path) as db,
+                db.execute(
                     "SELECT workflow_data FROM workflows WHERE workflow_id = ?",
                     (workflow_id,),
-                ) as cursor:
-                    row = await cursor.fetchone()
+                ) as cursor,
+            ):
+                row = await cursor.fetchone()
 
-                    if row:
-                        return json.loads(row[0])
+                if row:
+                    return json.loads(row[0])
 
             return None
 

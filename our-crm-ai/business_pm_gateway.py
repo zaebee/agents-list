@@ -13,6 +13,7 @@ Key Features:
 - Executive-level project planning
 """
 
+import argparse
 from dataclasses import dataclass
 from enum import Enum
 import re
@@ -696,7 +697,6 @@ class BusinessPMGateway(PMAgentGateway):
 
 def main():
     """CLI interface for Business PM Gateway."""
-    import argparse
 
     parser = argparse.ArgumentParser(
         description="Business PM Gateway - AI Project Manager for Business Goals"
