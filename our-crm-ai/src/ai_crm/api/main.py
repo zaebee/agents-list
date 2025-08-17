@@ -2,12 +2,13 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from ..auth import require_feature_access
-from ..auth.database import SessionLocal, create_tables, seed_default_data
-from ..auth.routes import router as auth_router
 from billing_api import router as billing_router
 import crm_service
 from dashboard_api import app as dashboard_app
+
+from ..auth import require_feature_access
+from ..auth.database import SessionLocal, create_tables, seed_default_data
+from ..auth.routes import router as auth_router
 from ..core.models import CommandRequest, CommandResponse
 
 
@@ -25,6 +26,7 @@ app = FastAPI(
 origins = [
     "http://localhost:3000",
     "http://crm.zae.life:3000",
+    "https://zae.life",
     "https://crm.zae.life",
 ]
 

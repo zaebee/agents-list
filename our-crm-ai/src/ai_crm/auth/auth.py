@@ -5,9 +5,6 @@ Integrates auth_database.py with existing security patterns.
 """
 
 from datetime import UTC, datetime, timedelta
-
-# Python 3.9 compatibility - UTC was added in Python 3.11
-UTC = UTC
 import logging
 import os
 import re
@@ -20,6 +17,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+
+# Python 3.9 compatibility - UTC was added in Python 3.11
+UTC = UTC
 
 from .database import (
     AccountStatus,
@@ -242,7 +242,7 @@ async def get_current_user(
     if jti:
         session = (
             db.query(AuthSession)
-            .filter(AuthSession.access_token_jti == jti, AuthSession.is_active == True)
+            .filter(AuthSession.access_token_jti == jti, AuthSession.is_active)
             .first()
         )
         if not session:
@@ -330,7 +330,7 @@ async def check_feature_access(
         db.query(SubscriptionFeature)
         .filter(
             SubscriptionFeature.feature_name == feature_name,
-            SubscriptionFeature.is_active == True,
+            SubscriptionFeature.is_active,
         )
         .first()
     )

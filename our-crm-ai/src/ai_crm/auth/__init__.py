@@ -8,38 +8,36 @@ Handles user authentication, authorization, security, and access control.
 from .auth import (
     PasswordValidator,
     authenticate_user,
+    check_feature_access,
     create_access_token,
     create_refresh_token,
     get_current_user,
     get_password_hash,
-    verify_password,
-    verify_token,
+    require_feature_access,
     require_roles,
     require_subscription_tier,
-    check_feature_access,
-    require_feature_access,
+    verify_password,
+    verify_token,
 )
-
 from .database import (
     AccountStatus,
-    AuthSession,
     AuditLog,
+    AuthSession,
     RateLimitRule,
     SubscriptionFeature,
     SubscriptionTier,
     User,
     UserRole,
-    get_db,
     create_tables,
+    get_db,
     seed_default_data,
 )
-
 from .routes import router as auth_router
 
 __all__ = [
     # Core auth functions
     "PasswordValidator",
-    "authenticate_user", 
+    "authenticate_user",
     "create_access_token",
     "create_refresh_token",
     "get_current_user",
@@ -47,14 +45,13 @@ __all__ = [
     "verify_password",
     "verify_token",
     "require_roles",
-    "require_subscription_tier", 
+    "require_subscription_tier",
     "check_feature_access",
     "require_feature_access",
-    
     # Database models and enums
     "AccountStatus",
     "AuthSession",
-    "AuditLog", 
+    "AuditLog",
     "RateLimitRule",
     "SubscriptionFeature",
     "SubscriptionTier",
@@ -63,13 +60,11 @@ __all__ = [
     "get_db",
     "create_tables",
     "seed_default_data",
-    
     # FastAPI router
     "auth_router",
-    
     # Submodules
     "auth",
-    "database", 
+    "database",
     "routes",
     "security",
 ]

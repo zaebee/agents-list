@@ -1,4 +1,5 @@
 import shutil
+import uuid
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,6 +8,7 @@ from pydantic import BaseModel
 from analytics_engine import AnalyticsEngine
 from business_pm_gateway import BusinessPMGateway
 from database import get_db_connection, init_database, init_default_users
+
 from ...auth.security import authenticate_user, create_access_token, get_current_user
 
 # Initialize database
@@ -23,6 +25,7 @@ app = FastAPI(
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://zae.life",
     "https://crm.zae.life",
     "http://localhost:8080",
     "http://127.0.0.1:8080",

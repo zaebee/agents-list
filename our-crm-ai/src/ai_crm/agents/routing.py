@@ -10,9 +10,10 @@ from enum import Enum
 import logging
 from typing import Any
 
+from repositories import AgentRepository
+
 from ..core.exceptions import AgentError, AgentUnavailableError
 from ..core.models import Agent, AgentSuggestion, TaskComplexity, TaskPriority
-from repositories import AgentRepository
 
 
 class RoutingStrategy(Enum):

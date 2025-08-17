@@ -5,7 +5,7 @@ Specialized agents for project management, task analysis, and business operation
 """
 
 __all__ = [
-    "gateway",    # PM gateway (refactored)
-    "business",   # Business PM gateway
-    "agent",      # PM agent gateway
+    "agent",  # PM agent gateway
+    "business",  # Business PM gateway
+    "gateway",  # PM gateway (refactored)
 ]

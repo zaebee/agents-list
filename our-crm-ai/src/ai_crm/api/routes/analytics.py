@@ -37,6 +37,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://zae.life",
         "https://crm.zae.life",
         "http://localhost:8080",
         "http://127.0.0.1:8080",

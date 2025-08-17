@@ -4,6 +4,7 @@ Authentication routes for AI-CRM system.
 """
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 # Python 3.9 compatibility - UTC was added in Python 3.11
 UTC = UTC
@@ -64,7 +65,7 @@ class LoginResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
-    user: dict
+    user: dict[str, Any]
 
 
 class TokenRefresh(BaseModel):
@@ -217,7 +218,7 @@ async def refresh_token(
         db.query(AuthSession)
         .filter(
             AuthSession.refresh_token == token_data.refresh_token,
-            AuthSession.is_active == True,
+            AuthSession.is_active,
         )
         .first()
     )
@@ -255,7 +256,7 @@ async def refresh_token(
 @router.post("/logout")
 async def logout(
     request: Request,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Logout user and invalidate session."""
@@ -302,13 +303,17 @@ async def logout(
 
 
 @router.get("/verify")
-async def verify_token_endpoint(current_user: dict = Depends(get_current_user)):
+async def verify_token_endpoint(
+    current_user: dict[str, Any] = Depends(get_current_user),
+):
     """Verify if the current token is valid."""
     return {"user": current_user}
 
 
 @router.get("/me", response_model=dict)
-async def get_current_user_info(current_user: dict = Depends(get_current_user)):
+async def get_current_user_info(
+    current_user: dict[str, Any] = Depends(get_current_user),
+):
     """Get current user information."""
     return {"user": current_user}
 

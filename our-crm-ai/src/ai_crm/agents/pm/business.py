@@ -16,6 +16,7 @@ Key Features:
 from dataclasses import dataclass
 from enum import Enum
 import re
+from typing import Any
 
 from pm_agent_gateway import (
     PMAgentGateway,
@@ -78,14 +79,14 @@ class ProjectPlan:
 
     project_name: str
     business_context: BusinessContext
-    technical_phases: list[dict]
+    technical_phases: list[dict[str, Any]]
     total_estimated_hours: float
     estimated_cost: float | None = None
-    roi_projection: dict | None = None
-    risk_assessment: dict | None = None
+    roi_projection: dict[str, Any] | None = None
+    risk_assessment: dict[str, Any] | None = None
     success_criteria: list[str] | None = None
-    milestones: list[dict] | None = None
-    resource_requirements: dict | None = None
+    milestones: list[dict[str, Any]] | None = None
+    resource_requirements: dict[str, Any] | None = None
 
 
 class BusinessPMGateway(PMAgentGateway):

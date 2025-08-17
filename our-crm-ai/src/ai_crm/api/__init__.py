@@ -8,8 +8,8 @@ FastAPI-based REST API endpoints and web application interface.
 from .main import app
 
 __all__ = [
-    "app",       # Main FastAPI application
-    "main",      # Main module
-    "routes",    # Route modules  
-    "docs",      # API documentation
+    "app",  # Main FastAPI application
+    "docs",  # API documentation
+    "main",  # Main module
+    "routes",  # Route modules
 ]

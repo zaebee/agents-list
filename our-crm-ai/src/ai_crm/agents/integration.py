@@ -491,7 +491,7 @@ class AgentIntegrationFramework:
         self.completed_tasks: dict[str, TaskExecution] = {}
 
         # Performance tracking
-        self.agent_performance: dict[str, dict] = {}
+        self.agent_performance: dict[str, dict[str, Any]] = {}
 
         # Load agent configurations
         self._load_agent_configs()
@@ -620,7 +620,11 @@ class AgentIntegrationFramework:
                 }
 
     async def execute_task(
-        self, agent_id: str, task_type: str, prompt: str, context: dict[str, Any] = None
+        self,
+        agent_id: str,
+        task_type: str,
+        prompt: str,
+        context: dict[str, Any] | None = None,
     ) -> TaskExecution:
         """Execute task with specified agent."""
         if agent_id not in self.agents:
